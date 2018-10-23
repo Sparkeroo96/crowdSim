@@ -4,4 +4,13 @@
 class Person:
 
     def __init__(self):
+        print "Creating Person"
+
+    def action(self):
+        self.move()
+
+    def move(self):
+        print "Person should move"
+
+
 

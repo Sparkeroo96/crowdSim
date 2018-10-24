@@ -6,6 +6,9 @@ class Person:
     def __init__(self):
         print "Creating Person"
 
+    def startingLoc(self):
+        return [2,3]
+
     def action(self):
         self.move()
 

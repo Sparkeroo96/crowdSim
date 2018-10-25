@@ -4,7 +4,7 @@
 class MapMain:
 
     def __init__(self):
-        print "Created Map"
+        print("Created Map")
 
     def sizeHeight(self):
         return 1000

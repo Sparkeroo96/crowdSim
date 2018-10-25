@@ -1,7 +1,7 @@
 # #!/usr/bin/python
-import Tkinter
-from Map.MapMain import MapMain
-from People.Person import Person
+import tkinter
+from Map.map_main import MapMain
+from People.person import Person
 mapInfo = MapMain()
 mapArray = mapInfo.mapExample()
 
@@ -62,8 +62,8 @@ personX1 = (cordiates[0] * standardSize) + offset - standardSize
 personY1 = (cordiates[1] * standardSize) + offset - standardSize
 personX2 = personX1 + standardSize
 personY2 = personY1 + standardSize
-print personX1
-print personY1
+print(personX1)
+print(personY1)
 mainGrid.create_oval(personX1,personY1,personX2,personY2, fill= "red")
 
 

@@ -4,7 +4,7 @@
 class Person:
 
     def __init__(self):
-        print "Creating Person"
+        print("Creating Person")
 
     def startingLoc(self):
         return [2,3]
@@ -13,7 +13,4 @@ class Person:
         self.move()
 
     def move(self):
-        print "Person should move"
-
-
-
+        print("Person should move")

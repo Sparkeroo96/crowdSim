@@ -12,7 +12,7 @@ class Simulation:
     map = None
 
     def __init__(self):
-        print "Simulation running"
+        print("Simulation running")
 
     def start_simulation(self):
         self.create_people(10)
@@ -20,7 +20,7 @@ class Simulation:
         self.populate_people_to_map()
 
     def create_people(self, numberOfPeople):
-        print "Creating people class"
+        print("Creating people class")
 
         for x in range(numberOfPeople):
             print(x)
@@ -28,13 +28,13 @@ class Simulation:
             self.arrayPeople.append(person)
 
     def create_map(self):
-        print "Creating Map"
+        print("Creating Map")
         map = MapMain()
         self.map = map
 
     def populate_people_to_map(self):
         for x in len(self.map):
-            print "Adding People To Map"
+            print("Adding People To Map")
 
 
 

@@ -3,10 +3,6 @@ import tkinter
 from Map.map_main import MapMain
 from People.person import Person
 
-#Difines the size of the squares on the grid
-offset = 10
-standard_size = 80
-
 
 mapInfo = MapMain()
 mapArray = mapInfo.get_map()
@@ -17,7 +13,7 @@ class GridGui:
     def __init__(self):
         print("GUI for map")
 
-    def get_size(self):
+    def get_size(self, standard_size, offset):
         num_rows_cols = mapInfo.grid_size(mapInfo.get_map())
         num_rows = num_rows_cols[0]
         num_cols = num_rows_cols[1]
@@ -25,7 +21,7 @@ class GridGui:
         canvas_height = standard_size * num_cols + (2 * offset)
         return [canvas_width, canvas_height]
 
-    def generate_grid(self, canvas_width, canvus_height, x1, y1, x2, y2):
+    def generate_grid(self, canvas_width, canvus_height, x1, y1, x2, y2, standard_size, offset):
         master = tkinter.Tk()
         mainGrid = tkinter.Canvas(master, width=canvas_width, height=canvus_height, bg="Green")
 

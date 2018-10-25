@@ -35,8 +35,10 @@ canvasWidth = standardSize * numRows + (2 * offset)
 canvasHeight = standardSize * numCol + (2 * offset)
 
 
-master = Tkinter.Tk()
-mainGrid = Tkinter.Canvas (master, width = canvasWidth, height = canvasHeight, bg="Green")
+# master = Tkinter.Tk()
+# mainGrid = Tkinter.Canvas (master, width = canvasWidth, height = canvasHeight, bg="Green")
+master = tkinter.Tk()
+mainGrid = tkinter.Canvas (master, width = canvasWidth, height = canvasHeight, bg="Green")
 
 # Takes the martix and converts it into a grid patten baced on the size of the arrays
 # Creates the rows

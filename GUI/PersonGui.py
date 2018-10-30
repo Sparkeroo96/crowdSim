@@ -1,11 +1,13 @@
 from People.person import *
 import tkinter
 
-#Person Placement
+# Person Placement
 
-testPerson = Person()
+# testPerson = Person()
+
 
 class PersonGui:
+
     def __int__(self):
         print("I was also called")
         
@@ -13,9 +15,9 @@ class PersonGui:
         testPerson = Person()
         return testPerson
 
-    def on_to_map(self, main_grid, standard_size, offset):
+    def on_to_map(self,person, main_grid, standard_size, offset):
         print("on to the map was called")
-        coordiantes = testPerson.startingLoc()
+        coordiantes = person.startingLoc()
         personX1 = (coordiantes[0] * standard_size) + offset - standard_size
         personY1 = (coordiantes[1] * standard_size) + offset - standard_size
         personX2 = personX1 + standard_size

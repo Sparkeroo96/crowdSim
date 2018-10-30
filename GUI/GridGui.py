@@ -1,8 +1,6 @@
 # #!/usr/bin/python
 import tkinter
 from Map.map_main import MapMain
-from People.person import Person
-
 
 mapInfo = MapMain()
 mapArray = mapInfo.get_map()

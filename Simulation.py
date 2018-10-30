@@ -4,6 +4,7 @@
 
 from People.person import Person
 from Map.map_main import MapMain
+from GUI.GuiController import GuiController
 
 
 class Simulation:
@@ -45,5 +46,7 @@ class Simulation:
         for x in range(100):
             self.step_simulation()
 
-
+    # @staticmethod
+    def test_gui(self):
+        self.GuiController.init_grid()
 

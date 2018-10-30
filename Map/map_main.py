@@ -27,9 +27,6 @@ class MapMain:
 
     def map_generate(self, xLength, yLength):
         """Generates a map on given x and y lengths"""
-        print("in map_generate")
-        print("x Length " + str(xLength))
-        print("y length " + str(yLength))
         x = 0
         while x < xLength:
             arrayTemp = []
@@ -63,7 +60,15 @@ class MapMain:
 
     def check_coordinates(self, arrayCoordinates):
         """Returns what exists at arrays coordinates"""
-        print("array coordinates " + str(arrayCoordinates[0]) + ", " + str(arrayCoordinates[1]))
+        if arrayCoordinates[0] < 0 or arrayCoordinates[0] >= self.get_map_length():
+            print("x out of array")
+            return False
+        if arrayCoordinates[1] < 0 or arrayCoordinates[1] >= self.get_map_height():
+            print("y out of array")
+            return False
+
+
+
         if self.map[arrayCoordinates[0]][arrayCoordinates[1]] == 0:
             return True
         return False
@@ -71,7 +76,6 @@ class MapMain:
 
     def add_to_map(self, object, arrayCoordinates):
         """Adds an element to the map at the given coordinates"""
-        print("Add to map coords " + str(arrayCoordinates[0]) + ", " + str(arrayCoordinates[1]))
         self.map[arrayCoordinates[0]][arrayCoordinates[1]] = object
 
     def remove_from_map(self, arrayCoordinates):

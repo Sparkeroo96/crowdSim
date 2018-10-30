@@ -19,9 +19,9 @@ class Simulation:
     def start_simulation(self):
         """Starts the simulation"""
         self.create_people(5)
-        self.create_map(10, 10)
+        self.create_map(12, 14)
         self.populate_people_to_map()
-        GuiController.init_grid()
+        GuiController.init_grid(self.map)
 
 
     def create_people(self, numberOfPeople):

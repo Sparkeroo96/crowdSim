@@ -14,10 +14,10 @@ class GuiController:
 
     # Creates the grid
     @staticmethod
-    def init_grid():
+    def init_grid(map_info):
         # Defines the size of the squares on the grid
         offset = 10
-        standard_size = 100
+        standard_size = 50
 
         # Corddinates for the first square in the grid
         X1 = offset
@@ -26,7 +26,7 @@ class GuiController:
         Y2 = offset + standard_size
 
         main_grid = GridGui()
-        size = main_grid.get_size(standard_size,offset)
+        size = main_grid.get_size(standard_size,offset,map_info)
         canvas_info = main_grid.generate_grid(size[0], size[1], X1, Y1, X2, Y2, standard_size, offset)
         master = canvas_info[0]
         main_grid_location = canvas_info[1]

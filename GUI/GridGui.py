@@ -2,8 +2,8 @@
 import tkinter
 from Map.map_main import MapMain
 
-mapInfo = MapMain()
-mapArray = mapInfo.get_map()
+map_info = MapMain()
+mapArray = map_info.get_map()
 
 
 class GridGui:
@@ -11,8 +11,8 @@ class GridGui:
     def __init__(self):
         print("GUI for map")
 
-    def get_size(self, standard_size, offset):
-        num_rows_cols = mapInfo.grid_size(mapInfo.get_map())
+    def get_size(self, standard_size, offset, map_info):
+        num_rows_cols = map_info.grid_size(map_info.get_map())
         num_rows = num_rows_cols[0]
         num_cols = num_rows_cols[1]
         canvas_width = standard_size * num_rows + (2 * offset)
@@ -32,8 +32,9 @@ class GridGui:
                 colour = "gray"
                 if mapArray[i][j] == 0:
                     colour = "white"
-                    
-
+                if mapArray[i][j] != 0:
+                    person = mapArray[i][j]
+                    # print(person.get_coordinates())
                 mainGrid.create_rectangle(x1, y1, x2, y2, fill = colour)
                 x1 = x2
                 x2 = x2 + standard_size

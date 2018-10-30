@@ -56,13 +56,11 @@ class Simulation:
         """Runs the simulation"""
         print("In run simulation")
         x = 0
-        for x in range(2):
-        # for x in range(100):
+        for x in range(100):
             self.step_simulation()
             x += 1
 
     def step_simulation(self):
-        print("Stepping simulation")
         """Takes one step in the simulation"""
         for person in self.arrayPeople:
             person.action()

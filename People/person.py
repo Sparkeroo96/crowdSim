@@ -31,7 +31,7 @@ class Person:
         randomNumber = randint(0, 10)
         # print(self.name + " should move " + str(randomNumber))
         newCoordinates = 0
-        print(self.name + " random number " + str(randomNumber) + " -- initial coords " +  str(self.coordinates))
+        # print(self.name + " random number " + str(randomNumber) + " -- initial coords " +  str(self.coordinates))
         if randomNumber <= 2: #person move up
             newCoordinates = [self.coordinates[0], self.coordinates[1] + 1]
 
@@ -49,12 +49,11 @@ class Person:
         # if newCoordinates is not None:
         if isinstance(newCoordinates, list):
             if self.map.check_coordinates(newCoordinates) == True:
-                print("check coords " + str(newCoordinates))
                 self.map.add_to_map(self,newCoordinates)
                 self.map.remove_from_map(self.coordinates)
                 self.coordinates = newCoordinates
 
-        print(self.name + " at coordinates " + str(self.coordinates))
+        # print(self.name + " at coordinates " + str(self.coordinates))
         return self.coordinates;
 
     def store_coordinates(self, coordinates):

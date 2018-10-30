@@ -5,11 +5,13 @@ from random import randint
 
 class Person:
     coordinates = []
+    name = ""
     # map is None
     map = 0
 
-    def __init__(self):
+    def __init__(self, name):
         print("Creating Person")
+        self.name = name
 
     def add_map(self, newMap, newCoordinates):
         """Storing the generated map"""
@@ -26,8 +28,10 @@ class Person:
     def move(self):
         """Person moving randomly around the course"""
 
-        randomNumber = randint(0, 11)
-        # print("Person should move " + str(randomNumber))
+        randomNumber = randint(0, 10)
+        # print(self.name + " should move " + str(randomNumber))
+        newCoordinates = 0
+        # print(self.name + " random number " + str(randomNumber) + " -- initial coords " +  str(self.coordinates))
         if randomNumber <= 2: #person move up
             newCoordinates = [self.coordinates[0], self.coordinates[1] + 1]
 
@@ -40,17 +44,16 @@ class Person:
         elif randomNumber <= 8: #Person move left
             newCoordinates = [self.coordinates[0] - 1, self.coordinates[1]]
 
-        elif randomNumber <= 10:
-            print("Person stay")
+        # if randomNumber is <=10 then person has chosen to stay
 
         # if newCoordinates is not None:
         if isinstance(newCoordinates, list):
             if self.map.check_coordinates(newCoordinates) == True:
-                self.map.add_to_map(newCoordinates)
+                self.map.add_to_map(self,newCoordinates)
                 self.map.remove_from_map(self.coordinates)
                 self.coordinates = newCoordinates
 
-        print("person at coordinates " + self.coordinates[0] + "," + self.coordinates[1])
+        # print(self.name + " at coordinates " + str(self.coordinates))
         return self.coordinates;
 
     def store_coordinates(self, coordinates):

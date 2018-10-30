@@ -14,7 +14,7 @@ class Simulation:
     map = None
 
     def __init__(self):
-        print("Simulation running")
+        print("Simulation init")
 
     def start_simulation(self):
         """Starts the simulation"""
@@ -26,28 +26,21 @@ class Simulation:
 
     def create_people(self, numberOfPeople):
         """Creates a number of people and adds to the array of people"""
-        # print("Creating people class")
-
         for x in range(numberOfPeople):
-            person = Person()
+            person = Person("Person " + str(x))
             self.arrayPeople.append(person)
 
     def create_map(self, xLength, yLength):
         """Creates a map object"""
-        # print("Creating Map")
-        map = MapMain()
-        self.map = map
+        self.map = MapMain()
         self.map.map_generate(xLength, yLength)
 
     def populate_people_to_map(self):
-        # print("In populat")
         """Adds people to the map"""
         mapLength = self.map.get_map_length() - 1
         mapHeight = self.map.get_map_height() - 1
-        # print("map length " + str(mapLength) + " mapHeight " + str(mapHeight))
 
         for person in self.arrayPeople:
-            # print("adding person to map");
             addedToMap = False
 
             while addedToMap == False:
@@ -65,11 +58,12 @@ class Simulation:
     def run_simulation(self):
         """Runs the simulation"""
         print("In run simulation")
+        x = 0
         for x in range(100):
             self.step_simulation()
+            x += 1
 
     def step_simulation(self):
-        print("Stepping simulation")
         """Takes one step in the simulation"""
         for person in self.arrayPeople:
             person.action()

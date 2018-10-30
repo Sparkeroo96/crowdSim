@@ -13,8 +13,8 @@ class GuiController:
 
 
     # Creates the grid
-    # @staticmethod
-    def init_grid(self):
+    @staticmethod
+    def init_grid():
         # Defines the size of the squares on the grid
         offset = 10
         standard_size = 100
@@ -33,6 +33,7 @@ class GuiController:
         # Creates one person and puts them on the map
         # test_person_gui = PersonGui()
         # canvas_info = test_pGerson_gui.on_to_map(main_grid_location, standard_size, offset)
+        print("GUI making grid")
         main_grid_location.pack()
         master.mainloop()
 

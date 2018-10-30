@@ -9,7 +9,10 @@ mapArray = [[1, 1, 1, 1, 1, 1, 1, 1],
             [1, 1, 1, 1, 1, 1, 1, 1],
             [1, 1, 1, 1, 1, 1, 1, 1]]
 class MapMain:
+
+    map = [];
     def __init__(self):
+        """Initiates the Map class"""
         print("Created Map")
 
     def sizeHeight(self):
@@ -45,3 +48,56 @@ class MapMain:
                     num_rows = working_rows
                     
         return [num_rows, num_cols]
+
+    def map_generate(self, xLength, yLength):
+        """Generates a map on given x and y lengths"""
+        # print("in map_generate")
+        # print("x Length " + str(xLength))
+        # print("y length " + str(yLength))
+        x = 0
+        while x < xLength:
+            arrayTemp = []
+            y = 0
+
+            while y < yLength:
+                arrayTemp.append(0)
+                y += 1
+
+            self.map.append(arrayTemp)
+            x += 1
+
+
+    def get_map(self):
+        """Returns the map"""
+        return self.map
+
+    def get_map_length(self):
+        """Gets the length of the map"""
+        return len(self.map)
+
+    def get_map_height(self):
+        """Works out the greatest height of the map"""
+        mapHeight = 0
+
+        for column in self.map:
+            if len(column) > mapHeight:
+                mapHeight = len(column)
+
+        return mapHeight
+
+    def check_coordinates(self, arrayCoordinates):
+        """Returns what exists at arrays coordinates"""
+        # print("array coordinates " + str(arrayCoordinates[0]) + ", " + str(arrayCoordinates[1]))
+        if self.map[arrayCoordinates[0]][arrayCoordinates[1]] == 0:
+            return True
+        return False
+        # return self.map[arrayCoordinates[0], arrayCoordinates[1]]
+
+    def add_to_map(self, object, arrayCoordinates):
+        """Adds an element to the map at the given coordinates"""
+        # print("Add to map coords " + str(arrayCoordinates[0]) + ", " + str(arrayCoordinates[1]))
+        self.map[arrayCoordinates[0]][arrayCoordinates[1]] = object
+
+    def remove_from_map(self, arrayCoordinates):
+        """Removes an element from the map by the given coordinates"""
+        self.map[arrayCoordinates[0]][arrayCoordinates[1]] = 1

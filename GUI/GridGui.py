@@ -30,8 +30,10 @@ class GridGui:
             #Creates the Columns
             for j in range(len(mapArray[i])):
                 colour = "gray"
-                if mapArray[i][j] != 0:
+                if mapArray[i][j] == 0:
                     colour = "white"
+                    
+
                 mainGrid.create_rectangle(x1, y1, x2, y2, fill = colour)
                 x1 = x2
                 x2 = x2 + standard_size

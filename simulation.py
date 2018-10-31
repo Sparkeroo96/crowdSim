@@ -75,7 +75,7 @@ class Simulation:
         for x in range(100):
             self.step_simulation()
             x += 1
-            print("Redraw")
+            # print("Redraw")
             gui = self.get_gui()
             gui.redraw()
 

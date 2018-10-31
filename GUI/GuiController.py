@@ -1,6 +1,7 @@
 import tkinter
 from GUI.GridGui import GridGui
 from GUI.PersonGui import *
+import time
 
 
 
@@ -84,6 +85,8 @@ class GuiController:
         # while True:
         master.update_idletasks()
         master.update()
+        canvas_grid_location.delete('all')
+        time.sleep(0.5)
 
 
 

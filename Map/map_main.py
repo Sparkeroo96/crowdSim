@@ -104,4 +104,4 @@ class MapMain:
 
     def remove_from_map(self, arrayCoordinates):
         """Removes an element from the map by the given coordinates"""
-        self.map[arrayCoordinates[0]][arrayCoordinates[1]] = 1
+        self.map[arrayCoordinates[0]][arrayCoordinates[1]] = 0

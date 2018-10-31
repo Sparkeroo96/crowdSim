@@ -9,19 +9,32 @@ from GUI.GuiController import GuiController
 
 
 class Simulation:
-
+    gui = None
     arrayPeople = []
     map = None
 
     def __init__(self):
         print("Simulation init")
 
+    def set_gui(self,gui1):
+        global gui
+        gui = gui1
+
+    def get_gui(self):
+        global gui
+        return gui
+
     def start_simulation(self):
         """Starts the simulation"""
         self.create_people(5)
         self.create_map(12, 14)
         self.populate_people_to_map()
-        GuiController.init_grid(self.map)
+        gui = GuiController()
+        self.set_gui(gui)
+        gui.init_grid(self.map)
+        print("1")
+        gui.redraw()
+        print('2')
 
 
     def create_people(self, numberOfPeople):
@@ -62,6 +75,9 @@ class Simulation:
         for x in range(100):
             self.step_simulation()
             x += 1
+            print("Redraw")
+            gui = self.get_gui()
+            gui.redraw()
 
     def step_simulation(self):
         """Takes one step in the simulation"""

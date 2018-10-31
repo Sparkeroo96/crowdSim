@@ -6,16 +6,50 @@ from GUI.PersonGui import *
 
 class GuiController:
 
+    canvas_grid = None
+    canvas_grid_location = None
+    size = None
+    master = None
+    canvas_info = None
+    # Defines the size of the squares on the grid
+    offset = 10
+    standard_size = 50
+
     def __int__(self):
         print("Gui Running")
 
         self.init_grid()
 
+    def get_standard_size(self):
+        global standard_size
+        return standard_size
+
+
+    def get_size(self):
+        global size
+        return size
+
+    def set_size(self, sizeNew):
+        global size
+        size = sizeNew
+
+    def get_offset(self):
+        global offset
+        return offset
+
+    def set_canvus_info(self, canvas_info1):
+        global canvas_info
+        canvas_info = canvas_info1
+
+    def get_cannvas_info(self):
+        global canvas_info
+        return  canvas_info
 
     # Creates the grid
-    @staticmethod
-    def init_grid(map_info):
-        # Defines the size of the squares on the grid
+    def init_grid(self, map_info):
+        global canvas_grid
+        global canvas_grid_location
+        global master
         offset = 10
         standard_size = 50
 
@@ -24,17 +58,33 @@ class GuiController:
         Y1 = offset
         X2 = offset + standard_size
         Y2 = offset + standard_size
-
-        main_grid = GridGui()
-        size = main_grid.get_size(standard_size,offset,map_info)
-        canvas_info = main_grid.generate_grid(size[0], size[1], X1, Y1, X2, Y2, standard_size, offset)
+        canvas_grid = GridGui()
+        size = canvas_grid.get_size(standard_size,offset,map_info)
+        self.set_size(size)
+        canvas_info = canvas_grid.generate_canvus(size[0], size[1], X1, Y1, X2, Y2, standard_size, offset)
+        self.set_canvus_info(canvas_info)
+        # canvas_grid.generate_grid(size[0], size[1], X1, Y1, X2, Y2, standard_size, offset)
         master = canvas_info[0]
-        main_grid_location = canvas_info[1]
-        # Creates one person and puts them on the map
-        # test_person_gui = PersonGui()
-        # canvas_info = test_pGerson_gui.on_to_map(main_grid_location, standard_size, offset)
-        print("GUI making grid")
-        main_grid_location.pack()
-        master.mainloop()
+        canvas_grid_location = canvas_info[1]
+        canvas_grid_location.pack()
+
+    def redraw(self):
+        global canvas_grid
+        global canvas_grid_location
+        size = self.get_size()
+        canvas_info_local = self.get_cannvas_info()
+        # Corddinates for the first square in the grid
+        X1 = 10  #self.get_offset()
+        Y1 = X1
+        X2 = X1 + 50 #self.get_standard_size()
+        Y2 = X1 + 50 # self.get_standard_size()
+        canvas_grid.generate_grid(canvas_info_local[0], canvas_info_local[1], 10, 10, 60, 60, 50, 10)
+
+        # canvas_grid.generate_grid([0], size[1], X1, Y1, X2, Y2, self.get_standard_size(), self.get_offset())
+        # while True:
+        master.update_idletasks()
+        master.update()
+
+
 
 

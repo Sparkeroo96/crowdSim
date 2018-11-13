@@ -82,21 +82,92 @@ class MapMain:
 
         return mapHeight
 
+    def get_min_max_x(self,x, radius):
+        """Gets the min max coordinates for x in a given value, returns in an array 0 being lowest 1 being highest"""
+        arrayX = []
+        arrayX[0] = x - radius
+        if arrayX[0] < 0:
+            arrayX[0] = 0
+
+        arrayX[1] = x + radius
+        if arrayX[1] > self.get_map_length():
+            arrayX[1]= self.get_map_length()
+
+        return arrayX
+
+    def get_min_max_y(self, y, radius):
+        """Gets min max coordinates for y value, returns an array 0 being lowest 1 being highest"""
+        arrayY = []
+        arrayY[0] = y - radius
+        if arrayY[0] < 0:
+            arrayY[0] = 0
+
+        arrayY[1] = y + radius
+        if arrayY[1] > self.get_map_height():
+            arrayY[1] = self.get_map_height()
+
+        return arrayY
+
     def check_coordinates(self, arrayCoordinates):
-        """Returns what exists at arrays coordinates"""
+        """Returns whether something exists at arrays coordinates"""
         if arrayCoordinates[0] < 0 or arrayCoordinates[0] >= self.get_map_length():
             print("x out of array")
             return False
+
         if arrayCoordinates[1] < 0 or arrayCoordinates[1] >= self.get_map_height():
             print("y out of array")
             return False
 
-
-
         if self.map[arrayCoordinates[0]][arrayCoordinates[1]] == 0:
             return True
         return False
-        # return self.map[arrayCoordinates[0], arrayCoordinates[1]]
+
+    def return_object_at_coordinates(self, arrayCoordinates):
+        """Returns whats at coordinates"""
+        if arrayCoordinates[0] < 0 or arrayCoordinates[0] >= self.get_map_length():
+            print("x out of array")
+            return False
+
+        if arrayCoordinates[1] < 0 or arrayCoordinates[1] >= self.get_map_height():
+            print("y out of array")
+            return False
+
+        return self.map[arrayCoordinates[0]][arrayCoordinates[1]]
+
+    def get_objects_in_range(self, objectInstance, arrayCoordinates, radius):
+        """gets objects of a given type in a certain range, if object = None retrieves everything"""
+        arrayObjects = []
+        xCoordinates = self.get_min_max_x(arrayCoordinates[0])
+        yCoordinates = self.get_min_max_y(arrayCoordinates[1])
+
+        x = xCoordinates[0]
+
+        while x <= xCoordinates[1]:
+            y = yCoordinates[0]
+
+            while y <= yCoordinates[1]:
+                if x == arrayCoordinates[0] and y == arrayCoordinates[1]:
+                    continue
+
+                checkCoords = [x, y]
+                obj = self.return_object_at_coordinates(checkCoords)
+
+                if obj == 0 or obj == False:
+                    continue
+
+                arrayTemp = []
+                arrayTemp['object'] = obj
+                arrayTemp['coordinates'] = checkCoords
+
+                if objectInstance == None or isinstance(obj, objectInstance):
+                    arrayObjects.append(arrayTemp)
+
+                y += 1
+
+            x += 1
+
+        return arrayObjects
+
 
     def add_to_map(self, object, arrayCoordinates):
         """Adds an element to the map at the given coordinates"""

@@ -8,6 +8,7 @@ class Person:
     name = ""
     # map is None
     map = 0
+    sight = 8
 
     def __init__(self, name):
         print("Creating Person")

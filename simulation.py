@@ -2,7 +2,8 @@
 # Will initi the map and the people
 # Created by Sam Parker
 
-from People.person import Person
+from People import *
+# from People.person import Person
 from Map.map_main import MapMain
 from random import randint
 from GUI.GuiController import GuiController
@@ -32,16 +33,16 @@ class Simulation:
         gui = GuiController()
         self.set_gui(gui)
         gui.init_grid(self.map)
-        print("1")
         gui.redraw()
-        print('2')
 
 
     def create_people(self, numberOfPeople):
         """Creates a number of people and adds to the array of people"""
         for x in range(numberOfPeople):
-            person = Person("Person " + str(x))
-            self.arrayPeople.append(person)
+            # person = Person("Person " + str(x))
+            # newPerson = person.Person("Person " + str(x))
+            newPerson = flockingPerson.FlockingPerson("Person " + str(x))
+            self.arrayPeople.append(newPerson)
 
     def create_map(self, xLength, yLength):
         """Creates a map object"""

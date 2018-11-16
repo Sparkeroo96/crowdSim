@@ -35,7 +35,7 @@ class MapMain:
         return mapArray
 
 # Does the maths to see how big the canvas has to be and how many grids to make
-    def grid_size(self,mapArray):
+    def grid_size(self, mapArray):
         num_rows = 0
         num_cols = 0
         working_rows = 0
@@ -82,27 +82,31 @@ class MapMain:
 
         return mapHeight
 
-    def get_min_max_x(self,x, radius):
+    def get_min_max_x(self, x, radius):
         """Gets the min max coordinates for x in a given value, returns in an array 0 being lowest 1 being highest"""
         arrayX = []
-        arrayX[0] = x - radius
+        # arrayX[0] = x - radius
+        arrayX.append(x - radius)
         if arrayX[0] < 0:
             arrayX[0] = 0
 
-        arrayX[1] = x + radius
+        # arrayX[1] = x + radius
+        arrayX.append(x + radius)
         if arrayX[1] > self.get_map_length():
-            arrayX[1]= self.get_map_length()
+            arrayX[1] = self.get_map_length()
 
         return arrayX
 
     def get_min_max_y(self, y, radius):
         """Gets min max coordinates for y value, returns an array 0 being lowest 1 being highest"""
         arrayY = []
-        arrayY[0] = y - radius
+        # arrayY[0] = y - radius
+        arrayY.append(y - radius)
         if arrayY[0] < 0:
             arrayY[0] = 0
 
-        arrayY[1] = y + radius
+        # arrayY[1] = y + radius
+        arrayY.append(y + radius)
         if arrayY[1] > self.get_map_height():
             arrayY[1] = self.get_map_height()
 
@@ -137,27 +141,32 @@ class MapMain:
     def get_objects_in_range(self, objectInstance, arrayCoordinates, radius):
         """gets objects of a given type in a certain range, if object = None retrieves everything"""
         arrayObjects = []
-        xCoordinates = self.get_min_max_x(arrayCoordinates[0])
-        yCoordinates = self.get_min_max_y(arrayCoordinates[1])
-
+        xCoordinates = self.get_min_max_x(arrayCoordinates[0], radius)
+        yCoordinates = self.get_min_max_y(arrayCoordinates[1], radius)
+        print("xCoordinates" + str(xCoordinates) + "\n yCoords " + str(yCoordinates))
         x = xCoordinates[0]
 
         while x <= xCoordinates[1]:
+
             y = yCoordinates[0]
 
             while y <= yCoordinates[1]:
                 if x == arrayCoordinates[0] and y == arrayCoordinates[1]:
+                    y += 1
                     continue
 
                 checkCoords = [x, y]
                 obj = self.return_object_at_coordinates(checkCoords)
 
                 if obj == 0 or obj == False:
+                    y += 1
                     continue
 
-                arrayTemp = []
-                arrayTemp['object'] = obj
-                arrayTemp['coordinates'] = checkCoords
+                arrayTemp = {}
+                arrayTemp.update({'object' : obj})
+                arrayTemp.update({'coordinates' : checkCoords})
+                # arrayTemp['object'] = obj
+                # arrayTemp['coordinates'] = checkCoords
 
                 if objectInstance == None or isinstance(obj, objectInstance):
                     arrayObjects.append(arrayTemp)

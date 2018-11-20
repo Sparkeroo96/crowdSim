@@ -21,7 +21,6 @@ class GridGui:
     def set_map(self, value):
         global map
         map = value
-        print(map)
 
     def get_map(self):
         global map
@@ -47,6 +46,7 @@ class GridGui:
 
 
     def generate_grid(self,canvas_width, canvas_height, x1, y1, x2, y2, standard_size, offset, frame):
+        """THis is the method that creates the grid. X axis runs along the top and Y axis is down the left side"""
         self.set_frame(frame)
         canvas_grid = Canvas(frame, width=canvas_width, height=canvas_height, bg="Green")
         # Takes the martix and converts it into a grid patten baced on the size of the arrays

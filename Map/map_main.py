@@ -49,6 +49,9 @@ class MapMain:
                     
         return [num_rows, num_cols]
 
+    def defult_map(self):
+        self.map_generate(100,100)
+
     def map_generate(self, xLength, yLength):
         """Generates a map on given x and y lengths"""
         x = 0

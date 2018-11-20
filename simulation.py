@@ -24,24 +24,37 @@ class Simulation:
         global gui
         return gui
 
+    def welcome_page(self):
+        """Creates the window for the application to run"""
+        gui = GuiController()
+        self.set_gui(gui)
+        #Calls the method in the main GUI to create the main screen
+        gui.init_master(self)
+        #gui.init_welcome_page(map)
+
+
+
     def start_simulation(self):
         """Starts the simulation"""
         self.create_people(5)
         self.create_map(12, 14)
         self.populate_people_to_map()
-        gui = GuiController()
-        self.set_gui(gui)
-        gui.init_grid(self.map)
-        print("1")
-        gui.redraw()
-        print('2')
-
+        gui = self.get_gui()
+        gui.init_simulation_frame(self.map)
+        gui.manage_frames()
+        self.run_simulation()
 
     def create_people(self, numberOfPeople):
         """Creates a number of people and adds to the array of people"""
         for x in range(numberOfPeople):
             person = Person("Person " + str(x))
             self.arrayPeople.append(person)
+
+    def defult_map(self):
+        """Creates a defult size for the welcome page"""
+        self.map = MapMain()
+        map = self.map.defult_map()
+        return map
 
     def create_map(self, xLength, yLength):
         """Creates a map object"""
@@ -75,9 +88,8 @@ class Simulation:
         for x in range(100):
             self.step_simulation()
             x += 1
-            # print("Redraw")
             gui = self.get_gui()
-            gui.redraw()
+            gui.manage_frames()
 
     def step_simulation(self):
         """Takes one step in the simulation"""

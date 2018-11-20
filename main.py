@@ -3,6 +3,5 @@ from simulation import Simulation
 
 
 simulation = Simulation()
-simulation.start_simulation()
+simulation.welcome_page()
 print("Simulation started")
-simulation.run_simulation()

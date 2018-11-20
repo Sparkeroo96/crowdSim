@@ -28,7 +28,7 @@ class Simulation:
     def start_simulation(self):
         """Starts the simulation"""
         self.create_people(5)
-        self.create_map(12, 14)
+        self.create_map(15, 15)
         self.populate_people_to_map()
         gui = GuiController()
         self.set_gui(gui)
@@ -54,6 +54,7 @@ class Simulation:
         mapLength = self.map.get_map_length() - 1
         mapHeight = self.map.get_map_height() - 1
 
+        x = 3
         for person in self.arrayPeople:
             addedToMap = False
 
@@ -61,24 +62,27 @@ class Simulation:
                 randomX = randint(0, mapLength)
                 randomY = randint(0, mapHeight)
                 coordinates = [randomX, randomY]
+                # coordinates = [x, 10]
 
                 if self.map.check_coordinates(coordinates) == 1:
                     self.map.add_to_map(person, coordinates)
                     # person.store_coordinates(coordinates)
                     person.add_map(self.map, coordinates)
                     addedToMap = True
+            x += 7
 
 
     def run_simulation(self):
         """Runs the simulation"""
-        print("In run simulation")
         x = 0
+        print(str(self.map.get_map()))
         for x in range(100):
             self.step_simulation()
             x += 1
-            # print("Redraw")
             gui = self.get_gui()
             gui.redraw()
+
+        print(self.map.get_map())
 
     def step_simulation(self):
         """Takes one step in the simulation"""

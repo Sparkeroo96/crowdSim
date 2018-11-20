@@ -13,7 +13,6 @@ class MapMain:
     map = [];
     def __init__(self):
         """Initiates the Map class"""
-        print("Created Map")
 
     def sizeHeight(self):
         return 1000
@@ -115,11 +114,11 @@ class MapMain:
     def check_coordinates(self, arrayCoordinates):
         """Returns whether something exists at arrays coordinates"""
         if arrayCoordinates[0] < 0 or arrayCoordinates[0] >= self.get_map_length():
-            print("x out of array")
+            # print("check x out of array " + str(arrayCoordinates) + " mapLength " + str(self.get_map_length()))
             return False
 
         if arrayCoordinates[1] < 0 or arrayCoordinates[1] >= self.get_map_height():
-            print("y out of array")
+            # print("check y out of array")
             return False
 
         if self.map[arrayCoordinates[0]][arrayCoordinates[1]] == 0:
@@ -129,13 +128,13 @@ class MapMain:
     def return_object_at_coordinates(self, arrayCoordinates):
         """Returns whats at coordinates"""
         if arrayCoordinates[0] < 0 or arrayCoordinates[0] >= self.get_map_length():
-            print("x out of array")
+            # print("x out of array " + str(arrayCoordinates) + " " + str(self.get_map_length()))
             return False
 
         if arrayCoordinates[1] < 0 or arrayCoordinates[1] >= self.get_map_height():
-            print("y out of array")
+            # print("y out of array " + str(arrayCoordinates) + " " + str(self.get_map_length()))
             return False
-
+        # print("coordinates " + str(arrayCoordinates))
         return self.map[arrayCoordinates[0]][arrayCoordinates[1]]
 
     def get_objects_in_range(self, objectInstance, arrayCoordinates, radius):
@@ -143,7 +142,7 @@ class MapMain:
         arrayObjects = []
         xCoordinates = self.get_min_max_x(arrayCoordinates[0], radius)
         yCoordinates = self.get_min_max_y(arrayCoordinates[1], radius)
-        print("xCoordinates" + str(xCoordinates) + "\n yCoords " + str(yCoordinates))
+        # print("xCoordinates" + str(xCoordinates) + "\n yCoords " + str(yCoordinates))
         x = xCoordinates[0]
 
         while x <= xCoordinates[1]:

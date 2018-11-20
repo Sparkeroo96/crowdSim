@@ -4,14 +4,13 @@ from random import randint
 
 
 class Person:
-    coordinates = []
+    coordinates = [0,1]
     name = ""
     # map is None
     map = 0
     sight = 8
 
     def __init__(self, name):
-        print("Creating Person")
         self.name = name
 
     def add_map(self, newMap, newCoordinates):
@@ -32,7 +31,7 @@ class Person:
         randomNumber = randint(0, 10)
         # print(self.name + " should move " + str(randomNumber))
         newCoordinates = 0
-        # print(self.name + " random number " + str(randomNumber) + " -- initial coords " +  str(self.coordinates))
+        print(self.name + " random number " + str(randomNumber) + " -- initial coords " +  str(self.coordinates))
         if randomNumber <= 2: #person move up
             newCoordinates = [self.coordinates[0], self.coordinates[1] + 1]
 

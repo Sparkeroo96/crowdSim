@@ -1,7 +1,7 @@
 # Class is the generic class for people moving around a board
 # Created by Sam 23/10/2018
 from random import randint
-
+from People.stateMachine import StateMachine
 
 class Person:
     coordinates = [0,1]
@@ -10,8 +10,19 @@ class Person:
     map = 0
     sight = 8
 
+    # Persons "needs" first value is importance second is how much they want to do it
+    needs = [["toilet", 1, 0],
+             ["thirst", 2, 0],
+             ["entertainment", 3, 0],
+             ["freshAir", 3, 0]
+            ]
+    currentState = "Idle"
+    stateMachine = ""
+    # gender = "" Use this one to determine which bathroom, later
+
     def __init__(self, name):
         self.name = name
+        self.stateMachine = StateMachine()
 
     def add_map(self, newMap, newCoordinates):
         """Storing the generated map"""
@@ -63,3 +74,14 @@ class Person:
     def get_coordinates(self):
         """Getting stored coordinates"""
         return self.coordinates
+
+    def find_greatest_need(self):
+        """Function is to help a person find out what they want to do next, based on their needs
+        Also considers them depending on their priority"""
+
+        for need in self.needs():
+            print("THis need")
+
+    def add_states_to_machine(self):
+        """This is where the object will add states to its statemachine"""
+        print("Adding states to machine")

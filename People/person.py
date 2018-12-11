@@ -18,11 +18,32 @@ class Person:
             ]
     currentState = "Idle"
     stateMachine = ""
+
+    states = {
+        "greatestNeed": [["usedToilet", "drinkDrink", "danced"], ["wantDrink", "wantToilet", "wantDance"]],
+
+        "wantDrink": [["isGreatestNeed"], ["findBar", "orderDrink"]],
+        "findBar": [["notAtBar"], ["moveToBar"]],
+        "moveToBar": [["found", "notFound"], ["orderDrink", "moveToBar"]],
+        "orderDrink": [["atBar"], ["drink"]],
+        "drink": [["getDrink"], ["drinkDrink"]],
+
+        "wantDance": [["isGreatestNeed"], ["dance", "findDanceFloor"]],
+        "findDanceFloor": [["notAtDanceFloor", "notFound"], ["moveToDanceFloor"]],
+        "moveToDanceFloor": [["notAtDanceFloor", "found"], ["dance", "moveToDanceFloor"]],
+        "dance": [["atDanceFloor"], ["greatestNeed"]],
+
+        "wantToilet": [["isGreatestNeed"], ["findToilet", "useToilet"]],
+        "findToilet": [["notAtToilet"], ["moveToilet"]],
+        "moveToilet": [["foundToilet", "notFoundToilet"], ["moveToilet", "useToilet"]],
+        "useToilet": [["atToilet"], ["usedToilet"]]
+    }
     # gender = "" Use this one to determine which bathroom, later
 
     def __init__(self, name):
         self.name = name
-        self.stateMachine = StateMachine()
+        self.stateMachine = StateMachine("person")
+        print(self.stateMachine.get_states())
 
     def add_map(self, newMap, newCoordinates):
         """Storing the generated map"""
@@ -85,3 +106,7 @@ class Person:
     def add_states_to_machine(self):
         """This is where the object will add states to its statemachine"""
         print("Adding states to machine")
+        for key, value in self.states:
+            print("currentState " + key)
+            print("currentValue " + value)
+            self.stateMachine.add_state(key, value[1], value[0])

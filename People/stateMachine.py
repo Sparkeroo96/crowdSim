@@ -56,8 +56,25 @@ class StateMachine:
         return state["requirement"]
 
     def get_states(self):
-        """Returns all possible states for this machine"""
+        """Returns all possible states for this machine
+        @:return returns an array of possible options
+        """
         return self.states.keys()
 
     def get_stateMachineFor(self):
+        """Tells you what object this state machine is for"""
         return self.stateMachineFor
+
+    def check_next_state_fine(self, nextState):
+        """Checks to see if the next state is fine,
+        @:param nextState the state you wish to be in
+        @:return Returns true if fine, false if not
+        """
+        nextStates =  self.states[self.currentState][nextStates]
+
+        for x in nextStates:
+            if x == nextState:
+                print(nextState + " is a possible next state")
+                return True
+
+        return False

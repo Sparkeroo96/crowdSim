@@ -1,5 +1,6 @@
 from tkinter import *
 from GUI.GridGui import GridGui
+from GUI.map_Edit_Gui import *
 from GUI.PersonGui import *
 from Map.map_main import MapMain
 from simulation import *
@@ -20,6 +21,10 @@ class GuiController:
     grid_gui_obj = None
     frame_controller = None
     previous_frame = None
+    value1 = None
+    value2 = None
+    first = None
+    working_map = None
 
     # Defines the size of the squares on the grid
     offset = 10
@@ -31,6 +36,22 @@ class GuiController:
         self.init_grid()
 
     # Group of setters and getters for all the global variables
+    def set_working_map(self,value):
+        global working_map
+        working_map = value
+
+    def get_working_map(self):
+        global working_map
+        return working_map
+
+    def set_first(self,value):
+        global first
+        first = value
+
+    def get_first(self):
+        global first
+        return first
+
     def set_frame_controller(self, value):
         global frame_controller
         frame_controller = value
@@ -111,6 +132,22 @@ class GuiController:
         global previous_frame
         return previous_frame
 
+    def get_value1(self):
+        global value1
+        return value1
+
+    def set_value1(self, value):
+        global value1
+        value1 = value
+
+    def get_value2(self):
+        global value2
+        return value2
+
+    def set_value2(self, value):
+        global value2
+        value2 = value
+
     def init_master(self,simulation):
         """Creates the application and then calls the welcome page"""
         master = Tk()
@@ -177,11 +214,13 @@ class GuiController:
         # Adds a start button that will run a defult simulation
         startButton = Button(welcome_frame, text='Start Simulation', command=self.start_sim)
         # Quit button that closed the application
+        map_editor = Button(welcome_frame, text="Map Editor", command=self.edit_map)
         quitButton = Button(welcome_frame, text="Exit", command=self.client_exit)
         # Places the button in the first coridanate on the frame
         startButton.place(x=0,y=0)
         # Adds the buttons to the frame and then the frame too the master
         startButton.pack()
+        map_editor.pack()
         quitButton.pack()
         welcome_frame.pack()
 
@@ -211,7 +250,7 @@ class GuiController:
         Y1 = offset
         X2 = offset + standard_size
         Y2 = offset + standard_size
-
+        first = self.first_square(map_array_obj, offset, standard_size)
         # Creates a object of the gridGui class so that the canvass and the grid can be created
         grid_gui_obj = GridGui()
         # Calls a function within GridGui that returns the size of the grid so that it can make the correct sied window
@@ -219,27 +258,50 @@ class GuiController:
         # Calls method that saves the size of the grid
         self.set_size(size)
         # Creates the first frame
-        first_frame = grid_gui_obj.generate_grid(size[0], size[1], X1, Y1, X2, Y2, standard_size, offset,frame_controller)
+        first_frame = grid_gui_obj.generate_grid(size[0], size[1], first[0], first[1], first[2], first[3], standard_size, offset,frame_controller)
         # Saves it
         self.set_previous_frame(first_frame)
         # Returns the first_frame in the frame controller
         return first_frame
 
+    def first_square(self,map_obj, offset, standard_size):
+        """Code that works out the bottom most left squares cordinates and returns them in an array"""
+        height = map_obj.get_map_height()
+        X1 = offset
+        Y1 = offset + (standard_size * (height - 1))
+        X2 = X1 + standard_size
+        Y2 = Y1 + standard_size
+        result = [X1, Y1, X2, Y2]
+        self.set_first(result)
+        return result
+
     def redraw(self):
         """This creates the next frame/ page of the simulation"""
         # Gets all the relevent information
         frame_controller = self.get_frame_controller()
-        X1 = 10  #self.get_offset()
-        Y1 = X1
-        X2 = X1 + 50 #self.get_standard_size()
-        Y2 = X1 + 50 # self.get_standard_size()
         size = self.get_size()
+        first = self.get_first()
         # Creates it and returns the next frame
-        next_frame = grid_gui_obj.generate_grid(size[0], size[1], 10, 10, 60, 60, 50, 10, frame_controller)
+        next_frame = grid_gui_obj.generate_grid(size[0], size[1], first[0], first[1], first[2], first[3], 50, 10, frame_controller)
         return next_frame
 
     def client_exit(self):
         """Closes the applicaion when the function is called by the client"""
         local_master = self.get_master()
         local_master.destroy()
+
+    def edit_map(self):
+        self.get_size_new_map()
+
+    def get_size_new_map(self):
+        """Creates the options page for the new map deciding how large it should be"""
+        welcome_frame = self.get_welcome_frame()
+        welcome_frame.destroy()
+        frame_edit = Frame(self.get_master())
+        edit_gui = mapEditGui()
+        edit_gui.set_gui_controller(self)
+        frame_edit = edit_gui.options_page(frame_edit,self.get_master())
+        frame_edit.update()
+
+
 

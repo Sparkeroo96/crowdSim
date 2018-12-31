@@ -1,7 +1,7 @@
 """Main Class that starts program"""
-from simulation import Simulation
-
-
+from simulation import simulation
 simulation = Simulation()
-simulation.welcome_page()
+print('hi:0')
+simulation.test()
+# simulation.welcome_page()
 print("Simulation started")

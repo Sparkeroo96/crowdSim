@@ -3,7 +3,7 @@
 from random import randint
 
 
-class Person:
+class person:
     coordinates = []
     name = ""
     # map is None

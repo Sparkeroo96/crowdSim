@@ -35,13 +35,16 @@ while not exit:
             angle = object[3]
             width = object[4]
             pygame.draw.circle(display, red, [xCoordinate,yCoordinate],width)
+            vision = data.personVision('id:2')
+            for cord in vision:
+                print(display.get_at((cord[0],cord[1])))
+
         if object[0] == 'wall':
             xCoordinate = object[1][0]
             yCoordinate = object[1][1]
             width = object[2][0]
             height = object[2][1]
             pygame.draw.rect(display,black,[xCoordinate,yCoordinate,width, height])
-
     # exit = True
     data.moveRandomly()
     pygame.display.update()

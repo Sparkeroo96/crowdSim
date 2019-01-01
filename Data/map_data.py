@@ -6,7 +6,7 @@ class map_data:
     # The GUI currently operates at 30 FPS meaning that each second the array is cycled though 30 times
     # [personType,uniqueName, [cordinateX,cordinateY],directionLooking,width]
     # [wall,[cordinateX,cordinateY],[width,height]]
-    mapDefult = [['person','id:1',[100,500],90,10],['person','id:2',[200,300],89,10],['wall',[10,10],[100,10]]]
+    mapDefult = [['person','id:1',[100,500],30,10],['person','id:2',[200,300],30,10],['wall',[10,10],[100,10]]]
 
     def __init__(self):
         print("Map_data Object Created")
@@ -24,31 +24,38 @@ class map_data:
                     angle2 = person[3] + (angleOfVison/2)
                     if angle1 <= 0:
                         angle1 = angle1 + 360
-                        print(angle1)
+                    if angle1 > 360:
+                        angle1 = angle1 - 360
                     found = True
                     break
         if found == False:
             print("Error finding %s" % id)
             return 0
-        result = self.angleMath(angle1,xCord,yCord,vision)
-        # print('reslut1 = %s' %result)
-        cordA = [xCord, yCord]
-        cordB = [xCord + result[0],yCord + result[1]]
-        result2 = self.angleMath(angle2,xCord,yCord,vision)
-        cordC = [xCord + result2[0],yCord + result2[1]]
+        # result = self.angleMath(angle1,xCord,yCord,vision)
+        # # print('reslut1 = %s' %result)
+        # cordA = [xCord, yCord]
+        # cordB = [xCord + result[0],yCord + result[1]]
+        # result2 = self.angleMath(angle2,xCord,yCord,vision)
+        # cordC = [xCord + result2[0],yCord + result2[1]]
         # adding all the cordiantes along one line of vision
-        x = 0
+        x = 10
         resultArray = []
-        while vision >= x:
-            value = self.angleMath(angle1,xCord,yCord,x)
-            value = [xCord + value[0],yCord + value[1]]
-            resultArray.append(value)
-            x = x + 1
-        # print('result2 = %s' %result2)
-        # print("coridanates")
-        # print(cordA)
-        # print(cordB)
-        # print(cordC)
+        rays = 10
+        i = 0
+        originalAngle = angle1
+        while i <= rays:
+            angle1 = originalAngle + (i * 5)
+            if angle1 <= 0:
+                angle1 = angle1 + 360
+            if angle1 > 360:
+                angle1 = angle1 - 360
+            while vision >= x:
+                value = self.angleMath(angle1,xCord,yCord,x)
+                value = [xCord + value[0],yCord + value[1]]
+                resultArray.append(value)
+                x = x + 1
+            i = i + 1
+            x = 10
         return resultArray
 
     def angleMath(self, angle, xcord, ycord,vision):
@@ -105,5 +112,9 @@ class map_data:
             map[0][2][0] -= 1
         # print(map[0][2][1])
 
+    def rotatePerson(self,newAngle):
+        map = self.getMap()
+        map[0][3] = newAngle
+        # print(map[0][3])
 test = map_data()
 test.personVision('id:2')

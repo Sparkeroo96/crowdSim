@@ -16,15 +16,12 @@ display = pygame.display.set_mode((800,600))
 pygame.display.set_caption("Crowd Simulation ")
 
 clock = pygame.time.Clock()
-
 exit = False
 while not exit:
     for event in pygame.event.get():
         # print(event)
         if event.type == pygame.QUIT:
             exit = True
-
-
     display.fill(white)
     # Going though the data set and assigning the different objects to the screen
     for object in array:
@@ -35,10 +32,16 @@ while not exit:
             angle = object[3]
             width = object[4]
             pygame.draw.circle(display, red, [xCoordinate,yCoordinate],width)
-            vision = data.personVision('id:2')
+            vision = data.personVision(object[1])
             for cord in vision:
-                print(display.get_at((cord[0],cord[1])))
-
+                display.set_at((cord[0],cord[1]),black)
+                try:
+                    colour = display.get_at((cord[0],cord[1]))
+                    if colour == (255,0,0,255): #Red person
+                        print()
+                except IndexError:
+                    print('Out of area')
+                    # break
         if object[0] == 'wall':
             xCoordinate = object[1][0]
             yCoordinate = object[1][1]

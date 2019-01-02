@@ -1,12 +1,14 @@
-# Main Map class that should handle the init and management of the map
-# Created by Chris Clark 11/12/2018
+"""
+Main Map class that should handle the init and management of the map
+Created by Chris Clark cc604
+"""
 import random as rand
 import math
 class map_data:
     # The GUI currently operates at 30 FPS meaning that each second the array is cycled though 30 times
     # [personType,uniqueName, [cordinateX,cordinateY],directionLooking,width]
     # [wall,[cordinateX,cordinateY],[width,height]]
-    mapDefult = [['person','id:1',[100,500],30,10],['person','id:2',[200,300],30,10],['wall',[10,10],[100,10]]]
+    mapDefult = [['person','id:1',[150,350],30,10],['person','id:2',[200,300],30,10],['wall',[10,10],[100,10]]]
 
     def __init__(self):
         print("Map_data Object Created")
@@ -38,7 +40,7 @@ class map_data:
         # result2 = self.angleMath(angle2,xCord,yCord,vision)
         # cordC = [xCord + result2[0],yCord + result2[1]]
         # adding all the cordiantes along one line of vision
-        x = 10
+        x = 12
         resultArray = []
         rays = 10
         i = 0
@@ -55,7 +57,7 @@ class map_data:
                 resultArray.append(value)
                 x = x + 1
             i = i + 1
-            x = 10
+            x = 12
         return resultArray
 
     def angleMath(self, angle, xcord, ycord,vision):
@@ -112,9 +114,23 @@ class map_data:
             map[0][2][0] -= 1
         # print(map[0][2][1])
 
+    def whichPerson(self,cords):
+        map = self.getMap()
+        for people in map:
+            if people[0] == "person":
+                x = people[2][0]
+                y = people[2][1]
+                radias = people[4]
+                x1 = cords[0]
+                y1 = cords[1]
+                distance = math.pow(x1 - x,2) + math.pow(y1 - y,2)
+                distanceRoot = math.sqrt(distance)
+                if distanceRoot <= radias:
+                    return people[1]
+
     def rotatePerson(self,newAngle):
         map = self.getMap()
         map[0][3] = newAngle
         # print(map[0][3])
 test = map_data()
-test.personVision('id:2')
+test.whichPerson([205,305])

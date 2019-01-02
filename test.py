@@ -1,3 +1,8 @@
+"""
+The main GUI that creates the display and runs the code for the system
+
+Created by Chris Clark cc604
+"""
 import pygame
 from Data import map_data
 
@@ -19,7 +24,7 @@ clock = pygame.time.Clock()
 exit = False
 while not exit:
     for event in pygame.event.get():
-        # print(event)
+        print(event)
         if event.type == pygame.QUIT:
             exit = True
     display.fill(white)
@@ -33,14 +38,22 @@ while not exit:
             width = object[4]
             pygame.draw.circle(display, red, [xCoordinate,yCoordinate],width)
             vision = data.personVision(object[1])
+            previous = 0
             for cord in vision:
-                display.set_at((cord[0],cord[1]),black)
+                # display.set_at((cord[0],cord[1]),black)
                 try:
                     colour = display.get_at((cord[0],cord[1]))
                     if colour == (255,0,0,255): #Red person
-                        print()
+                        whichPerson = data.whichPerson(cord)
+                        if previous != whichPerson and whichPerson != None:
+                            print(previous)
+                            print(whichPerson)
+                            print(" ")
+                        previous = whichPerson
+                        # print("I see someone!")
                 except IndexError:
-                    print('Out of area')
+                    nothing = 0
+                    # print()
                     # break
         if object[0] == 'wall':
             xCoordinate = object[1][0]

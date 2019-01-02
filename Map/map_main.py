@@ -103,7 +103,7 @@ class MapMain:
         self.map[arrayCoordinates[0]][arrayCoordinates[1]] = 1
 
     """Adds the environment objects into the grid"""
-    def add_env_objects_to_map(self, object, arrayCoordinates):
+    def add_env_objects_to_map(self, arrayCoordinates):
         self.map[arrayCoordinates[0]][arrayCoordinates[1]] = 2
 
     def remove_from_map(self, arrayCoordinates):

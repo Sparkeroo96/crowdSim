@@ -1,12 +1,12 @@
 class EnvObject:
-    coordinates = [6, 4]
+    coordinates = []
     map = 2
-    envObjectName = "Base Object"
+    envObjectName = ""
 
     def __init__(self):
         print("Creating Object")
 
-    def set_cords(self):
+    def get_cords(self):
         return self.coordinates
 
     def add_map(self, newMap, newCoordinates):

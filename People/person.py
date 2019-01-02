@@ -74,7 +74,7 @@ class Person:
             print("action")
 
         elif stateAction == "":
-
+            print("no action")
         else:
             self.random_move()
         # return self.random_move()

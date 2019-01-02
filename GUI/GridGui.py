@@ -37,12 +37,11 @@ class GridGui:
         for i in range(len(mapArray)):
             #Creates the Columns
             for j in range(len(mapArray[i])):
-                colour = "gray"
+                colour = "white"
                 if mapArray[i][j] == 0:
-                    colour = "white"
-                if mapArray[i][j] != 0:
-                    person = mapArray[i][j]
-                    # print(person.get_coordinates())
+                    colour = "gray"
+                elif mapArray[i][j] == 2:
+                    colour = "yellow"
 
                 canvas_grid.create_rectangle(x1, y1, x2, y2, fill = colour)
                 x1 = x2

@@ -10,7 +10,7 @@ class Person:
     map = 0
 
     def __init__(self, name):
-        print("Creating Person")
+        # print("Creating Person")
         self.name = name
 
     def add_map(self, newMap, newCoordinates):
@@ -19,7 +19,7 @@ class Person:
         self.coordinates = newCoordinates
 
     def startingLoc(self):
-        return [2,3]
+        return [4,6]
 
     def action(self):
         """What the person is going to do"""
@@ -27,7 +27,6 @@ class Person:
 
     def move(self):
         """Person moving randomly around the course"""
-
         randomNumber = randint(0, 10)
         # print(self.name + " should move " + str(randomNumber))
         newCoordinates = 0

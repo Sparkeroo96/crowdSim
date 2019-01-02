@@ -100,7 +100,11 @@ class MapMain:
 
     def add_to_map(self, object, arrayCoordinates):
         """Adds an element to the map at the given coordinates"""
-        self.map[arrayCoordinates[0]][arrayCoordinates[1]] = object
+        self.map[arrayCoordinates[0]][arrayCoordinates[1]] = 1
+
+    """Adds the environment objects into the grid"""
+    def add_env_objects_to_map(self, object, arrayCoordinates):
+        self.map[arrayCoordinates[0]][arrayCoordinates[1]] = 2
 
     def remove_from_map(self, arrayCoordinates):
         """Removes an element from the map by the given coordinates"""

@@ -7,6 +7,7 @@ from People import *
 from Map.map_main import MapMain
 from random import randint
 from GUI.GuiController import GuiController
+from Objects import *
 
 
 class Simulation:
@@ -27,8 +28,11 @@ class Simulation:
 
     def start_simulation(self):
         """Starts the simulation"""
-        self.create_people(5)
+        self.create_people(1)
         self.create_map(15, 15)
+
+        self.populate_objects_to_map()
+
         self.populate_people_to_map()
         gui = GuiController()
         self.set_gui(gui)
@@ -40,8 +44,8 @@ class Simulation:
         """Creates a number of people and adds to the array of people"""
         for x in range(numberOfPeople):
             # person = Person("Person " + str(x))
-            # newPerson = person.Person("Person " + str(x))
-            newPerson = flockingPerson.FlockingPerson("Person " + str(x))
+            newPerson = person.Person("Person " + str(x))
+            # newPerson = flockingPerson.FlockingPerson("Person " + str(x))
             self.arrayPeople.append(newPerson)
 
     def create_map(self, xLength, yLength):
@@ -62,7 +66,7 @@ class Simulation:
                 randomX = randint(0, mapLength)
                 randomY = randint(0, mapHeight)
                 coordinates = [randomX, randomY]
-                # coordinates = [x, 10]
+                coordinates = [7, 7]
 
                 if self.map.check_coordinates(coordinates) == 1:
                     self.map.add_to_map(person, coordinates)
@@ -71,6 +75,10 @@ class Simulation:
                     addedToMap = True
             x += 7
 
+    def populate_objects_to_map(self):
+        barCoords = [4,7]
+        newBar = bar.Bar(barCoords, 1,1);
+        self.map.add_to_map(newBar, barCoords)
 
     def run_simulation(self):
         """Runs the simulation"""
@@ -81,6 +89,8 @@ class Simulation:
             x += 1
             gui = self.get_gui()
             gui.redraw()
+
+            print("\n\n")
 
         print(self.map.get_map())
 

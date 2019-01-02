@@ -1,3 +1,4 @@
+from random import randint
 
 class StateMachine:
 
@@ -15,9 +16,9 @@ class StateMachine:
 
     def add_state(self, stateName, nextState, requirement):
         if stateName not in self.states:
-            self.createNewState(stateName)
+            self.create_new_state(stateName)
 
-        self.addState(stateName, nextState)
+        self.add_next_states(stateName, nextState)
 
         self.states[stateName]["requirement"] = requirement
 
@@ -47,8 +48,9 @@ class StateMachine:
     def get_state(self, stateName):
         return self.states.get(stateName)
 
-    def get_state_next_states(self,stateName):
+    def get_state_next_states(self, stateName):
         state = self.get_state(stateName)
+        print("stateName: " + stateName)
         return state["nextStates"]
 
     def get_state_requirment(self, stateName):
@@ -70,7 +72,7 @@ class StateMachine:
         @:param nextState the state you wish to be in
         @:return Returns true if fine, false if not
         """
-        nextStates =  self.states[self.currentState][nextStates]
+        nextStates =  self.states[self.currentState][nextState]
 
         for x in nextStates:
             if x == nextState:
@@ -78,3 +80,33 @@ class StateMachine:
                 return True
 
         return False
+
+    def get_next_state(self):
+        """Function gets next state and moves into it"""
+        print("current state " + self.currentState)
+        nextStates = self.get_state_next_states(self.currentState)
+        print("get next state " + str(nextStates))
+
+        statesCount = len(nextStates)
+        if statesCount == 1:
+            #Only 1 next state, moving there
+            print("nextSstates length = 1")
+            selectedNextState = nextStates[0]
+
+        else:
+            print("more than 1 next state " + str(statesCount))
+            selectedNextState = self.__get_random_next_state(nextStates, statesCount)
+
+        print("selectedNextState = " + selectedNextState)
+
+        self.set_current_state(selectedNextState)
+
+
+
+    def __get_random_next_state(self, nextStates, statesCount):
+        """Function randomly picks a next state from the given next options,
+        Don't call this function call get_next_state
+        """
+        print("statesCount " + str(statesCount))
+        random = randint(0, statesCount - 1)
+        return nextStates[random]

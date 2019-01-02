@@ -10,13 +10,19 @@ class Person:
     map = 0
     sight = 8
 
+    rememberedObj = ""
+    rememberedCoords = []
+
     # Persons "needs" first value is importance second is how much they want to do it
+    #Not in use currently might remove them
     needs = [["toilet", 1, 0],
              ["thirst", 2, 0],
              ["entertainment", 3, 0],
              ["freshAir", 3, 0]
             ]
-    currentState = "Idle"
+
+    defaultState = "greatestNeed"
+    currentState = "greatestNeed"
     stateMachine = ""
 
     states = {
@@ -26,7 +32,7 @@ class Person:
         "findBar": [["notAtBar"], ["moveToBar"]],
         "moveToBar": [["found", "notFound"], ["orderDrink", "moveToBar"]],
         "orderDrink": [["atBar"], ["drink"]],
-        "drink": [["getDrink"], ["drinkDrink"]],
+        "drink": [["getDrink"], ["greatestNeed"]],
 
         "wantDance": [["isGreatestNeed"], ["dance", "findDanceFloor"]],
         "findDanceFloor": [["notAtDanceFloor", "notFound"], ["moveToDanceFloor"]],
@@ -36,13 +42,18 @@ class Person:
         "wantToilet": [["isGreatestNeed"], ["findToilet", "useToilet"]],
         "findToilet": [["notAtToilet"], ["moveToilet"]],
         "moveToilet": [["foundToilet", "notFoundToilet"], ["moveToilet", "useToilet"]],
-        "useToilet": [["atToilet"], ["usedToilet"]]
+        "useToilet": [["atToilet"], ["greatestNeed"]],
     }
     # gender = "" Use this one to determine which bathroom, later
 
     def __init__(self, name):
         self.name = name
+
         self.stateMachine = StateMachine("person")
+        self.add_states_to_machine()
+
+        self.currentState = self.defaultState
+        self.stateMachine.set_current_state(self.currentState)
         print(self.stateMachine.get_states())
 
     def add_map(self, newMap, newCoordinates):
@@ -55,15 +66,26 @@ class Person:
 
     def action(self):
         """What the person is going to do"""
-        return self.move()
+        print("Current state " + str(self.currentState))
 
-    def move(self):
+        stateAction = self.get_state_action()
+
+        if stateAction == "navigateToCoords":
+            print("action")
+
+        elif stateAction == "":
+
+        else:
+            self.random_move()
+        # return self.random_move()
+
+    def random_move(self):
         """Person moving randomly around the course"""
 
         randomNumber = randint(0, 10)
         # print(self.name + " should move " + str(randomNumber))
         newCoordinates = 0
-        print(self.name + " random number " + str(randomNumber) + " -- initial coords " +  str(self.coordinates))
+        print(self.name + " random number " + str(randomNumber) + " -- initial coords " + str(self.coordinates))
         if randomNumber <= 2: #person move up
             newCoordinates = [self.coordinates[0], self.coordinates[1] + 1]
 
@@ -80,8 +102,8 @@ class Person:
 
         # if newCoordinates is not None:
         if isinstance(newCoordinates, list):
-            if self.map.check_coordinates(newCoordinates) == True:
-                self.map.add_to_map(self,newCoordinates)
+            if self.map.check_coordinates(newCoordinates):
+                self.map.add_to_map(self, newCoordinates)
                 self.map.remove_from_map(self.coordinates)
                 self.coordinates = newCoordinates
 
@@ -96,17 +118,102 @@ class Person:
         """Getting stored coordinates"""
         return self.coordinates
 
-    def find_greatest_need(self):
-        """Function is to help a person find out what they want to do next, based on their needs
-        Also considers them depending on their priority"""
+    def get_state_action(self):
+        """Causes the person to act based on their current state"""
+        print("get state action")
 
-        for need in self.needs():
-            print("THis need")
+        action = "moveRandom"
+
+        if self.currentState == self.defaultState:
+            print(self.name + " in greatest need")
+            self.currentState = self.stateMachine.get_next_state()
+
+        if "want" in self.currentState:
+            # Person has a want desire
+            if self.want_action(self.currentState):
+                action = "navigateToCoords"
+
+        elif "find" in self.currentState:
+            # Person trying to find an object
+            print(self.name + " finding object")
+            if self.find_object(self.rememberedObj):
+                action = "navigateToCoords"
+
+        elif "move" in self.currentState:
+            # Person moving to object
+            print(self.name + " Person moving to object")
+            action = "navigateToCoords"
+
+        elif self.currentState == "orderDrink":
+            # Person is ordering their drink
+            print(self.name + " Ordering a drink")
+
+        elif self.currentState == "dance":
+            # Person will dance
+            print(self.name + " is dancing")
+            self.stateMachine.get_next_state()
+
+        return action
+
+    def want_action(self, wantState):
+        """The people want to do something"""
+        if wantState == "wantDrink":
+            print("wantDrink")
+            searchObject = "Bar"
+
+        elif wantState == "wantDance":
+            print("want dance")
+            searchObject = "DanceFloor"
+
+        else:
+            print("want Toilet")
+            searchObject = "Toilet"
+
+        self.rememberedObj = searchObject
+
+        return self.find_object(searchObject)
+
+    def find_object(self, searchObject):
+        """This function does the find function of a person
+        :return Returns Ture if there are objects, false if it cant find one
+        """
+        objects = self.map.get_objects_in_range(searchObject, self.coordinates, self.sight)
+
+        if not objects:
+            # This is when there are no objects in range and you want the person to wander to keep looking
+            print("no objects in range")
+            self.rememberedCoords = "search"
+            return False
+
+        else:
+            # Objects exist, find out closest
+            self.work_out_closest_object(objects)
+            return True
+
+    def work_out_closest_object(self, objects):
+        """ Works out which of the seen objects are closest"""
+
+        smallestDifference = "null"
+        newCoords = []
+
+        for obj in objects:
+            objCoords = obj["coordinates"]
+            xDiff = abs(self.coordinates[0] - objCoords[0])
+            yDiff = abs(self.coordinates[1] - objCoords[1])
+            totalDifference = xDiff + yDiff
+
+            if totalDifference < smallestDifference:
+                smallestDifference = totalDifference
+                newCoords = objCoords
+
+        self.rememberedCoords = newCoords
+
+
 
     def add_states_to_machine(self):
         """This is where the object will add states to its statemachine"""
         print("Adding states to machine")
-        for key, value in self.states:
-            print("currentState " + key)
-            print("currentValue " + value)
+        for key, value in self.states.items():
+            print("\ncurrentState " + key)
+            print("currentValue " + str(value))
             self.stateMachine.add_state(key, value[1], value[0])

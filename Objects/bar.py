@@ -1,18 +1,17 @@
-"""
-The bar object
-Created by Sam Parker
-"""
-from Objects.baseObject import BaseObject
+from Objects.base_object import BaseObject
+
+"""May look to initialise the bar object details in init after. """
 
 
 class Bar(BaseObject):
 
-    freeBarStaff = [];
-
-    def __init__(self, coordinates, xSize, ySize):
-        self.coordinates = coordinates
-        self.xSize = xSize
-        self.ySize = ySize
+    def __init__(self):
+        self.set_id('id: 3')
+        self.set_env_object_name('Drinks Bar')
+        self.set_coordX(400)
+        self.set_coordY(100)
+        self.set_angle(60)
+        self.set_width(20)
 
     def barStaffWait(self, barStaff):
         """

@@ -18,17 +18,54 @@ class BaseObject:
     name = ""
 
     coordinates = []
+    envObjectName = ""
+    id = ""
+    coordX = 0
+    coordY = 0
+    angle = 0
+    width = 0
+
+    def get_details(self):
+        return ([self.envObjectName, self.id, self.coordX, self.coordY, self.angle, self.width])
+    """Cords"""
+    def get_cords(self):
+        cords = [self.coordX, self.coordY]
+        return cords
+
+    """Returns what object it is"""
+    def get_env_object_name(self):
+        return self.envObjectName
+
+    def get_id(self):
+        return self.id
+
+    def get_angle(self):
+        return self.angle
+
+    def get_width(self):
+        return self.width
+
+    def set_env_object_name(self, name):
+        self.envObjectName = name
+
+    def set_id(self, newID):
+        self.id = newID
 
     colour = []
 
     def __init__(self, coordinates, name):
         self.coordinates = coordinates
+    def set_coordX(self, coordX):
+        self.coordX = coordX
 
-    def getCoordinates(self):
-        return self.coordinates
+    def set_coordY(self, coordY):
+        self.coordY = coordY
 
-    def getClipThrough(self):
-        return self.clipThrough
+    def set_angle(self, angle):
+        self.angle = angle
+
+    def set_width(self, width):
+        self.width = width
 
     def get_name(self):
         """Gets the objects unique name/id"""

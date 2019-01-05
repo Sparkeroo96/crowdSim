@@ -4,6 +4,9 @@ Created by Chris Clark cc604
 """
 import random as rand
 import math
+from Environment.bar_object import BarObject
+
+
 class map_data:
     # The GUI currently operates at 30 FPS meaning that each second the array is cycled though 30 times
     # [personType,uniqueName, [cordinateX,cordinateY],directionLooking,width]
@@ -12,6 +15,9 @@ class map_data:
 
     def __init__(self):
         print("Map_data Object Created")
+        """Add env object """
+        self.addEnvObject()
+
 
     def personVision(self,id):
         vision = 100
@@ -97,22 +103,28 @@ class map_data:
         array = self.mapDefult
         array.append('person',name,[cordinateX,cordinateY],angle,width)
 
-    def moveRandomly(self):
+    def addEnvObject(self):
+        bar = BarObject()
+        array = self.mapDefult
+        array.append(bar.get_details())
+
+    def moveRandomly(self, move):
         map = self.getMap()
-        x = rand.randint(0,4)
-        # Example of how to go UP!
-        if x == 0:
-            map[0][2][1] -= 1
-        # Example of how to go DOWN!
-        if x == 1:
-            map[0][2][1] += 1
-        # Example of going RIGHT!
-        if x == 3:
-            map[0][2][0] += 1
-        # Example of going LEFT!
-        if x == 4:
-            map[0][2][0] -= 1
-        # print(map[0][2][1])
+        if move == 0:
+            x = rand.randint(0,4)
+            # Example of how to go UP!
+            if x == 1:
+                map[0][2][1] -= 1
+            # Example of how to go DOWN!
+            if x == 2:
+                map[0][2][1] += 1
+            # Example of going RIGHT!
+            if x == 3:
+                map[0][2][0] += 1
+            # Example of going LEFT!
+            if x == 4:
+                map[0][2][0] -= 1
+            # print(map[0][2][1])
 
     def whichPerson(self,cords):
         map = self.getMap()

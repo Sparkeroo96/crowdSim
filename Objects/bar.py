@@ -8,6 +8,8 @@ from Objects.baseObject import BaseObject
 class Bar(BaseObject):
 
     freeBarStaff = [];
+    #Colour is Blue
+    colour = [0, 0, 153]
 
     def __init__(self, coordinates, xSize, ySize):
         self.coordinates = coordinates

@@ -4,14 +4,39 @@ Created by Chris Clark cc604
 """
 import random as rand
 import math
+from People import *
+from Objects import *
+
 class map_data:
     # The GUI currently operates at 30 FPS meaning that each second the array is cycled though 30 times
     # [personType,uniqueName, [cordinateX,cordinateY],directionLooking,width]
     # [wall,[cordinateX,cordinateY],[width,height]]
+
     mapDefult = [['person','id:1',[150,350],30,10],['person','id:2',[200,300],30,10],['wall',[10,10],[100,10]]]
+
+    mapData = []
 
     def __init__(self):
         print("Map_data Object Created")
+
+    def map_default(self):
+        """Getting default map data"""
+
+        self.add_people_to_map(1)
+
+        return self.mapData
+
+    def add_people_to_map(self, peopleCount):
+        """Adding people to map"""
+        x = 0
+        while x < peopleCount:
+            coords = [50 * (x + 1), 50 * (x + 1)]
+
+            newPerson = person.Person("person " + str(len(self.mapData)), coords, None)
+
+            self.mapData.append(newPerson)
+
+            x += 1
 
     def personVision(self,id):
         vision = 100

@@ -5,10 +5,17 @@ from People.stateMachine import StateMachine
 
 class Person:
     coordinates = [0,1]
+    #Was size but chris has angle and width so using that instead
+    size = [30,10]
+    angle = 30
+    width = 10
     name = ""
     # map is None
     map = 0
     sight = 8
+    #Persons colour for display on map
+    colour = [255, 0, 0]
+    shape = "circle"
 
     rememberedObj = ""
     rememberedCoords = []
@@ -46,8 +53,15 @@ class Person:
     }
     # gender = "" Use this one to determine which bathroom, later
 
-    def __init__(self, name):
+    def __init__(self, name, coords, size):
         self.name = name
+
+        if coords:
+            self.coordinates = coords
+        if size:
+            self.size = size
+        else:
+            self.size = [30,10]
 
         self.stateMachine = StateMachine("person")
         self.add_states_to_machine()
@@ -68,6 +82,8 @@ class Person:
         """What the person is going to do"""
         print("Current state " + str(self.currentState))
 
+        return self.random_move()
+
         stateAction = self.get_state_action()
 
         if stateAction == "navigateToCoords":
@@ -80,7 +96,7 @@ class Person:
         # return self.random_move()
 
     def random_move(self):
-        """Person moving randomly around the course"""
+        """Person moving randomly around the map"""
 
         randomNumber = randint(0, 10)
         # print(self.name + " should move " + str(randomNumber))
@@ -98,17 +114,39 @@ class Person:
         elif randomNumber <= 8: #Person move left
             newCoordinates = [self.coordinates[0] - 1, self.coordinates[1]]
 
-        # if randomNumber is <=10 then person has chosen to stay
-
-        # if newCoordinates is not None:
+        # PERSON NEEDS TO SEE IF THERE IS SOMETHING OCCUPING THIS SPACE
+        # ADD THAT IN
         if isinstance(newCoordinates, list):
-            if self.map.check_coordinates(newCoordinates):
-                self.map.add_to_map(self, newCoordinates)
-                self.map.remove_from_map(self.coordinates)
-                self.coordinates = newCoordinates
+            self.coordinates = newCoordinates
 
-        # print(self.name + " at coordinates " + str(self.coordinates))
-        return self.coordinates;
+
+        # randomNumber = randint(0, 10)
+        # # print(self.name + " should move " + str(randomNumber))
+        # newCoordinates = 0
+        # print(self.name + " random number " + str(randomNumber) + " -- initial coords " + str(self.coordinates))
+        # if randomNumber <= 2: #person move up
+        #     newCoordinates = [self.coordinates[0], self.coordinates[1] + 1]
+        #
+        # elif randomNumber <= 4: #Person move down
+        #     newCoordinates = [self.coordinates[0], self.coordinates[1] - 1]
+        #
+        # elif randomNumber <= 6: #person move right
+        #     newCoordinates = [self.coordinates[0] + 1, self.coordinates[1]]
+        #
+        # elif randomNumber <= 8: #Person move left
+        #     newCoordinates = [self.coordinates[0] - 1, self.coordinates[1]]
+        #
+        # # if randomNumber is <=10 then person has chosen to stay
+        #
+        # # if newCoordinates is not None:
+        # if isinstance(newCoordinates, list):
+        #     if self.map.check_coordinates(newCoordinates):
+        #         self.map.add_to_map(self, newCoordinates)
+        #         self.map.remove_from_map(self.coordinates)
+        #         self.coordinates = newCoordinates
+        #
+        # # print(self.name + " at coordinates " + str(self.coordinates))
+        # return self.coordinates;
 
     def store_coordinates(self, coordinates):
         """Storing a set of coordinates"""
@@ -117,6 +155,30 @@ class Person:
     def get_coordinates(self):
         """Getting stored coordinates"""
         return self.coordinates
+
+    def get_angle(self):
+        """Returns the objects angle"""
+        return self.angle
+
+    def get_width(self):
+        """Returns the objects size"""
+        return self.width
+
+    def get_size(self):
+        """returns persons size"""
+        return self.size
+
+    def get_height(self):
+        """Returns the objects height"""
+        return self.height
+
+    def get_shape(self):
+        """Returns the shape of the object to draw"""
+        return self.shape
+
+    def get_colour(self):
+        """Returns the persons colour"""
+        return self.colour
 
     def get_state_action(self):
         """Causes the person to act based on their current state"""

@@ -6,8 +6,7 @@ from People.stateMachine import StateMachine
 class Person:
     coordinates = [0,1]
     #Was size but chris has angle and width so using that instead
-    size = [30,10]
-    angle = 30
+    angle = 0
     width = 10
     name = ""
     # map is Noneisinstance
@@ -19,7 +18,7 @@ class Person:
 
     rememberedObj = ""
     rememberedCoords = []
-
+    vision = []
     # Persons "needs" first value is importance second is how much they want to do it
     #Not in use currently might remove them
     needs = [["toilet", 1, 0],
@@ -53,22 +52,22 @@ class Person:
     }
     # gender = "" Use this one to determine which bathroom, later
 
-    def __init__(self, name, coords, size):
+    def __init__(self, name, coords, width, angle):
         self.name = name
 
         if coords:
             self.coordinates = coords
-        if size:
-            self.size = size
-        else:
-            self.size = [30,10]
+        if angle:
+            self.angle = angle
+        if width:
+            self.width = width
 
         self.stateMachine = StateMachine("person")
         self.add_states_to_machine()
 
         self.currentState = self.defaultState
         self.stateMachine.set_current_state(self.currentState)
-        print(self.stateMachine.get_states())
+        # print(self.stateMachine.get_states())
 
     def add_map(self, newMap, newCoordinates):
         """Storing the generated map"""
@@ -80,20 +79,20 @@ class Person:
 
     def action(self):
         """What the person is going to do"""
-        print("Current state " + str(self.currentState))
+        # print("Current state " + str(self.currentState))
 
         return self.random_move()
 
         stateAction = self.get_state_action()
 
         if stateAction == "navigateToCoords":
-            print("action")
+             print("action")
 
         elif stateAction == "":
-            print("no action")
+             print("no action")
         else:
             self.random_move()
-        # return self.random_move()
+        return self.random_move()
 
     def random_move(self):
         """Person moving randomly around the map"""
@@ -101,7 +100,7 @@ class Person:
         randomNumber = randint(0, 10)
         # print(self.name + " should move " + str(randomNumber))
         newCoordinates = 0
-        print(self.name + " random number " + str(randomNumber) + " -- initial coords " + str(self.coordinates))
+        # print(self.name + " random number " + str(randomNumber) + " -- initial coords " + str(self.coordinates))
         if randomNumber <= 2: #person move up
             newCoordinates = [self.coordinates[0], self.coordinates[1] + 1]
 
@@ -292,8 +291,25 @@ class Person:
 
     def add_states_to_machine(self):
         """This is where the object will add states to its statemachine"""
-        print("Adding states to machine")
+        # print("Adding states to machine")
         for key, value in self.states.items():
-            print("\ncurrentState " + key)
-            print("currentValue " + str(value))
+            # print("\ncurrentState " + key)
+            # print("currentValue " + str(value))
             self.stateMachine.add_state(key, value[1], value[0])
+
+    def clear_vision(self):
+        """This method wipes the vison"""
+        self.vision = []
+
+    def add_to_vision(self,id):
+        """Adds to the vision array if it isn't aready in there"""
+        vision = self.vision
+        #variable to see if the id is already in the vision
+        already_there = False
+        for people in vision:
+            #Cheacks to see if the person is already in the vision
+            if id == people:
+                already_there = True
+        # if it isnt then it adds it to the array
+        if already_there == False:
+            vision.append(id)

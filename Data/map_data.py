@@ -1,35 +1,78 @@
 """
 Main Map class that should handle the init and management of the map
 Created by Chris Clark cc604
+Modified by Sam Parker swp5
 """
 import random as rand
 import math
+from People import *
+from Objects import *
+
 class map_data:
     # The GUI currently operates at 30 FPS meaning that each second the array is cycled though 30 times
     # [personType,uniqueName, [cordinateX,cordinateY],directionLooking,width]
     # [wall,[cordinateX,cordinateY],[width,height]]
+
     mapDefult = [['person','id:1',[150,350],30,10],['person','id:2',[200,300],30,10],['wall',[10,10],[100,10]]]
+
+    mapData = []
 
     def __init__(self):
         print("Map_data Object Created")
+
+    def map_default(self):
+        """Getting default map data"""
+
+        self.add_people_to_map(1)
+
+        return self.mapData
+
+    def add_people_to_map(self, peopleCount):
+        """Adding people to map"""
+        x = 0
+        while x < peopleCount:
+            coords = [50 * (x + 1), 50 * (x + 1)]
+
+            newPerson = person.Person("person " + str(len(self.mapData)), coords, None)
+
+            self.mapData.append(newPerson)
+
+            x += 1
 
     def personVision(self,id):
         vision = 100
         angleOfVison = 30
         found = False
         for person in self.mapDefult:
-            if person[0] == 'person':
-                if person[1] == id:
-                    xCord = person[2][0]
-                    yCord = person[2][1]
-                    angle1 = person[3] - (angleOfVison/2)
-                    angle2 = person[3] + (angleOfVison/2)
+            if isinstance(person, "Person"):
+                if person.get_name() == id:
+                    coordinates = person.get_coordinates()
+                    xCord = coordinates[0]
+                    yCord = coordinates[1]
+
+                    width = person.get_width()
+                    angle1 = width - (angleOfVison / 2)
+                    angle2 = width + (angleOfVison / 2)
+
                     if angle1 <= 0:
                         angle1 = angle1 + 360
                     if angle1 > 360:
                         angle1 = angle1 - 360
                     found = True
                     break
+
+            # if person[0] == 'person':
+            #     if person[1] == id:
+            #          = person[2][0]
+            #         yCord = person[2][1]
+            #         angle1 = person[3] - (angleOfVison/2)
+            #         angle2 = person[3] + (angleOfVison/2)
+            #         if angle1 <= 0:
+            #             angle1 = angle1 + 360
+            #         if angle1 > 360:
+            #             angle1 = angle1 - 360
+            #         found = True
+            #         break
         if found == False:
             print("Error finding %s" % id)
             return 0
@@ -52,8 +95,8 @@ class map_data:
             if angle1 > 360:
                 angle1 = angle1 - 360
             while vision >= x:
-                value = self.angleMath(angle1,xCord,yCord,x)
-                value = [xCord + value[0],yCord + value[1]]
+                value = self.angleMath(angle1, xCord, yCord, x)
+                value = [xCord + value[0], yCord + value[1]]
                 resultArray.append(value)
                 x = x + 1
             i = i + 1
@@ -88,6 +131,66 @@ class map_data:
             horizontal = math.floor(vision * math.sin(math.radians(360) - angle1))
             horizontal = horizontal * -1
         return [veritcal, horizontal]
+
+    def check_space_unoccupied(self, coordinates, object_size, object_name):
+        """Checks to see if a set of coordinates is occupied by an object or person
+        :param coordinates is the set its checking to see if anything occupies it
+        :param object_size is the object that is the size of the object currently checking coords, if it has a width and height give it as a list
+        :param object_name is the name of the object doing checking so it doesnt check itself
+        """
+
+        ranges = self.__get_coordinates_range(coordinates, object_size)
+
+        for object in self.mapData:
+            if object.get_name() == object_name:
+                continue
+
+            if isinstance(object, "Person"):
+
+
+
+
+    def __get_coordinates_range(self, coordinates, object_size):
+        """ Function gets the range of spaces used by a set of coordinates
+        :param coordinates is the set its checking to see if anything occupies it
+        :param object_size is the object that is the size of the object currently checking coords, if it has a width and height give it as a list
+        """
+        xCoord = coordinates[0]
+        yCoord = coordinates[1]
+        if isinstance(object_size, list):
+            # If there is a width and height give it as a list
+            print("list")
+            xSize = object_size[0]
+            ySize = object_size[1]
+
+        else:
+            # For when you just give the width, most likely gonna be for a person
+            print("int")
+            xSize = object_size
+            ySize = object_size
+
+        # X Coordinate ranges
+        if xCoord - xSize < 0:
+            lowX = 0
+        else:
+            lowX = xCoord - xSize
+
+        highX = xCoord + object_size
+
+        # Y Coordinate ranges
+        if yCoord - ySize < 0:
+            lowY = 0
+        else:
+            lowY = yCoord - ySize
+
+        highY = yCoord + object_size
+
+        xRanges = [lowX, highX]
+        yRanges = [lowY, highY]
+        return [xRanges, yRanges]
+
+
+
 
     def getMap(self):
         # Returns the map

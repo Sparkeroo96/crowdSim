@@ -18,7 +18,7 @@ red = (255, 0, 0)
 
 # Getting intial data to start the main loop for the simulation method
 array = data.getMap()
-objectArray = data.map_default()
+# objectArray = data.map_default()
 
 display = pygame.display.set_mode((800,600))
 pygame.display.set_caption("Crowd Simulation ")
@@ -28,12 +28,12 @@ exit = False
 # Main loop for the applicaion
 while not exit:
     for event in pygame.event.get():
-        print(event)
+        # print(event)
         if event.type == pygame.QUIT:
             exit = True
     display.fill(white)
     # Goes though the map array object
-    for object in objectArray:
+    for object in array:
         object.action()
         print("object")
         coordinates = object.get_coordinates()

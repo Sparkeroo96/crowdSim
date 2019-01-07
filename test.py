@@ -25,13 +25,14 @@ pygame.display.set_caption("Crowd Simulation ")
 
 clock = pygame.time.Clock()
 exit = False
+# Main loop for the applicaion
 while not exit:
     for event in pygame.event.get():
         print(event)
         if event.type == pygame.QUIT:
             exit = True
     display.fill(white)
-
+    # Goes though the map array object
     for object in objectArray:
         object.action()
         print("object")

@@ -117,6 +117,7 @@ class Person:
         # PERSON NEEDS TO SEE IF THERE IS SOMETHING OCCUPING THIS SPACE
         # ADD THAT IN
         if isinstance(newCoordinates, list):
+            edge_coordinates = self.get_edge_coordinates_array()
             self.coordinates = newCoordinates
 
 
@@ -147,6 +148,21 @@ class Person:
         #
         # # print(self.name + " at coordinates " + str(self.coordinates))
         # return self.coordinates;
+
+    def get_edge_coordinates_array(self):
+        """Gets the edge coordinates of the circle"""
+        edge_coordinates = []
+        x = 0
+        xCoord = self.coordinates[0]
+        yCoord = self.coordinates[1]
+
+        for x in 360:
+            coord = self.map.angleMath(x, xCoord, yCoord, self.width)
+            edge_coordinates.append(coord)
+
+            x += 1
+
+        return edge_coordinates
 
     def store_coordinates(self, coordinates):
         """Storing a set of coordinates"""

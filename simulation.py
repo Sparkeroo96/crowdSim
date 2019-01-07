@@ -186,5 +186,3 @@ class Simulation:
     #     """Takes one step in the simulation"""
     #     for person in self.arrayPeople:
     #         person.action()
-
-

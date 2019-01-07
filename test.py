@@ -5,6 +5,7 @@ Created by Chris Clark cc604
 Modified by Sam Parker swp5
 """
 import pygame
+import math
 from Data import map_data
 
 data = map_data.map_data()
@@ -45,27 +46,11 @@ while not exit:
         # the process of adding a person and the funcitons that get called
         if shape == "circle":
             # Creating the cicle with the variables provided
-            pygame.draw.circle(display, colour, coordinates, width)
-            # Calls the person vision function that returns an array of all the cordinates on the vision lines it makes
-            vision = data.personVision(object.coordinates[0],object.coordinates[1],object.angle)
-            # clears the person vision from the previous ittoration
-            object.clear_vision()
-            # goes though every coordinates and works out what colour is in that pixcel
-            for cord in vision:
-                        # try and catch to prevent out of array exceptions
-                         try:
-                             # gets the colour at the cordiate
-                             colour = display.get_at((cord[0],cord[1]))
-                             # if it is red then it must be a person
-                             if colour == (255,0,0,255): #Red person
-                                # calls a function that returns the id of the person they can see
-                                 whichPerson = data.whichPerson(cord)
-                                 if whichPerson:
-                                     # adds to the persons vision array in their object
-                                    object.add_to_vision(whichPerson)
-                         except IndexError:
-                            nothing = 0
-
+            pygame.draw.circle(display, colour, coordinates, round(width/2))
+            # Maths to add the pixcels to represent the eyes
+            eyes = data.person_eyes(object.coordinates, object.angle, round(object.width/2))
+            display.set_at((eyes[0][0],eyes[0][1]),white)
+            display.set_at((eyes[1][0],eyes[1][1]),white)
             # print(vision)
             # print(objectArray)
 
@@ -73,6 +58,29 @@ while not exit:
             # objects
             height = object.get_height()
             pygame.draw.rect(display, black, [coordinates[0], coordinates[1], width, height])
+
+    for object in objectArray:
+        if shape == 'circle':
+            # Calls the person vision function that returns an array of all the cordinates on the vision lines it makes
+            vision = data.personVision(object.coordinates[0],object.coordinates[1],object.angle)
+            # clears the person vision from the previous ittoration
+            object.clear_vision()
+            # goes though every coordinates and works out what colour is in that pixcel
+            for cord in vision:
+                # display.set_at((cord[0],cord[1]), black)
+                # try and catch to prevent out of array exceptions
+                try:
+                    # gets the colour at the cordiate
+                    colour = display.get_at((cord[0],cord[1]))
+                    # if it is red then it must be a person
+                    if colour == (255,0,0,255): #Red person
+                    # calls a function that returns the id of the person they can see
+                        whichPerson = data.whichPerson(cord)
+                        # adds to the persons vision array in their object
+                        object.add_to_vision(whichPerson)
+                except IndexError:
+                    nothing = 0
+
     pygame.display.update()
     clock.tick(30)
 pygame.quit()

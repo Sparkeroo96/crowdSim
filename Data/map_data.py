@@ -46,26 +46,29 @@ class map_data:
         rays = 10
         # The itorating number of rays
         i = 0
+        angle = angle - 25
+        if angle <= 0:
+            angle = angle + 360
         # saves the starting angle
         originalAngle = angle
         # results array for all the newCoordinates
         resultArray = []
         while i <= rays:
             # increases the angles by 5 each intoration
-            angle1 = originalAngle + (i * 5)
+            angle = originalAngle + (i * 5)
             # this is an if statement that stops the number being more than 360 and less than 0
-            if angle1 <= 0:
-                angle1 = angle + 360
-            if angle1 > 360:
-                angle1 = angle - 360
+            if angle > 360:
+                angle = angle - 360
             # this then produces the cordiantes for each line and adds them to the array
             while vision >= x:
-                value = self.angleMath(angle1,x1,y1,x)
+                value = self.angleMath(angle,x1,y1,x)
                 value = [x1 + value[0],y1 + value[1]]
                 resultArray.append(value)
                 x = x + 1
             i = i + 1
             x = 12
+            # print(resultArray)
+            # print( )
         return resultArray
 
     def angleMath(self, angle, xcord, ycord,vision):
@@ -176,3 +179,17 @@ class map_data:
                 distanceRoot = math.sqrt(distance)
                 if distanceRoot <= radias:
                     return people.name
+
+    def person_eyes(self, cords, angle, radias):
+        angle_left = angle - 25
+        if angle_left <= 0:
+            angle_left = angle_left + 360
+        angle_right = angle + 25
+        if angle_right > 360:
+            angle_right = angle_right - 360
+        # THis is the maths for the eyes
+        left_eye = self.angleMath(angle_left,cords[0],cords[1],radias-3)
+        right_eye = self.angleMath(angle_right,cords[0],cords[1],radias-3)
+        left_eye = [cords[0] + left_eye[0], cords[1] + left_eye[1]]
+        right_eye = [cords[0] + right_eye[0], cords[1] + right_eye[1]]
+        return [left_eye,right_eye]

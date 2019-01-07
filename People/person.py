@@ -117,8 +117,10 @@ class Person:
         # PERSON NEEDS TO SEE IF THERE IS SOMETHING OCCUPING THIS SPACE
         # ADD THAT IN
         if isinstance(newCoordinates, list):
-            edge_coordinates = self.get_edge_coordinates_array()
-            self.coordinates = newCoordinates
+            edgeCoordinates = self.get_edge_coordinates_array()
+
+            if self.map.check_coordinates_for_person(newCoordinates, self.width, self.name, edgeCoordinates):
+                self.coordinates = newCoordinates
 
 
         # randomNumber = randint(0, 10)

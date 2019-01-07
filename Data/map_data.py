@@ -13,6 +13,26 @@ class map_data:
     def __init__(self):
         print("Map_data Object Created")
 
+    def map_default(self):
+        """Getting default map data"""
+
+        self.add_people_to_map(1)
+
+        return self.mapData
+
+    def add_people_to_map(self, peopleCount):
+        """Adding people to map"""
+        x = 0
+        while x < peopleCount:
+            coords = [50 * (x + 1), 50 * (x + 1)]
+
+            newPerson = person.Person("person " + str(len(self.mapData)), coords, None)
+
+            newPerson.add_map(self, coords)
+            self.mapData.append(newPerson)
+
+            x += 1
+
     def personVision(self,id):
         """This function gets an person and returns an array of the cordinates of their vision"""
         # How far a person can see
@@ -102,6 +122,64 @@ class map_data:
             horizontal = math.floor(vision * math.sin(math.radians(360) - angle1))
             horizontal = horizontal * -1
         return [veritcal, horizontal]
+
+    def check_space_unoccupied(self, coordinates, object_size, object_name, object_shape):
+        """Checks to see if a set of coordinates is occupied by an object or person
+        :param coordinates is the set its checking to see if anything occupies it
+        :param object_size is the object that is the size of the object currently checking coords, if it has a width and height give it as a list
+        :param object_name is the name of the object doing checking so it doesnt check itself
+        """
+
+        ranges = self.__get_coordinates_range(coordinates, object_size)
+
+        for object in self.mapData:
+            if object.get_name() == object_name:
+                continue
+
+            if isinstance(object, "Person"):
+                print("In Person")
+
+
+
+
+    def __get_coordinates_range(self, coordinates, object_size):
+        """ Function gets the range of spaces used by a set of coordinates
+        :param coordinates is the set its checking to see if anything occupies it
+        :param object_size is the object that is the size of the object currently checking coords, if it has a width and height give it as a list
+        """
+        xCoord = coordinates[0]
+        yCoord = coordinates[1]
+        if isinstance(object_size, list):
+            # If there is a width and height give it as a list
+            print("list")
+            xSize = object_size[0]
+            ySize = object_size[1]
+
+        else:
+            # For when you just give the width, most likely gonna be for a person
+            print("int")
+            xSize = object_size
+            ySize = object_size
+
+        # X Coordinate ranges
+        if xCoord - xSize < 0:
+            lowX = 0
+        else:
+            lowX = xCoord - xSize
+
+        highX = xCoord + object_size
+
+        # Y Coordinate ranges
+        if yCoord - ySize < 0:
+            lowY = 0
+        else:
+            lowY = yCoord - ySize
+
+        highY = yCoord + object_size
+
+        xRanges = [lowX, highX]
+        yRanges = [lowY, highY]
+        return [xRanges, yRanges]
 
     def getMap(self):
         # Returns the map

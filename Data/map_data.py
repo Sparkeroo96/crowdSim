@@ -4,11 +4,16 @@ Created by Chris Clark cc604
 """
 import random as rand
 import math
+from People import *
+from Objects import *
+
 class map_data:
     # The GUI currently operates at 30 FPS meaning that each second the array is cycled though 30 times
     # [personType,uniqueName, [cordinateX,cordinateY],directionLooking,width]
     # [wall,[cordinateX,cordinateY],[width,height]]
     mapDefult = [['person','id:1',[150,350],30,10],['person','id:2',[200,300],30,10],['wall',[10,10],[100,10]]]
+
+    mapData = []
 
     def __init__(self):
         print("Map_data Object Created")
@@ -138,6 +143,16 @@ class map_data:
 
             if isinstance(object, "Person"):
                 print("In Person")
+
+    def check_coordinates_for_person(self, check_coords, edge_coordinates):
+        """Check to see if a person can move into a space
+        :param check_coords The new coordinates to check
+        :param edge_coordinates The persons edge coordinates
+        """
+
+        for object in self.mapData:
+            # Checking to see how close each object is
+            print("check coordinates for map data")
 
 
 

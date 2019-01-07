@@ -10,7 +10,7 @@ class Person:
     angle = 30
     width = 10
     name = ""
-    # map is None
+    # map is Noneisinstance
     map = 0
     sight = 8
     #Persons colour for display on map

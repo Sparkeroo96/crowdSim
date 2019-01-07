@@ -7,8 +7,7 @@ Created by Sam Parker
 class BaseObject:
 
     clipThrough = False
-    xSize = 0
-    ySize = 0
+
     angle = 0
     width = 0
     height = 0
@@ -16,6 +15,8 @@ class BaseObject:
     shape = "rectangle"
 
     name = ""
+
+    colour = []
 
     coordinates = []
     envObjectName = ""
@@ -50,8 +51,6 @@ class BaseObject:
 
     def set_id(self, newID):
         self.id = newID
-
-    colour = []
 
     def __init__(self, coordinates, name):
         self.coordinates = coordinates

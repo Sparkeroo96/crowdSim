@@ -1,22 +1,25 @@
 """
 Main Map class that should handle the init and management of the map
 Created by Chris Clark cc604
+Modified by Sam Parker swp5
 """
 import random as rand
 import math
+from People import *
 class map_data:
     # The GUI currently operates at 30 FPS meaning that each second the array is cycled though 30 times
     # [personType,uniqueName, [cordinateX,cordinateY],directionLooking,width]
     # [wall,[cordinateX,cordinateY],[width,height]]
-    mapDefult = [['person','id:1',[150,350],30,10],['person','id:2',[200,300],30,10],['wall',[10,10],[100,10]]]
+    # mapDefult = [['person','id:1',[150,350],30,10],['person','id:2',[200,300],30,10],['wall',[10,10],[100,10]]]
 
+    mapData = []
     def __init__(self):
         print("Map_data Object Created")
 
     def map_default(self):
         """Getting default map data"""
 
-        self.add_people_to_map(1)
+        self.add_people_to_map(10)
 
         return self.mapData
 
@@ -26,63 +29,39 @@ class map_data:
         while x < peopleCount:
             coords = [50 * (x + 1), 50 * (x + 1)]
 
-            newPerson = person.Person("person " + str(len(self.mapData)), coords, None)
+            newPerson = person.Person("person " + str(len(self.mapData)), coords, 20, rand.randint(0,360))
 
             newPerson.add_map(self, coords)
             self.mapData.append(newPerson)
 
             x += 1
 
-    def personVision(self,id):
+    def personVision(self,x1,y1,angle):
         """This function gets an person and returns an array of the cordinates of their vision"""
-        # How far a person can see
+        # # How far a person can see
         vision = 100
-        # The angle of the vision
-        angleOfVison = 30
-        # check to see if the id it was passed exisits
-        found = False
-        #For loop that goes though the map array and finds the person that is doing the looking
-        for person in self.mapDefult:
-            if person[0] == 'person':
-                if person[1] == id:
-                    # Saves the data of the person who is looking
-                    xCord = person[2][0]
-                    yCord = person[2][1]
-                    # Starting angle of the vision
-                    angle1 = person[3] - (angleOfVison/2)
-                    # If statements to stop the angle being highter than 360 and lower than 0
-                    if angle1 <= 0:
-                        angle1 = angle1 + 360
-                    if angle1 > 360:
-                        angle1 = angle1 - 360
-                    found = True
-                    break
-        # If the Id wasn't found then it prints an error
-        if found == False:
-            print("Error finding %s" % id)
-            return 0
         # Number the vision starts from, this stops the person from seeing themselves
         x = 12
-        #This will hold the people that they see
-        resultArray = []
         # This is the amount of rays that they produce
         rays = 10
         # The itorating number of rays
         i = 0
         # saves the starting angle
-        originalAngle = angle1
+        originalAngle = angle
+        # results array for all the newCoordinates
+        resultArray = []
         while i <= rays:
             # increases the angles by 5 each intoration
             angle1 = originalAngle + (i * 5)
             # this is an if statement that stops the number being more than 360 and less than 0
             if angle1 <= 0:
-                angle1 = angle1 + 360
+                angle1 = angle + 360
             if angle1 > 360:
-                angle1 = angle1 - 360
+                angle1 = angle - 360
             # this then produces the cordiantes for each line and adds them to the array
             while vision >= x:
-                value = self.angleMath(angle1,xCord,yCord,x)
-                value = [xCord + value[0],yCord + value[1]]
+                value = self.angleMath(angle1,x1,y1,x)
+                value = [x1 + value[0],y1 + value[1]]
                 resultArray.append(value)
                 x = x + 1
             i = i + 1
@@ -181,49 +160,19 @@ class map_data:
         yRanges = [lowY, highY]
         return [xRanges, yRanges]
 
-    def getMap(self):
-        # Returns the map
-        return self.mapDefult
-
-    def addPerson(self,name,cordinateX,cordinateY,angle,width):
-        """adds a person to the array"""
-        array = self.mapDefult
-        array.append('person',name,[cordinateX,cordinateY],angle,width)
-
-    def moveRandomly(self):
-        map = self.getMap()
-        x = rand.randint(0,4)
-        # Example of how to go UP!
-        if x == 0:
-            map[0][2][1] -= 1
-        # Example of how to go DOWN!
-        if x == 1:
-            map[0][2][1] += 1
-        # Example of going RIGHT!
-        if x == 3:
-            map[0][2][0] += 1
-        # Example of going LEFT!
-        if x == 4:
-            map[0][2][0] -= 1
-        # print(map[0][2][1])
 
     def whichPerson(self,cords):
         """This function checks to see if a cordiante is within another person and returns their id"""
-        map = self.getMap()
+        map = self.mapData
         for people in map:
-            if people[0] == "person":
-                x = people[2][0]
-                y = people[2][1]
-                radias = people[4]
+            if people.get_shape() == "circle":
+                x = people.coordinates[0]
+                y = people.coordinates[1]
+                radias = people.width / 2
                 x1 = cords[0]
                 y1 = cords[1]
                 # This is pythagorous and works out if the point is within the circle
                 distance = math.pow(x1 - x,2) + math.pow(y1 - y,2)
                 distanceRoot = math.sqrt(distance)
                 if distanceRoot <= radias:
-                    return people[1]
-
-    def rotatePerson(self,newAngle):
-        map = self.getMap()
-        map[0][3] = newAngle
-        # print(map[0][3])
+                    return people.name

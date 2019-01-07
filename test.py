@@ -17,8 +17,7 @@ green = (51, 204, 51)
 red = (255, 0, 0)
 
 # Getting intial data to start the main loop for the simulation method
-array = data.getMap()
-# objectArray = data.map_default()
+objectArray = data.map_default()
 
 display = pygame.display.set_mode((800,600))
 pygame.display.set_caption("Crowd Simulation ")
@@ -33,64 +32,47 @@ while not exit:
             exit = True
     display.fill(white)
     # Goes though the map array object
-    for object in array:
+    for object in objectArray:
         object.action()
-        print("object")
+        # print("object")
         coordinates = object.get_coordinates()
         angle = object.get_angle()
         width = object.get_width()
         colour = object.get_colour()
 
         shape = object.get_shape()
-        print("shape = " + shape)
+        # print("shape = " + shape)
+        # the process of adding a person and the funcitons that get called
         if shape == "circle":
-            # People
-            print("here " + str(coordinates))
+            # Creating the cicle with the variables provided
             pygame.draw.circle(display, colour, coordinates, width)
+            # Calls the person vision function that returns an array of all the cordinates on the vision lines it makes
+            vision = data.personVision(object.coordinates[0],object.coordinates[1],object.angle)
+            # clears the person vision from the previous ittoration
+            object.clear_vision()
+            # goes though every coordinates and works out what colour is in that pixcel
+            for cord in vision:
+                        # try and catch to prevent out of array exceptions
+                         try:
+                             # gets the colour at the cordiate
+                             colour = display.get_at((cord[0],cord[1]))
+                             # if it is red then it must be a person
+                             if colour == (255,0,0,255): #Red person
+                                # calls a function that returns the id of the person they can see
+                                 whichPerson = data.whichPerson(cord)
+                                 if whichPerson:
+                                     # adds to the persons vision array in their object
+                                    object.add_to_vision(whichPerson)
+                         except IndexError:
+                            nothing = 0
+
+            # print(vision)
+            # print(objectArray)
 
         elif shape == "rectangle":
             # objects
             height = object.get_height()
             pygame.draw.rect(display, black, [coordinates[0], coordinates[1], width, height])
-
-        # NEED TO ADD VISION STUFF
-        # LEAVE FOR CHRIS?
-
-    # Going though the data set and assigning the different objects to the screen
-    # for object in array:
-    #     # Adding the people to the map
-    #     if object[0]  == 'person':
-    #         xCoordinate = object[2][0]
-    #         yCoordinate = object[2][1]
-    #         angle = object[3]
-    #         width = object[4]
-    #         pygame.draw.circle(display, red, [xCoordinate,yCoordinate],width)
-    #         vision = data.personVision(object[1])
-    #         previous = 0
-    #         for cord in vision:
-    #             # display.set_at((cord[0],cord[1]),black)
-    #             try:
-    #                 colour = display.get_at((cord[0],cord[1]))
-    #                 if colour == (255,0,0,255): #Red person
-    #                     whichPerson = data.whichPerson(cord)
-    #                     if previous != whichPerson and whichPerson != None:
-    #                         print(previous)
-    #                         print(whichPerson)
-    #                         print(" ")
-    #                     previous = whichPerson
-    #                     # print("I see someone!")
-    #             except IndexError:
-    #                 nothing = 0
-    #                 # print()
-    #                 # break
-    #     if object[0] == 'wall':
-    #         xCoordinate = object[1][0]
-    #         yCoordinate = object[1][1]
-    #         width = object[2][0]
-    #         height = object[2][1]
-    #         pygame.draw.rect(display,black,[xCoordinate,yCoordinate,width, height])
-    # # exit = True
-    # data.moveRandomly()
     pygame.display.update()
     clock.tick(30)
 pygame.quit()

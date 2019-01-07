@@ -49,7 +49,7 @@ class FlockingPerson(Person):
         else:
             #should do something if nothing stands out
             print("None is greater than another, move randomly??")
-            self.move()
+            self.random_move()
 
         if isinstance(newCoordinates, list):
             if self.map.check_coordinates(newCoordinates) == True:

@@ -8,7 +8,7 @@ mapArray = [[1, 1, 1, 1, 1, 1, 1, 1],
             [1, 1, 1, 1, 1, 1, 1, 1],
             [1, 1, 1, 1, 1, 1, 1, 1],
             [1, 1, 1, 1, 1, 1, 1, 1]]
-class MapMain:
+class map_main:
 
     map = [];
     def __init__(self):
@@ -45,8 +45,11 @@ class MapMain:
                 working_rows = working_rows + 1
                 if working_rows > num_rows:
                     num_rows = working_rows
-                    
+
         return [num_rows, num_cols]
+
+    def defult_map(self):
+        self.map_generate(100,100)
 
     def map_generate(self, xLength, yLength):
         """Generates a map on given x and y lengths"""

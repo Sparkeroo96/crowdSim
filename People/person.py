@@ -3,22 +3,33 @@
 from random import randint
 from People.stateMachine import StateMachine
 
+
 class Person:
     coordinates = [0,1]
     #Was size but chris has angle and width so using that instead
     angle = 0
     width = 10
     name = ""
+
     # map is Noneisinstance
     map = 0
-    sight = 8
+    vision = 100
+
     #Persons colour for display on map
     colour = [255, 0, 0]
     shape = "circle"
 
     rememberedObj = ""
     rememberedCoords = []
-    vision = []
+
+    headAngle = 0
+
+    memory = {
+        "bar" : [],
+        "danceFloor" : [],
+        "toilet" : []
+    }
+
     # Persons "needs" first value is importance second is how much they want to do it
     #Not in use currently might remove them
     needs = [["toilet", 1, 0],
@@ -79,9 +90,9 @@ class Person:
 
     def action(self):
         """What the person is going to do"""
-        # print("Current state " + str(self.currentState))
+        print("action() Current state " + str(self.currentState))
 
-        return self.random_move()
+        # return self.random_move()
 
         stateAction = self.get_state_action()
 
@@ -157,7 +168,7 @@ class Person:
         xCoord = self.coordinates[0]
         yCoord = self.coordinates[1]
 
-        for x in 360:
+        while x < 360:
             coord = self.map.angleMath(x, xCoord, yCoord, self.width)
             edge_coordinates.append(coord)
 
@@ -172,6 +183,10 @@ class Person:
     def get_coordinates(self):
         """Getting stored coordinates"""
         return self.coordinates
+
+    def get_name(self):
+        """Returns the name of the person"""
+        return self.name
 
     def get_angle(self):
         """Returns the objects angle"""
@@ -199,26 +214,29 @@ class Person:
 
     def get_state_action(self):
         """Causes the person to act based on their current state"""
-        print("get state action")
+        print("get state action " + str(self.currentState))
 
         action = "moveRandom"
 
         if self.currentState == self.defaultState:
             print(self.name + " in greatest need")
             self.currentState = self.stateMachine.get_next_state()
+        else:
+            print("not greatest need")
 
-        if "want" in self.currentState:
+        if "want" in str(self.currentState):
+            print("here")
             # Person has a want desire
             if self.want_action(self.currentState):
                 action = "navigateToCoords"
 
-        elif "find" in self.currentState:
+        elif "find" in str(self.currentState):
             # Person trying to find an object
             print(self.name + " finding object")
             if self.find_object(self.rememberedObj):
                 action = "navigateToCoords"
 
-        elif "move" in self.currentState:
+        elif "move" in str(self.currentState):
             # Person moving to object
             print(self.name + " Person moving to object")
             action = "navigateToCoords"
@@ -248,16 +266,22 @@ class Person:
             print("want Toilet")
             searchObject = "Toilet"
 
+        print("Search object " + searchObject)
         self.rememberedObj = searchObject
 
         return self.find_object(searchObject)
 
     def find_object(self, searchObject):
         """This function does the find function of a person
-        :return Returns Ture if there are objects, false if it cant find one
+        :return Returns True if there are objects, false if it cant find one
         """
-        objects = self.map.get_objects_in_range(searchObject, self.coordinates, self.sight)
+        # objects = self.map.get_objects_in_range(searchObject, self.coordinates, self.sight)
 
+        objects = self.map.personVision(self.coordinates[0], self.coordinates[1], self.angle, self.vision)
+
+        print("find_object objects " + str(objects))
+
+        return False
         if not objects:
             # This is when there are no objects in range and you want the person to wander to keep looking
             print("no objects in range")

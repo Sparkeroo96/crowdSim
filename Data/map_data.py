@@ -6,11 +6,14 @@ Modified by Sam Parker swp5
 import random as rand
 import math
 from People import *
-<<<<<<< HEAD
-from Objects import *
 
-=======
->>>>>>> 91004e94f10c032978cf51c549569a5086382127
+# Seems to need these for allowing isinstance(example, Person), doesnt work with the above import
+from People.person import Person
+from People.flockingPerson import FlockingPerson
+
+from Objects import *
+from Objects.bar import Bar
+
 class map_data:
     # The GUI currently operates at 30 FPS meaning that each second the array is cycled though 30 times
     # [personType,uniqueName, [cordinateX,cordinateY],directionLooking,width]
@@ -18,17 +21,15 @@ class map_data:
     # mapDefult = [['person','id:1',[150,350],30,10],['person','id:2',[200,300],30,10],['wall',[10,10],[100,10]]]
 
     mapData = []
-<<<<<<< HEAD
 
-=======
->>>>>>> 91004e94f10c032978cf51c549569a5086382127
     def __init__(self):
         print("Map_data Object Created")
 
     def map_default(self):
         """Getting default map data"""
 
-        self.add_people_to_map(10)
+        self.add_people_to_map(1)
+        self.add_bar_to_map(1)
 
         return self.mapData
 
@@ -45,7 +46,18 @@ class map_data:
 
             x += 1
 
-    def personVision(self,x1,y1,angle):
+    def add_bar_to_map(self, barCount):
+        """Adds a number of bars to the map"""
+        x = 0
+        while x < barCount:
+            coords = [100 * (x + 1), 100 * (x + 1)]
+            newBar = bar.Bar(coords, "bar " + str(len(self.mapData)), 100, 20)
+
+            self.mapData.append(newBar)
+
+            x += 1
+
+    def personVision(self,x1,y1,angle, vision):
         """This function gets an person and returns an array of the cordinates of their vision"""
         # # How far a person can see
         vision = 100
@@ -144,7 +156,7 @@ class map_data:
                 # So we dont check the same object
                 continue
 
-            if isinstance(obj, "Person"):
+            if isinstance(obj, Person):
                 # Object is person get their edge coordinates
                 person1 = {
                     "radius" : radius,
@@ -163,9 +175,9 @@ class map_data:
 
             else:
                 # Object is instance of baseObject, i.e. Bar
-                width = object.get_width()
-                height = object.get_height()
-                rectangleCoordRanges = self.__get_coordinates_range(object.get_coordinates(), [width, height])
+                width = obj.get_width()
+                height = obj.get_height()
+                rectangleCoordRanges = self.__get_coordinates_range(obj.get_coordinates(), [width, height])
 
                 if self.check_circle_overlap_rectangle(edgeCoordinates, rectangleCoordRanges):
                     print("good")
@@ -198,12 +210,12 @@ class map_data:
         Checks to see if a circle and rectangle intersect
         :param circle: properties
         :param rectangle: rectangle properties
-        :return: True if overlap
+        :return: True if  overlap
         """
         for edge in circleEdge:
-            if rectangle["X"][0] < edge[0] and edge[0] < rectangle["X"][1] and rectangle["Y"][0] < edge[1] and edge[1] < rectangle["Y"][1]
-                return False
-        return True
+            if rectangle["X"][0] < edge[0] and edge[0] < rectangle["X"][1] and rectangle["Y"][0] < edge[1] and edge[1] < rectangle["Y"][1]:
+                return True
+        return False
 
 
     def __get_coordinates_range(self, coordinates, object_size):
@@ -215,13 +227,11 @@ class map_data:
         yCoord = coordinates[1]
         if isinstance(object_size, list):
             # If there is a width and height give it as a list
-            print("list")
             xSize = object_size[0]
             ySize = object_size[1]
 
         else:
             # For when you just give the width, most likely gonna be for a person
-            print("int")
             xSize = object_size
             ySize = object_size
 
@@ -231,7 +241,7 @@ class map_data:
         else:
             lowX = xCoord - xSize
 
-        highX = xCoord + object_size
+        highX = xCoord + xSize
 
         # Y Coordinate ranges
         if yCoord - ySize < 0:
@@ -239,7 +249,7 @@ class map_data:
         else:
             lowY = yCoord - ySize
 
-        highY = yCoord + object_size
+        highY = yCoord + ySize
 
         xRanges = [lowX, highX]
         yRanges = [lowY, highY]

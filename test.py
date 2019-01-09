@@ -7,6 +7,7 @@ Modified by Sam Parker swp5
 import pygame
 import math
 from Data import map_data
+from time import sleep
 
 data = map_data.map_data()
 pygame.init()
@@ -81,6 +82,10 @@ while not exit:
                 except IndexError:
                     nothing = 0
 
+    #FOR TESTING PURPOSES
+    sleep(1)
+    # END OF SLEEP
+    
     pygame.display.update()
     clock.tick(30)
 pygame.quit()

@@ -9,3 +9,12 @@ class Wall(BaseObject):
         self.coordinates = coordinates
         self.xSize = xSize
         self.ySize = ySize
+
+    def get_xSize(self):
+        return self.xSize
+
+    def get_coordinates(self):
+        return self.coordinates
+
+    def get_ySize(self):
+        return self.ySize

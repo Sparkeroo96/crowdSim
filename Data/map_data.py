@@ -6,6 +6,8 @@ Modified by Sam Parker swp5
 import random as rand
 import math
 from People import *
+from Objects import *
+
 class map_data:
     # The GUI currently operates at 30 FPS meaning that each second the array is cycled though 30 times
     # [personType,uniqueName, [cordinateX,cordinateY],directionLooking,width]
@@ -35,75 +37,9 @@ class map_data:
             self.mapData.append(newPerson)
 
             x += 1
-
-    def personVision(self,x1,y1,angle):
-        """This function gets an person and returns an array of the cordinates of their vision"""
-        # # How far a person can see
-        vision = 100
-        # Number the vision starts from, this stops the person from seeing themselves
-        x = 12
-        # This is the amount of rays that they produce
-        rays = 10
-        # The itorating number of rays
-        i = 0
-        angle = angle - 25
-        if angle <= 0:
-            angle = angle + 360
-        # saves the starting angle
-        originalAngle = angle
-        # results array for all the newCoordinates
-        resultArray = []
-        while i <= rays:
-            # increases the angles by 5 each intoration
-            angle = originalAngle + (i * 5)
-            # this is an if statement that stops the number being more than 360 and less than 0
-            if angle > 360:
-                angle = angle - 360
-            # this then produces the cordiantes for each line and adds them to the array
-            while vision >= x:
-                value = self.angleMath(angle,x1,y1,x)
-                value = [x1 + value[0],y1 + value[1]]
-                resultArray.append(value)
-                x = x + 1
-            i = i + 1
-            x = 12
-            # print(resultArray)
-            # print( )
-        return resultArray
-
-    def angleMath(self, angle, xcord, ycord,vision):
-        """This is the maths that returns the amount the x and y cordianes need to change to produce the cordinates
-        of the new loaction """
-        # These variables will be chnaged into number to change
-        veritcal = 0
-        horizontal = 0
-        # The math.sin and cos works in radians so this converts the number to radians
-        angle1 = math.radians(angle)
-        #These 4 if statements do the maths that takes the lengh of their vision, and the angle that they are directionLooking
-        # then returns the value that the point would have to change
-
-        if 1 <= angle and angle <= 90:
-            veritcal = math.floor(vision * math.sin(math.radians(90) - angle1))
-            veritcal = veritcal * -1
-            # print(veritcal)
-            horizontal = math.floor(vision * math.cos(math.radians(90) - angle1))
-            # print(horizontal)
-        if 90 < angle and angle <= 180:
-            # print("BR")
-            veritcal = math.floor(vision * math.sin(angle1 - math.radians(90)))
-            horizontal = math.floor(vision * math.cos(angle1 - math.radians(90)))
-        if 180 < angle and angle <= 270:
-            # print("BL")
-            veritcal = math.floor(vision * math.sin(math.radians(270) - angle1))
-            horizontal = math.floor(vision * math.cos(math.radians(270) - angle1))
-            horizontal = horizontal *-1
-        if 270 < angle and angle <=360:
-            # print('TL')
-            veritcal = math.floor(vision * math.cos(math.radians(360)- angle1))
-            veritcal = veritcal * -1
-            horizontal = math.floor(vision * math.sin(math.radians(360) - angle1))
-            horizontal = horizontal * -1
-        return [veritcal, horizontal]
+    def add_wall_to_map(self, cords,width, height):
+            newWall = wall.Wall(cords,width,height)
+            self.mapData.append(newWall)
 
     def check_space_unoccupied(self, coordinates, object_size, object_name, object_shape):
         """Checks to see if a set of coordinates is occupied by an object or person
@@ -120,9 +56,6 @@ class map_data:
 
             if isinstance(object, "Person"):
                 print("In Person")
-
-
-
 
     def __get_coordinates_range(self, coordinates, object_size):
         """ Function gets the range of spaces used by a set of coordinates
@@ -165,7 +98,10 @@ class map_data:
 
 
     def whichPerson(self,cords):
-        """This function checks to see if a cordiante is within another person and returns their id"""
+        """This function checks to see if a cordiante is within another person and returns their id
+        :Pram cords the cordinates of the person they are looking at
+        :return the Id of the person they are looking at
+        """
         map = self.mapData
         for people in map:
             if people.get_shape() == "circle":
@@ -179,17 +115,3 @@ class map_data:
                 distanceRoot = math.sqrt(distance)
                 if distanceRoot <= radias:
                     return people.name
-
-    def person_eyes(self, cords, angle, radias):
-        angle_left = angle - 25
-        if angle_left <= 0:
-            angle_left = angle_left + 360
-        angle_right = angle + 25
-        if angle_right > 360:
-            angle_right = angle_right - 360
-        # THis is the maths for the eyes
-        left_eye = self.angleMath(angle_left,cords[0],cords[1],radias-3)
-        right_eye = self.angleMath(angle_right,cords[0],cords[1],radias-3)
-        left_eye = [cords[0] + left_eye[0], cords[1] + left_eye[1]]
-        right_eye = [cords[0] + right_eye[0], cords[1] + right_eye[1]]
-        return [left_eye,right_eye]

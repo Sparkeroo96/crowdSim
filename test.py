@@ -22,16 +22,53 @@ objectArray = data.map_default()
 
 display = pygame.display.set_mode((800,600))
 pygame.display.set_caption("Crowd Simulation ")
-
+pause = False
 clock = pygame.time.Clock()
 exit = False
+wall = False
+drag = False
 # Main loop for the applicaion
 while not exit:
     for event in pygame.event.get():
-        # print(event)
         if event.type == pygame.QUIT:
             exit = True
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_p:
+                pause = not pause
+
     display.fill(white)
+    # Pauses the simulation and alows for editing function
+    while pause:
+        for event in pygame.event.get():
+            print(event)
+            #Pauses sim
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_p:
+                    pause = not pause
+                #Allows wall adding
+                if event.key == pygame.K_w:
+                    print("making wall")
+                    wall = True
+            # Gets the starting cordinates for the walls
+            if event.type == pygame.MOUSEBUTTONDOWN and wall:
+                x1, y1 = event.pos
+                drag = True
+            # gets the width and height for the walls and creates the object
+            if event.type == pygame.MOUSEBUTTONUP and wall:
+                x2, y2 = event.pos
+                width = x1 - x2
+                width = width * -1
+                height = y1 - y2
+                height = height * -1
+                data.add_wall_to_map([x1,y1],width,height)
+                pygame.draw.rect(display,black,[x1,y1,width,height])
+                pygame.display.update()
+                drag = not drag
+            # quits if x is pressed
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                quit()
+
     # Goes though the map array object
     for object in objectArray:
         object.action()
@@ -48,7 +85,7 @@ while not exit:
             # Creating the cicle with the variables provided
             pygame.draw.circle(display, colour, coordinates, round(width/2))
             # Maths to add the pixcels to represent the eyes
-            eyes = data.person_eyes(object.coordinates, object.angle, round(object.width/2))
+            eyes = object.person_eyes(object.coordinates, object.angle, round(object.width/2))
             display.set_at((eyes[0][0],eyes[0][1]),white)
             display.set_at((eyes[1][0],eyes[1][1]),white)
             # print(vision)
@@ -56,13 +93,13 @@ while not exit:
 
         elif shape == "rectangle":
             # objects
-            height = object.get_height()
-            pygame.draw.rect(display, black, [coordinates[0], coordinates[1], width, height])
+            coordinates = object.get_coordinates()
+            pygame.draw.rect(display, black, [coordinates[0],coordinates[1], object.get_xSize(), object.get_ySize()])
 
     for object in objectArray:
         if shape == 'circle':
             # Calls the person vision function that returns an array of all the cordinates on the vision lines it makes
-            vision = data.personVision(object.coordinates[0],object.coordinates[1],object.angle)
+            vision = object.personVision(object.coordinates[0],object.coordinates[1],object.angle)
             # clears the person vision from the previous ittoration
             object.clear_vision()
             # goes though every coordinates and works out what colour is in that pixcel
@@ -80,6 +117,14 @@ while not exit:
                         object.add_to_vision(whichPerson)
                 except IndexError:
                     nothing = 0
+    # Menu bar
+    # pygame.draw.rect(display,black,(0,0,50,20),2)
+    # pygame.font.init() # you have to call this at the start,
+    #                # if you want to use this module.
+    # myfont = pygame.font.SysFont('Comic Sans MS', 20)
+    # text_surface = myfont.render('FILE', False, (0, 0, 0))
+    # display.blit(text_surface,(7,5))
+
 
     pygame.display.update()
     clock.tick(30)

@@ -9,7 +9,7 @@ class Bar(BaseObject):
 
     freeBarStaff = [];
     #Colour is Blue
-    colour = [0, 0, 153]
+    colour = (0, 0, 153)
 
     def __init__(self, coordinates, name,  width, height):
         self.coordinates = coordinates

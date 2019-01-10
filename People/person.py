@@ -20,6 +20,7 @@ class Person:
     shape = "circle"
 
     rememberedObj = ""
+    rememberedColour = ""
     rememberedCoords = []
 
     headAngle = 0
@@ -277,7 +278,9 @@ class Person:
         """
         # objects = self.map.get_objects_in_range(searchObject, self.coordinates, self.sight)
 
-        objects = self.map.personVision(self.coordinates[0], self.coordinates[1], self.angle, self.vision)
+        colourCode = self.map.get_object_colour_code(searchObject)
+        print("object colour code : " + str(colourCode))
+        objects = self.map.person_look_for_object(self.coordinates, self.angle, self.vision, colourCode)
 
         print("find_object objects " + str(objects))
 

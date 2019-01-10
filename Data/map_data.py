@@ -21,9 +21,11 @@ class map_data:
     # mapDefult = [['person','id:1',[150,350],30,10],['person','id:2',[200,300],30,10],['wall',[10,10],[100,10]]]
 
     mapData = []
+    gui = None
 
-    def __init__(self):
+    def __init__(self, gui):
         print("Map_data Object Created")
+        self.gui = gui
 
     def map_default(self):
         """Getting default map data"""
@@ -57,10 +59,42 @@ class map_data:
 
             x += 1
 
-    def personVision(self,x1,y1,angle, vision):
+    def get_object_colour_code(self, objectType):
+        """
+        Gets an object colour code
+        :param objectType: The object type you are looking for
+        :return: Returns an RGB array, false if no such object type exists
+        """
+
+        for obj in self.mapData:
+            print("objType: " + str(type(obj)))
+            # if type(obj) == objectType:
+            searchString = "." + objectType + "'"
+            if searchString in str(type(obj)):
+                return obj.get_colour()
+
+
+        return False
+
+    def person_look_for_object(self, coordinates, angle, vision, colourCode):
+        """
+        Returns an array with references to given object
+        :param coordinates: Persons coordinates given as [x, y]
+        :param angle: Persons viewing angle
+        :param vision: Persons vision range
+        :return: Array of objects
+        """
+
+        visionCoordinates = self.personVision(coordinates[0], coordinates[1], angle, vision)
+
+        coordinatesWithColour = self.gui.check_coordinates_for_colour(visionCoordinates, colourCode)
+
+    def personVision(self, x1, y1, angle, vision):
         """This function gets an person and returns an array of the cordinates of their vision"""
         # # How far a person can see
-        vision = 100
+        if vision is None:
+            vision = 100
+
         # Number the vision starts from, this stops the person from seeing themselves
         x = 12
         # This is the amount of rays that they produce
@@ -275,7 +309,7 @@ class map_data:
                 distance = math.pow(x1 - x,2) + math.pow(y1 - y,2)
                 distanceRoot = math.sqrt(distance)
                 if distanceRoot <= radias:
-                    return people.name
+                    return people
 
     def person_eyes(self, cords, angle, radias):
         angle_left = angle - 25

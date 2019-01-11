@@ -6,12 +6,12 @@ Modified by Sam Parker swp5
 import random as rand
 import math
 from People import *
+from Objects import *
 
 # Seems to need these for allowing isinstance(example, Person), doesnt work with the above import
 from People.person import Person
 from People.flockingPerson import FlockingPerson
 
-from Objects import *
 from Objects.bar import Bar
 
 class map_data:
@@ -30,8 +30,8 @@ class map_data:
     def map_default(self):
         """Getting default map data"""
 
-        self.add_people_to_map(1)
-        self.add_bar_to_map(1)
+        self.add_people_to_map(10)
+        self.add_bar_to_map(0)
 
         return self.mapData
 
@@ -119,6 +119,22 @@ class map_data:
         }
         # return [xRanges, yRanges]
         return returnValue
+
+    def get_object_colour_code(self, objectType):
+        """
+        Gets an object colour code
+        :param objectType: The object type you are looking for
+        :return: Returns an RGB array, false if no such object type exists
+        """
+
+        for obj in self.mapData:
+            print("objType: " + str(type(obj)))
+            # if type(obj) == objectType:
+            searchString = "." + objectType + "'"
+            if searchString in str(type(obj)):
+                return obj.get_colour()
+
+        return False
 
 
     def whichPerson(self,cords):

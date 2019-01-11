@@ -81,7 +81,7 @@ class Person:
 
         self.currentState = self.defaultState
         self.stateMachine.set_current_state(self.currentState)
-        # print(self.stateMachine.get_states())
+        # #print(self.stateMachine.get_states())
 
     def add_map(self, newMap, newCoordinates):
         """Storing the generated map"""
@@ -93,28 +93,29 @@ class Person:
 
     def action(self):
         """What the person is going to do"""
-        print("action() Current state " + str(self.currentState))
+        # #print("action() Current state " + str(self.currentState))
 
-        # return self.random_move()
+
+        return self.random_move()
 
         stateAction = self.get_state_action()
 
         if stateAction == "navigateToCoords":
-             print("action")
-
+             #print("action")
+            x = 0
         elif stateAction == "":
-             print("no action")
+             #print("no action")
+            x =0
         else:
             self.random_move()
         return self.random_move()
 
     def random_move(self):
         """Person moving randomly around the map"""
-
-        randomNumber = randint(0, 10)
-        # print(self.name + " should move " + str(randomNumber))
+        randomNumber = randint(0, 8)
+        # #print(self.name + " should move " + str(randomNumber))
         newCoordinates = 0
-        # print(self.name + " random number " + str(randomNumber) + " -- initial coords " + str(self.coordinates))
+        # #print(self.name + " random number " + str(randomNumber) + " -- initial coords " + str(self.coordinates))
         if randomNumber <= 2: #person move up
             newCoordinates = [self.coordinates[0], self.coordinates[1] + 1]
 
@@ -126,62 +127,16 @@ class Person:
 
         elif randomNumber <= 8: #Person move left
             newCoordinates = [self.coordinates[0] - 1, self.coordinates[1]]
+        self.coordinates = newCoordinates
+        # print(self.get_coordinates())
 
         # PERSON NEEDS TO SEE IF THERE IS SOMETHING OCCUPING THIS SPACE
         # ADD THAT IN
-        if isinstance(newCoordinates, list):
-            edgeCoordinates = self.get_edge_coordinates_array()
-
-            if self.map.check_coordinates_for_person(newCoordinates, self.width, self.name, edgeCoordinates):
-                self.coordinates = newCoordinates
-
-<<<<<<< HEAD
-=======
-
-        # randomNumber = randint(0, 10)
-        # # print(self.name + " should move " + str(randomNumber))
-        # newCoordinates = 0
-        # print(self.name + " random number " + str(randomNumber) + " -- initial coords " + str(self.coordinates))
-        # if randomNumber <= 2: #person move up
-        #     newCoordinates = [self.coordinates[0], self.coordinates[1] + 1]
-        #
-        # elif randomNumber <= 4: #Person move down
-        #     newCoordinates = [self.coordinates[0], self.coordinates[1] - 1]
-        #
-        # elif randomNumber <= 6: #person move right
-        #     newCoordinates = [self.coordinates[0] + 1, self.coordinates[1]]
-        #
-        # elif randomNumber <= 8: #Person move left
-        #     newCoordinates = [self.coordinates[0] - 1, self.coordinates[1]]
-        #
-        # # if randomNumber is <=10 then person has chosen to stay
-        #
-        # # if newCoordinates is not None:
         # if isinstance(newCoordinates, list):
-        #     if self.map.check_coordinates(newCoordinates):
-        #         self.map.add_to_map(self, newCoordinates)
-        #         self.map.remove_from_map(self.coordinates)
-        #         self.coordinates = newCoordinates
-        #
-        # # print(self.name + " at coordinates " + str(self.coordinates))
-        # return self.coordinates;
+        #     edgeCoordinates = self.get_edge_coordinates_array()
 
-    def get_edge_coordinates_array(self):
-        """Gets the edge coordinates of the circle"""
-        edge_coordinates = []
-        x = 0
-        xCoord = self.coordinates[0]
-        yCoord = self.coordinates[1]
+            # if self.map.check_coordinates_for_person(newCoordinates, self.width, self.name, edgeCoordinates):
 
-        while x < 360:
-            coord = self.map.angleMath(x, xCoord, yCoord, self.width)
-            edge_coordinates.append(coord)
-
-            x += 1
-
-        return edge_coordinates
-
->>>>>>> task_6
     def store_coordinates(self, coordinates):
         """Storing a set of coordinates"""
         self.coordinates = coordinates
@@ -220,40 +175,41 @@ class Person:
 
     def get_state_action(self):
         """Causes the person to act based on their current state"""
-        print("get state action " + str(self.currentState))
+        # #print("get state action " + str(self.currentState))
 
         action = "moveRandom"
 
         if self.currentState == self.defaultState:
-            print(self.name + " in greatest need")
+            # #print(self.name + " in greatest need")
             self.currentState = self.stateMachine.get_next_state()
         else:
-            print("not greatest need")
+            #print("not greatest need")
+            x = 0
 
         if "want" in str(self.currentState):
-            print("here")
+            # #print("here")
             # Person has a want desire
             if self.want_action(self.currentState):
                 action = "navigateToCoords"
 
         elif "find" in str(self.currentState):
             # Person trying to find an object
-            print(self.name + " finding object")
+            #print(self.name + " finding object")
             if self.find_object(self.rememberedObj):
                 action = "navigateToCoords"
 
         elif "move" in str(self.currentState):
             # Person moving to object
-            print(self.name + " Person moving to object")
+            #print(self.name + " Person moving to object")
             action = "navigateToCoords"
 
         elif self.currentState == "orderDrink":
             # Person is ordering their drink
-            print(self.name + " Ordering a drink")
-
+            #print(self.name + " Ordering a drink")
+            x = 0
         elif self.currentState == "dance":
             # Person will dance
-            print(self.name + " is dancing")
+            #print(self.name + " is dancing")
             self.stateMachine.get_next_state()
 
         return action
@@ -261,18 +217,18 @@ class Person:
     def want_action(self, wantState):
         """The people want to do something"""
         if wantState == "wantDrink":
-            print("wantDrink")
+            #print("wantDrink")
             searchObject = "Bar"
 
         elif wantState == "wantDance":
-            print("want dance")
+            #print("want dance")
             searchObject = "DanceFloor"
 
         else:
-            print("want Toilet")
+            #print("want Toilet")
             searchObject = "Toilet"
 
-        print("Search object " + searchObject)
+        #print("Search object " + searchObject)
         self.rememberedObj = searchObject
 
         return self.find_object(searchObject)
@@ -284,15 +240,15 @@ class Person:
         # objects = self.map.get_objects_in_range(searchObject, self.coordinates, self.sight)
 
         colourCode = self.map.get_object_colour_code(searchObject)
-        print("object colour code : " + str(colourCode))
-        objects = self.map.person_look_for_object(self.coordinates, self.angle, self.vision, colourCode)
+        #print("object colour code : " + str(colourCode))
+        objects = self.map.person_look_for_object(searchObject, colourCode)
 
-        print("find_object objects " + str(objects))
+        #print("find_object objects " + str(objects))
 
         return False
         if not objects:
             # This is when there are no objects in range and you want the person to wander to keep looking
-            print("no objects in range")
+            #print("no objects in range")
             self.rememberedCoords = "search"
             return False
 
@@ -319,14 +275,27 @@ class Person:
 
         self.rememberedCoords = newCoords
 
+    def get_edge_coordinates_array(self):
+        """Gets the edge coordinates of the circle"""
+        edge_coordinates = []
+        x = 0
+        xCoord = self.coordinates[0]
+        yCoord = self.coordinates[1]
 
+        while x < 360:
+            coord = self.angleMath(x, xCoord, yCoord, self.width)
+            edge_coordinates.append(coord)
+
+            x += 1
+
+        return edge_coordinates
 
     def add_states_to_machine(self):
         """This is where the object will add states to its statemachine"""
-        # print("Adding states to machine")
+        # #print("Adding states to machine")
         for key, value in self.states.items():
-            # print("\ncurrentState " + key)
-            # print("currentValue " + str(value))
+            # #print("\ncurrentState " + key)
+            # #print("currentValue " + str(value))
             self.stateMachine.add_state(key, value[1], value[0])
 
     def clear_vision(self):
@@ -403,8 +372,8 @@ class Person:
                 x = x + 1
             i = i + 1
             x = 12
-            # print(resultArray)
-            # print( )
+            # #print(resultArray)
+            # #print( )
         return resultArray
 
     def angleMath(self, angle, xcord, ycord,vision):
@@ -427,20 +396,20 @@ class Person:
         if 1 <= angle and angle <= 90:
             veritcal = round(vision * math.sin(math.radians(90) - angle1))
             veritcal = veritcal * -1
-            # print(veritcal)
+            # #print(veritcal)
             horizontal = round(vision * math.cos(math.radians(90) - angle1))
-            # print(horizontal)
+            # #print(horizontal)
         if 90 < angle and angle <= 180:
-            # print("BR")
+            # #print("BR")
             veritcal = round(vision * math.sin(angle1 - math.radians(90)))
             horizontal = round(vision * math.cos(angle1 - math.radians(90)))
         if 180 < angle and angle <= 270:
-            # print("BL")
+            # #print("BL")
             veritcal = round(vision * math.sin(math.radians(270) - angle1))
             horizontal = round(vision * math.cos(math.radians(270) - angle1))
             horizontal = horizontal *-1
         if 270 < angle and angle <=360:
-            # print('TL')
+            # #print('TL')
             veritcal = round(vision * math.cos(math.radians(360)- angle1))
             veritcal = veritcal * -1
             horizontal = round(vision * math.sin(math.radians(360) - angle1))

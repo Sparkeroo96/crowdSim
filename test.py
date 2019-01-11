@@ -7,18 +7,20 @@ Modified by Sam Parker swp5
 import pygame
 import math
 from Data import map_data
+class runningMain:
 
-data = map_data.map_data()
-pygame.init()
+    data = map_data.map_data()
+    pygame.init()
 
-# RGB Colours defined
-white = (255,255,255)
-black = (0,0,0)
-green = (51, 204, 51)
-red = (255, 0, 0)
+    # RGB Colours defined
+    white = (255,255,255)
+    black = (0,0,0)
+    green = (51, 204, 51)
+    red = (255, 0, 0)
 
-# Getting intial data to start the main loop for the simulation method
-objectArray = data.map_default()
+    display = None
+    # Getting intial data to start the main loop for the simulation method
+    objectArray = data.map_default()
 
 display = pygame.display.set_mode((800,600))
 pygame.display.set_caption("Crowd Simulation ")
@@ -117,15 +119,6 @@ while not exit:
                         object.add_to_vision(whichPerson)
                 except IndexError:
                     nothing = 0
-    # Menu bar
-    # pygame.draw.rect(display,black,(0,0,50,20),2)
-    # pygame.font.init() # you have to call this at the start,
-    #                # if you want to use this module.
-    # myfont = pygame.font.SysFont('Comic Sans MS', 20)
-    # text_surface = myfont.render('FILE', False, (0, 0, 0))
-    # display.blit(text_surface,(7,5))
-
-
     pygame.display.update()
     clock.tick(30)
 pygame.quit()

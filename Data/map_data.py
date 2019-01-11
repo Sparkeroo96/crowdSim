@@ -78,6 +78,7 @@ class map_data:
 
     def person_look_for_object(self, coordinates, angle, vision, colourCode):
         """
+        DEFUNCT
         Returns an array with references to given object
         :param coordinates: Persons coordinates given as [x, y]
         :param angle: Persons viewing angle
@@ -295,21 +296,64 @@ class map_data:
         return returnValue
 
 
-    def whichPerson(self,cords):
-        """This function checks to see if a cordiante is within another person and returns their id"""
-        map = self.mapData
-        for people in map:
-            if people.get_shape() == "circle":
-                x = people.coordinates[0]
-                y = people.coordinates[1]
-                radias = people.width / 2
-                x1 = cords[0]
-                y1 = cords[1]
+    def what_object(self,coords):
+        """This function checks to see if a cordiante is within another person and returns a reference to the object"""
+
+        for obj in self.map_default():
+            if obj.get_shape() == "circle":
+                x = obj.coordinates[0]
+                y = obj.coordinates[1]
+                radias = obj.width / 2
+                x1 = coords[0]
+                y1 = coords[1]
                 # This is pythagorous and works out if the point is within the circle
                 distance = math.pow(x1 - x,2) + math.pow(y1 - y,2)
                 distanceRoot = math.sqrt(distance)
                 if distanceRoot <= radias:
-                    return people
+                    return obj
+
+            else:
+                width = obj.get_width()
+                height = obj.get_height()
+
+                coordsRange = self.__get_coordinates_range(coords, [width, height])
+
+                if self.point_in_coordinates_range(coords, coordsRange):
+                    return obj
+
+        # map = self.mapData
+        # for people in map:
+        #     if people.get_shape() == "circle":
+        #         x = people.coordinates[0]
+        #         y = people.coordinates[1]
+        #         radias = people.width / 2
+        #         x1 = cords[0]
+        #         y1 = cords[1]
+        #         # This is pythagorous and works out if the point is within the circle
+        #         distance = math.pow(x1 - x,2) + math.pow(y1 - y,2)
+        #         distanceRoot = math.sqrt(distance)
+        #         if distanceRoot <= radias:
+        #             return people
+
+    def point_in_coordinates_range(self, coordinates, range):
+        """
+        Finds out if a given point exists within a range of other coordinates
+        :param coordinates: The point to check
+        :param range: the range to check given as {X: [lowX, highX], Y: [lowY, highY]}
+        :return: True if it is contained within the ranges
+        """
+
+        x = coordinates[0]
+        y = coordinates[1]
+
+        if x >= range["X"][0] and x <= range["X"][1] and y >= range["Y"][0] and y <= range["Y"][1]:
+            return True
+
+        return False
+
+
+
+
 
     def person_eyes(self, cords, angle, radias):
         angle_left = angle - 25

@@ -2,7 +2,9 @@
 # Created by Sam 23/10/2018
 from random import randint
 from People.stateMachine import StateMachine
-
+from Objects.bar import Bar
+from Objects.toilet import Toilet
+from Objects.danceFloor import DanceFloor
 
 class Person:
     coordinates = [0,1]
@@ -13,7 +15,9 @@ class Person:
 
     # map is Noneisinstance
     map = 0
-    vision = 100
+    sight = 100
+
+    vision = []
 
     #Persons colour for display on map
     colour = [255, 0, 0]
@@ -26,9 +30,9 @@ class Person:
     headAngle = 0
 
     memory = {
-        "bar" : [],
-        "danceFloor" : [],
-        "toilet" : []
+        "Bar" : [],
+        "DanceFloor" : [],
+        "Toilet" : []
     }
 
     # Persons "needs" first value is importance second is how much they want to do it
@@ -97,14 +101,44 @@ class Person:
 
         stateAction = self.get_state_action()
 
-        if stateAction == "navigateToCoords":
+        if stateAction == "navigateToRememberedObj":
              print("action")
+             self.move()
 
         elif stateAction == "":
              print("no action")
         else:
             self.random_move()
         return self.random_move()
+
+    def navigate_to_remembered_object(self):
+        """
+        Starts to move to the rememberd Object
+        :return: True on success
+        """
+
+        nextMove = []
+        
+        #First move
+
+        # PHILS A* STUFF
+
+
+        self.move(nextMove)
+
+
+    def move(self, coordinates):
+        """
+        Moves to a given set of coordinates
+        :param coordinates:
+        :return: True on successful move
+        """
+
+        if self.map.check_coordinates_for_person(coordinates, self.width, self.name, self.get_edge_coordinates_array()):
+            self.coordinates = coordinates
+            return True
+
+        return False
 
     def random_move(self):
         """Person moving randomly around the map"""
@@ -213,6 +247,10 @@ class Person:
         """Returns the persons colour"""
         return self.colour
 
+    def get_sight(self):
+        """Returns the persons sight range"""
+        return self.sight
+
     def get_state_action(self):
         """Causes the person to act based on their current state"""
         print("get state action " + str(self.currentState))
@@ -229,18 +267,18 @@ class Person:
             print("here")
             # Person has a want desire
             if self.want_action(self.currentState):
-                action = "navigateToCoords"
+                action = "navigateToRememberedObj"
 
         elif "find" in str(self.currentState):
             # Person trying to find an object
             print(self.name + " finding object")
             if self.find_object(self.rememberedObj):
-                action = "navigateToCoords"
+                action = "navigateToRememberedObj"
 
         elif "move" in str(self.currentState):
             # Person moving to object
             print(self.name + " Person moving to object")
-            action = "navigateToCoords"
+            action = "navigateToRememberedObj"
 
         elif self.currentState == "orderDrink":
             # Person is ordering their drink
@@ -274,33 +312,49 @@ class Person:
 
     def find_object(self, searchObject):
         """This function does the find function of a person
+        :param searchObject: The object you want to look for
         :return Returns True if there are objects, false if it cant find one
         """
-        # objects = self.map.get_objects_in_range(searchObject, self.coordinates, self.sight)
 
-        colourCode = self.map.get_object_colour_code(searchObject)
-        print("object colour code : " + str(colourCode))
-        objects = self.map.person_look_for_object(self.coordinates, self.angle, self.vision, colourCode)
+        closestObj = self.get_closest_object_from_memory(searchObject)
 
-        print("find_object objects " + str(objects))
+        returnString = ""
 
-        return False
-        if not objects:
-            # This is when there are no objects in range and you want the person to wander to keep looking
-            print("no objects in range")
-            self.rememberedCoords = "search"
-            return False
-
+        if closestObj is False or closestObj is None:
+            returnString = "randomMove"
         else:
-            # Objects exist, find out closest
-            self.work_out_closest_object(objects)
-            return True
+            self.rememberedObj = closestObj
+            self.rememberedCoords = closestObj.get_coordinates()
+            self.rememberedColour = closestObj.get_colour()
+
+        
+
+        # # objects = self.map.get_objects_in_range(searchObject, self.coordinates, self.sight)
+        # 
+        # colourCode = self.map.get_object_colour_code(searchObject)
+        # print("object colour code : " + str(colourCode))
+        # objects = self.map.person_look_for_object(self.coordinates, self.angle, self.vision, colourCode)
+        # 
+        # print("find_object objects " + str(objects))
+        # 
+        # return False
+        # if not objects:
+        #     # This is when there are no objects in range and you want the person to wander to keep looking
+        #     print("no objects in range")
+        #     self.rememberedCoords = "search"
+        #     return False
+        # 
+        # else:
+        #     # Objects exist, find out closest
+        #     self.work_out_closest_object(objects)
+        #     return True
 
     def work_out_closest_object(self, objects):
         """ Works out which of the seen objects are closest"""
 
         smallestDifference = "null"
         newCoords = []
+        returnedObject = None
 
         for obj in objects:
             objCoords = obj["coordinates"]
@@ -311,7 +365,9 @@ class Person:
             if totalDifference < smallestDifference:
                 smallestDifference = totalDifference
                 newCoords = objCoords
+                returnedObject = obj
 
+        return returnedObject
         self.rememberedCoords = newCoords
 
 
@@ -340,3 +396,50 @@ class Person:
         # if it isnt then it adds it to the array
         if already_there == False:
             vision.append(id)
+
+    def add_to_memory(self, obj):
+        """Adds an object to the persons memory so they can find it again easier
+        :param obj: The obj to add
+        """
+        key = ""
+        if isinstance(obj, Bar):
+            key = "Bar"
+
+        elif isinstance(obj, DanceFloor):
+            key = "DanceFloor"
+
+        elif isinstance(obj, Toilet):
+            key = "Toilet"
+
+        if not self.memory[key]:
+            self.memory[key].append(obj)
+            return True
+
+        if self.check_obj_already_known(obj) is None:
+            self.memory[key].append(obj)
+
+    def check_obj_already_known(self, obj, key):
+        """
+        Checks to see if an obj is already remembered
+        :param obj: The object to check
+        :param key: The object type
+        :return: True if it is remembered
+        """
+
+        for rememberedObj in self.memory[key]:
+            if rememberedObj.get_name() == obj.get_name():
+                return True
+
+        return False
+
+    def get_closest_object_from_memory(self, objType):
+        """
+        Searches the persons memory for the object that they are looking for
+        :param objType: The object type they are looking for
+        :return: The object or false if none
+        """
+
+        if self.memory[objType] is None:
+            return False
+
+        return self.work_out_closest_object(self.memory[objType])

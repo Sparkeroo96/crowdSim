@@ -8,7 +8,7 @@ import pygame
 import math
 from Data import map_data
 from time import sleep
-
+from People.person import Person
 
 class RunningMain:
 
@@ -114,22 +114,22 @@ class RunningMain:
         """
         self.display.fill(self.white)
         # Goes though the map array object
-        for object in objectArray:
-            object.action()
+        for obj in objectArray:
+            obj.action()
             # print("object")
-            coordinates = object.get_coordinates()
-            angle = object.get_angle()
-            width = object.get_width()
-            colour = object.get_colour()
+            coordinates = obj.get_coordinates()
+            angle = obj.get_angle()
+            width = obj.get_width()
+            colour = obj.get_colour()
 
-            shape = object.get_shape()
+            shape = obj.get_shape()
             # print("shape = " + shape)
             # the process of adding a person and the funcitons that get called
             if shape == "circle":
                 # Creating the cicle with the variables provided
                 pygame.draw.circle(self.display, colour, coordinates, round(width / 2))
                 # Maths to add the pixcels to represent the eyes
-                eyes = self.data.person_eyes(object.coordinates, object.angle, round(object.width / 2))
+                eyes = self.data.person_eyes(obj.coordinates, obj.angle, round(obj.width / 2))
                 self.display.set_at((eyes[0][0], eyes[0][1]), self.white)
                 self.display.set_at((eyes[1][0], eyes[1][1]), self.white)
                 # print(vision)
@@ -137,28 +137,42 @@ class RunningMain:
 
             elif shape == "rectangle":
                 # objects
-                height = object.get_height()
+                height = obj.get_height()
                 pygame.draw.rect(self.display, self.black, [coordinates[0], coordinates[1], width, height])
 
-        for object in objectArray:
-            if shape == 'circle':
+        for obj in objectArray:
+            # if shape == 'circle':
+            if isinstance(obj, Person):
                 # Calls the person vision function that returns an array of all the cordinates on the vision lines it makes
-                vision = self.data.personVision(object.coordinates[0], object.coordinates[1], object.angle)
+
+                sight = obj.get_sight()
+                coordinates = obj.get_coordinates()
+
+                vision = self.data.personVision(coordinates[0], coordinates[1], obj.angle, sight)
                 # clears the person vision from the previous ittoration
-                object.clear_vision()
+                obj.clear_vision()
                 # goes though every coordinates and works out what colour is in that pixcel
                 for cord in vision:
                     # display.set_at((cord[0],cord[1]), black)
                     # try and catch to prevent out of array exceptions
                     try:
                         # gets the colour at the cordiate
-                        colour = display.get_at((cord[0], cord[1]))
+                        colour = self.display.get_at((cord[0], cord[1]))
                         # if it is red then it must be a person
-                        if colour == (255, 0, 0, 255):  # Red person
-                            # calls a function that returns the id of the person they can see
-                            whichPerson = self.data.whichPerson(cord)
-                            # adds to the persons vision array in their object
-                            object.add_to_vision(whichPerson)
+
+                        if colour != (255, 255, 255, 255):
+                            # Its an object of some kind
+                            seenObj = self.data.what_object
+
+                            obj.add_to_vision(seenObj)
+                            obj.add_to_memory(obj)
+
+                        # if colour == (255, 0, 0, 255):  # Red person
+                        #     # calls a function that returns the id of the person they can see
+                        #     whichPerson = self.data.what_object(cord)
+                        #     # adds to the persons vision array in their object
+                        #     obj.add_to_vision(whichPerson)
+
                     except IndexError:
                         nothing = 0
 

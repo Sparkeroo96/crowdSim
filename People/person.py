@@ -30,6 +30,8 @@ class Person:
     rememberedColour = ""
     rememberedCoords = []
 
+    rotate = 0
+
     headAngle = 0
 
     memory = {
@@ -101,15 +103,16 @@ class Person:
         # #print("action() Current state " + str(self.currentState))
 
 
-        return self.random_move()
+        # return self.random_move()
 
         stateAction = self.get_state_action()
+        print("stateAction " + stateAction)
 
         if stateAction == "navigateToRememberedObj":
              print("action")
              self.move()
 
-        elif stateAction == "":
+        elif stateAction == "rotate":
              #print("no action")
             x =0
         else:
@@ -144,6 +147,17 @@ class Person:
             return True
 
         return False
+
+    def rotate(self):
+        """
+        Rotates the person so there vision goes full circle, going to do by 30 degrees
+        :return:
+        """
+
+        # angleResult
+        # if self.angle + 30 > 360:
+
+
 
     def random_move(self):
         """Person moving randomly around the map"""
@@ -236,6 +250,14 @@ class Person:
             #print(self.name + " finding object")
             if self.find_object(self.rememberedObj):
                 action = "navigateToRememberedObj"
+                self.rotate = 0
+            else:
+
+                if self.rotate == 0:
+                    action = "rotate"
+
+                #Move random or rotate?
+
 
         elif "move" in str(self.currentState):
             # Person moving to object
@@ -395,7 +417,7 @@ class Person:
             self.memory[key].append(obj)
             return True
 
-        if self.check_obj_already_known(obj) is None:
+        if self.check_obj_already_known(obj, key) is None:
             self.memory[key].append(obj)
 
     def check_obj_already_known(self, obj, key):

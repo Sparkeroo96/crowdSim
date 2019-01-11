@@ -29,8 +29,8 @@ class map_data:
     def map_default(self):
         """Getting default map data"""
 
-        self.add_people_to_map(1)
-        self.add_bar_to_map(1)
+        self.add_people_to_map(3)
+        # self.add_bar_to_map(1)
 
         return self.mapData
 

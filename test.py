@@ -51,16 +51,12 @@ class RunningMain:
                         self.pause = not self.pause
 
             # Function that runs the main program
-            print("key")
             self.key_buttons()
-            print("draw_display")
             self.draw_display(objectArray)
-            print("after draw")
             pygame.display.update()
             clock.tick(30)
             sleep(2)
 
-        print("after while")
         pygame.quit()
         quit()
 
@@ -141,7 +137,6 @@ class RunningMain:
                 width = obj.get_width()
                 pygame.draw.rect(self.display, self.black, [coordinates[0], coordinates[1], width, height])
 
-        print("vision" + str(objectArray))
         for obj in objectArray:
             # if obj.get_shape() == 'circle':
             if isinstance(obj, Person):

@@ -6,12 +6,12 @@ Modified by Sam Parker swp5
 import random as rand
 import math
 from People import *
+from Objects import *
 
 # Seems to need these for allowing isinstance(example, Person), doesnt work with the above import
 from People.person import Person
 from People.flockingPerson import FlockingPerson
 
-from Objects import *
 from Objects.bar import Bar
 
 class map_data:
@@ -24,7 +24,6 @@ class map_data:
     gui = None
 
     def __init__(self, gui):
-        print("Map_data Object Created")
         self.gui = gui
 
     def map_default(self):
@@ -52,7 +51,7 @@ class map_data:
         """Adds a number of bars to the map"""
         x = 0
         while x < barCount:
-            coords = [100 * (x + 1), 100 * (x + 1)]
+            coords = [150 * (x + 1), 150 * (x + 1)]
             newBar = bar.Bar(coords, "bar " + str(len(self.mapData)), 100, 20)
 
             self.mapData.append(newBar)
@@ -161,6 +160,11 @@ class map_data:
             horizontal = horizontal * -1
         return [veritcal, horizontal]
 
+
+    def add_wall_to_map(self, cords,width, height):
+            newWall = wall.Wall(cords,width,height)
+            self.mapData.append(newWall)
+
     def check_space_unoccupied(self, coordinates, object_size, object_name, object_shape):
         """Checks to see if a set of coordinates is occupied by an object or person
         :param coordinates is the set its checking to see if anything occupies it
@@ -177,81 +181,16 @@ class map_data:
             if isinstance(object, "Person"):
                 print("In Person")
 
-    def check_coordinates_for_person(self, check_coords, radius, name, edgeCoordinates):
-        """Check to see if a person can move into a space
-        :param check_coords The new coordinates to check
-        :param edge_coordinates The persons edge coordinates
-        :param radius the persons width
-        :param name the persons id, so it doesnt do check against itself
-        """
+    def add_bar_to_map(self, barCount):
+        """Adds a number of bars to the map"""
+        x = 0
+        while x < barCount:
+            coords = [100 * (x + 1), 100 * (x + 1)]
+            newBar = bar.Bar(coords, "bar " + str(len(self.mapData)), 100, 20)
 
-        for obj in self.mapData:
-            # Checking to see how close each object is
-            if obj.get_name() == name:
-                # So we dont check the same object
-                continue
+            self.mapData.append(newBar)
 
-            if isinstance(obj, Person):
-                # Object is person get their edge coordinates
-                person1 = {
-                    "radius" : radius,
-                    "xCoord" : check_coords[0],
-                    "yCoord" : check_coords[1]
-                }
-                person2 = {
-                    "radius" : obj.get_width(),
-                    "xCoord" : obj.get_coordinates()[0],
-                    "yCoord" : obj.get_coordinates()[1]
-                }
-
-                if self.check_circle_touch(person1, person2) == 0:
-                    #Circles overlap
-                    return False
-
-            else:
-                # Object is instance of baseObject, i.e. Bar
-                width = obj.get_width()
-                height = obj.get_height()
-                rectangleCoordRanges = self.__get_coordinates_range(obj.get_coordinates(), [width, height])
-
-                if self.check_circle_overlap_rectangle(edgeCoordinates, rectangleCoordRanges):
-                    print("good")
-
-        #Coordinates are fine to move to
-        return True
-
-
-    def check_circle_touch(self, person1, person2):
-        """Checks to see if two circles have either coordinates overlap
-        Reference: https://www.geeksforgeeks.org/check-two-given-circles-touch-intersect/
-        Author: Smitha Dinesh Semwal
-        :returns 1 if touching, -1 if not touching and 0 if there is an overlap
-        """
-
-        distSq = (person1["xCoord"] - person2["xCoord"]) * (person1["xCoord"] - person2["xCoord"]) + (person1["yCoord"] - person2["yCoord"]) * (person1["yCoord"] - person2["yCoord"]);
-        radSumSq = (person1["radius"] + person2["radius"]) * (person1["radius"] + person2["radius"]);
-        if (distSq == radSumSq):
-            # Circles are touching
-            return 1
-        elif (distSq > radSumSq):
-            #Circles are not touching
-            return -1
-        else:
-            #Circles overlap
-            return 0
-
-    def check_circle_overlap_rectangle(self, circleEdge, rectangle):
-        """
-        Checks to see if a circle and rectangle intersect
-        :param circle: properties
-        :param rectangle: rectangle properties
-        :return: True if  overlap
-        """
-        for edge in circleEdge:
-            if rectangle["X"][0] < edge[0] and edge[0] < rectangle["X"][1] and rectangle["Y"][0] < edge[1] and edge[1] < rectangle["Y"][1]:
-                return True
-        return False
-
+            x += 1
 
     def __get_coordinates_range(self, coordinates, object_size):
         """ Function gets the range of spaces used by a set of coordinates
@@ -295,10 +234,26 @@ class map_data:
         # return [xRanges, yRanges]
         return returnValue
 
+    def get_object_colour_code(self, objectType):
+        """
+        Gets an object colour code
+        :param objectType: The object type you are looking for
+        :return: Returns an RGB array, false if no such object type exists
+        """
 
-    def what_object(self,coords):
+        for obj in self.mapData:
+            print("objType: " + str(type(obj)))
+            # if type(obj) == objectType:
+            searchString = "." + objectType + "'"
+            if searchString in str(type(obj)):
+                return obj.get_colour()
+
+        return False
+
+
+    def what_object(self, coords):
         """This function checks to see if a cordiante is within another person and returns a reference to the object"""
-
+        print("what obj")
         for obj in self.map_default():
             if obj.get_shape() == "circle":
                 x = obj.coordinates[0]
@@ -359,12 +314,16 @@ class map_data:
         angle_left = angle - 25
         if angle_left <= 0:
             angle_left = angle_left + 360
+
         angle_right = angle + 25
+
         if angle_right > 360:
             angle_right = angle_right - 360
+
         # THis is the maths for the eyes
         left_eye = self.angleMath(angle_left,cords[0],cords[1],radias-3)
         right_eye = self.angleMath(angle_right,cords[0],cords[1],radias-3)
         left_eye = [cords[0] + left_eye[0], cords[1] + left_eye[1]]
         right_eye = [cords[0] + right_eye[0], cords[1] + right_eye[1]]
+
         return [left_eye,right_eye]

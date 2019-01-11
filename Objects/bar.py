@@ -9,12 +9,17 @@ class Bar(BaseObject):
 
     freeBarStaff = [];
     #Colour is Blue
-    colour = [0, 0, 153]
+    colour = (0, 0, 153)
 
-    def __init__(self, coordinates, xSize, ySize):
+    def __init__(self, coordinates, name,  width, height):
         self.coordinates = coordinates
-        self.xSize = xSize
-        self.ySize = ySize
+        self.width = width
+        self.height = height
+
+        #Should the bar have a fixed width? And you make multiple instances of it
+
+
+        self.name = name
 
     def barStaffWait(self, barStaff):
         """

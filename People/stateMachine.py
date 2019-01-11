@@ -90,18 +90,18 @@ class StateMachine:
         statesCount = len(nextStates)
         if statesCount == 1:
             #Only 1 next state, moving there
-            print("nextSstates length = 1")
             selectedNextState = nextStates[0]
 
         else:
-            print("more than 1 next state " + str(statesCount))
             selectedNextState = self.__get_random_next_state(nextStates, statesCount)
+
+        selectedNextState =  "wantDrink"
 
         print("selectedNextState = " + selectedNextState)
 
         self.set_current_state(selectedNextState)
 
-
+        return selectedNextState
 
     def __get_random_next_state(self, nextStates, statesCount):
         """Function randomly picks a next state from the given next options,

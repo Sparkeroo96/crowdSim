@@ -6,7 +6,13 @@ Modified by Sam Parker swp5
 import random as rand
 import math
 from People import *
+
+# Seems to need these for allowing isinstance(example, Person), doesnt work with the above import
+from People.person import Person
+from People.flockingPerson import FlockingPerson
+
 from Objects import *
+from Objects.bar import Bar
 
 class map_data:
     # The GUI currently operates at 30 FPS meaning that each second the array is cycled though 30 times
@@ -15,13 +21,17 @@ class map_data:
     # mapDefult = [['person','id:1',[150,350],30,10],['person','id:2',[200,300],30,10],['wall',[10,10],[100,10]]]
 
     mapData = []
-    def __init__(self):
+    gui = None
+
+    def __init__(self, gui):
         print("Map_data Object Created")
+        self.gui = gui
 
     def map_default(self):
         """Getting default map data"""
 
-        self.add_people_to_map(10)
+        self.add_people_to_map(1)
+        self.add_bar_to_map(1)
 
         return self.mapData
 
@@ -57,6 +67,17 @@ class map_data:
             if isinstance(object, "Person"):
                 print("In Person")
 
+    def add_bar_to_map(self, barCount):
+        """Adds a number of bars to the map"""
+        x = 0
+        while x < barCount:
+            coords = [100 * (x + 1), 100 * (x + 1)]
+            newBar = bar.Bar(coords, "bar " + str(len(self.mapData)), 100, 20)
+
+            self.mapData.append(newBar)
+
+            x += 1
+
     def __get_coordinates_range(self, coordinates, object_size):
         """ Function gets the range of spaces used by a set of coordinates
         :param coordinates is the set its checking to see if anything occupies it
@@ -66,13 +87,11 @@ class map_data:
         yCoord = coordinates[1]
         if isinstance(object_size, list):
             # If there is a width and height give it as a list
-            print("list")
             xSize = object_size[0]
             ySize = object_size[1]
 
         else:
             # For when you just give the width, most likely gonna be for a person
-            print("int")
             xSize = object_size
             ySize = object_size
 
@@ -82,7 +101,7 @@ class map_data:
         else:
             lowX = xCoord - xSize
 
-        highX = xCoord + object_size
+        highX = xCoord + xSize
 
         # Y Coordinate ranges
         if yCoord - ySize < 0:
@@ -90,11 +109,16 @@ class map_data:
         else:
             lowY = yCoord - ySize
 
-        highY = yCoord + object_size
+        highY = yCoord + ySize
 
         xRanges = [lowX, highX]
         yRanges = [lowY, highY]
-        return [xRanges, yRanges]
+        returnValue = {
+            "X" : xRanges,
+            "Y" : yRanges
+        }
+        # return [xRanges, yRanges]
+        return returnValue
 
 
     def whichPerson(self,cords):
@@ -114,4 +138,4 @@ class map_data:
                 distance = math.pow(x1 - x,2) + math.pow(y1 - y,2)
                 distanceRoot = math.sqrt(distance)
                 if distanceRoot <= radias:
-                    return people.name
+                    return people

@@ -16,7 +16,7 @@ class BaseObject:
 
     name = ""
 
-    colour = []
+    colour = ()
 
     coordinates = []
     envObjectName = ""
@@ -28,6 +28,7 @@ class BaseObject:
 
     def get_details(self):
         return ([self.envObjectName, self.id, self.coordX, self.coordY, self.angle, self.width])
+
     """Cords"""
     def get_cords(self):
         cords = [self.coordX, self.coordY]

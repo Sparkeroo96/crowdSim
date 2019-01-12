@@ -27,6 +27,7 @@ class Person:
     shape = "circle"
 
     rememberedObj = ""
+    rememberedObjType = ""
     rememberedColour = ""
     rememberedCoords = []
 
@@ -105,16 +106,19 @@ class Person:
 
         # return self.random_move()
 
+        self.currentState = self.stateMachine.get_current_state()
+
         stateAction = self.get_state_action()
         print("stateAction " + stateAction)
 
         if stateAction == "navigateToRememberedObj":
              print("action")
-             self.move()
+             self.navigate_to_remembered_object()
 
         elif stateAction == "rotate":
              #print("no action")
-            x =0
+             self.person_rotate()
+
         else:
             self.random_move()
         return self.random_move()
@@ -126,8 +130,23 @@ class Person:
         """
 
         nextMove = []
-        
+        x = self.coordinates[0]
+        y = self.coordinates[1]
+        targetCoordinates = self.rememberedObj.get_coordinates()
+
         #First move
+        if targetCoordinates[0] > x:
+            x += 1
+        elif targetCoordinates[0] < x:
+            x -=1
+
+        if targetCoordinates[1] > y:
+            y += 1
+
+        elif targetCoordinates[1] < y:
+            y -= 1
+
+        nextMove = [x, y]
 
         # PHILS A* STUFF
 
@@ -148,14 +167,29 @@ class Person:
 
         return False
 
-    def rotate(self):
+    def person_rotate(self, clockwise = True):
         """
         Rotates the person so there vision goes full circle, going to do by 30 degrees
-        :return:
+        :param clockwise: says whether or not to go clockwise or counter clockwise
+        :return: Returns the new angle
         """
+        print(self.name + "  " + str(self.rotate))
+        if clockwise:
+            angleResult =  self.angle + 30
+        else:
+            angleResult = self.angle - 30
 
-        # angleResult
-        # if self.angle + 30 > 360:
+        if angleResult > 360:
+            angleResult = angleResult - 360
+
+        elif angleResult < 0:
+            angleResult = 360 - angleResult
+
+        self.angle = angleResult
+        self.rotate += 1
+
+
+        return angleResult
 
 
 
@@ -244,20 +278,33 @@ class Person:
             # Person has a want desire
             if self.want_action(self.currentState):
                 action = "navigateToRememberedObj"
+                self.rotate = 0
+                self.advance_state_machine()
+
+            else:
+                action = "rotate"
 
         elif "find" in str(self.currentState):
             # Person trying to find an object
             #print(self.name + " finding object")
-            if self.find_object(self.rememberedObj):
+            if self.find_object(self.rememberedObjType):
                 action = "navigateToRememberedObj"
                 self.rotate = 0
+                self.advance_state_machine()
             else:
-
-                if self.rotate == 0:
+                # Cant find object do a circle to see it
+                if self.rotate < 12:
                     action = "rotate"
 
+                else:
+                    #Done a circle move or rotate, dont want it to
+                    random = randint(0, 100)
+                    if random == 1:
+                        action = "rotate"
+                        self.rotate = 0
+                    else:
+                        action = "moveRandom"
                 #Move random or rotate?
-
 
         elif "move" in str(self.currentState):
             # Person moving to object
@@ -291,7 +338,10 @@ class Person:
             searchObject = "Toilet"
 
         #print("Search object " + searchObject)
-        self.rememberedObj = searchObject
+        self.rememberedObjType = searchObject
+
+        self.advance_state_machine()
+        # self.currentState = self.stateMachine.choose_next_state("find" + searchObject)
 
         return self.find_object(searchObject)
 
@@ -303,14 +353,15 @@ class Person:
 
         closestObj = self.get_closest_object_from_memory(searchObject)
 
-        returnString = ""
-
         if closestObj is False or closestObj is None:
-            returnString = "randomMove"
+            return False
         else:
+            self.rememberedObjType = searchObject
             self.rememberedObj = closestObj
             self.rememberedCoords = closestObj.get_coordinates()
             self.rememberedColour = closestObj.get_colour()
+            return True
+
 
         
 
@@ -337,17 +388,20 @@ class Person:
     def work_out_closest_object(self, objects):
         """ Works out which of the seen objects are closest"""
 
-        smallestDifference = "null"
+        smallestDifference = None
         newCoords = []
         returnedObject = None
 
         for obj in objects:
-            objCoords = obj["coordinates"]
+            # objCoords = obj["coordinates"]
+            objCoords = obj.get_coordinates()
             xDiff = abs(self.coordinates[0] - objCoords[0])
             yDiff = abs(self.coordinates[1] - objCoords[1])
             totalDifference = xDiff + yDiff
+            print("Total Difference " + str(totalDifference))
+            print("Smalles Difft " + str(smallestDifference))
 
-            if totalDifference < smallestDifference:
+            if smallestDifference is None or totalDifference < smallestDifference:
                 smallestDifference = totalDifference
                 newCoords = objCoords
                 returnedObject = obj
@@ -377,6 +431,48 @@ class Person:
             # #print("\ncurrentState " + key)
             # #print("currentValue " + str(value))
             self.stateMachine.add_state(key, value[1], value[0])
+
+    def advance_state_machine(self):
+        """
+        Advances the statemachine to the next logical step instead of a random one
+        :return:
+        """
+
+        current_state = self.stateMachine.get_current_state()
+        nextState = ""
+
+        if "want" in current_state or "find" in current_state:
+            keyword = ""
+            if "Drink" in current_state or "":
+                keyword = "Bar"
+            elif "Dance" in current_state:
+                keyword = "DanceFloor"
+            elif "Toilet" in current_state:
+                keyword = "Toilet"
+
+            if "want" in current_state:
+                nextState = "find"
+            else:
+                nextState = "moveTo"
+
+            nextState += keyword
+
+        elif "move" in current_state:
+            if "Bar" in current_state:
+                nextState = "orderDrink"
+
+            elif "DanceFloor" in current_state:
+                nextState = "dance"
+
+            elif "Toilet" in current_state:
+                nextState = "useToilet"
+
+        else:
+            return self.stateMachine.get_next_state()
+
+        return self.stateMachine.choose_next_state(nextState)
+
+
 
     def clear_vision(self):
         """This method wipes the vison"""
@@ -440,7 +536,9 @@ class Person:
         :param objType: The object type they are looking for
         :return: The object or false if none
         """
-
+        print("objType " + str(objType))
+        print("Memory " + str(self.memory))
+        print("specific " + str(self.memory[objType]))
         if self.memory[objType] is None:
             return False
 

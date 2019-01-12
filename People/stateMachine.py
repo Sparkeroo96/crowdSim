@@ -110,3 +110,18 @@ class StateMachine:
         print("statesCount " + str(statesCount))
         random = randint(0, statesCount - 1)
         return nextStates[random]
+
+    def choose_next_state(self, nextState):
+        """
+        Function moves to given state if possible
+        :param nextState: The state you want to move to
+        :return: True on success
+        """
+        possibleNextStates = self.get_state_next_states(self.currentState)
+
+        for state in possibleNextStates:
+            if state == nextState:
+                self.currentState = nextState
+                return nextState
+
+        return False

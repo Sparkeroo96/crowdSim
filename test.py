@@ -55,7 +55,6 @@ class RunningMain:
             self.draw_display(objectArray)
             pygame.display.update()
             clock.tick(30)
-            sleep(2)
 
         pygame.quit()
         quit()
@@ -130,11 +129,11 @@ class RunningMain:
             elif shape == "rectangle":
                 # objects
 
-                coordinates = obj.get_coordinates()
+                # coordinates = obj.get_coordinates()
                 # height = obj.get_ySize()
                 # width = obj.get_xSize()
                 height = obj.get_height()
-                width = obj.get_width()
+                # width = obj.get_width()
                 pygame.draw.rect(self.display, self.black, [coordinates[0], coordinates[1], width, height])
 
         for obj in objectArray:

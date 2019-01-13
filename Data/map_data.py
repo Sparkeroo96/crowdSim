@@ -52,19 +52,19 @@ class map_data:
             self.mapData.append(newWall)
 
     def check_space_unoccupied(self, coordinates, object_size, object_name, object_shape):
-        """Checks to see if a set of coordinates is occupied by an object or person
+        """Checks to see if a set of coordinates is occupied by an obj or person
         :param coordinates is the set its checking to see if anything occupies it
-        :param object_size is the object that is the size of the object currently checking coords, if it has a width and height give it as a list
-        :param object_name is the name of the object doing checking so it doesnt check itself
+        :param object_size is the obj that is the size of the obj currently checking coords, if it has a width and height give it as a list
+        :param object_name is the name of the obj doing checking so it doesnt check itself
         """
 
-        ranges = self.__get_coordinates_range(coordinates, object_size)
+        ranges = self._get_coordinates_range(coordinates, object_size)
 
-        for object in self.mapData:
-            if object.get_name() == object_name:
+        for obj in self.mapData:
+            if obj.get_name() == object_name:
                 continue
 
-            if isinstance(object, "Person"):
+            if isinstance(obj, "Person"):
                 print("In Person")
 
     def add_bar_to_map(self, barCount):
@@ -78,10 +78,10 @@ class map_data:
 
             x += 1
 
-    def __get_coordinates_range(self, coordinates, object_size):
+    def _get_coordinates_range(self, coordinates, object_size):
         """ Function gets the range of spaces used by a set of coordinates
         :param coordinates is the set its checking to see if anything occupies it
-        :param object_size is the object that is the size of the object currently checking coords, if it has a width and height give it as a list
+        :param object_size is the obj that is the size of the obj currently checking coords, if it has a width and height give it as a list
         """
         xCoord = coordinates[0]
         yCoord = coordinates[1]
@@ -122,9 +122,9 @@ class map_data:
 
     def get_object_colour_code(self, objectType):
         """
-        Gets an object colour code
-        :param objectType: The object type you are looking for
-        :return: Returns an RGB array, false if no such object type exists
+        Gets an obj colour code
+        :param objectType: The obj type you are looking for
+        :return: Returns an RGB array, false if no such obj type exists
         """
 
         for obj in self.mapData:
@@ -142,7 +142,7 @@ class map_data:
         :Pram cords the cordinates of the person they are looking at
         :return the Id of the person they are looking at
         """
-        map = self.mapData
+        map = self.get_map()
         for people in map:
             if people.get_shape() == "circle":
                 x = people.coordinates[0]
@@ -155,3 +155,70 @@ class map_data:
                 distanceRoot = math.sqrt(distance)
                 if distanceRoot <= radias:
                     return people
+
+    def export(self,file_name,save_name):
+        """Function that outputs the map in a saveable format"""
+        map = self.get_map()
+        data = []
+        file = open(file_name, 'r')
+        line_num = 1
+        num_lines = 1
+        saved_data = []
+        for line in file:
+            num_lines = num_lines + 1
+            saved_data.append(line)
+        print(saved_data)
+        file.close()
+        file = open(file_name,'w+')
+        for line in saved_data:
+            file.write(line)
+        file.write("#####" + "\n")
+        file.write(save_name + "\n")
+        for obj in map:
+            if isinstance(obj,Person):
+                obj_type = 'Person'
+                coords = obj.get_coordinates()
+                angle = obj.get_angle()
+                width = obj.get_width()
+                data = [obj_type,coords,width,angle]
+            elif isinstance(obj, wall):
+                obj_type = 'Wall'
+                coords = obj.get_coordinates()
+                width = obj.get_width()
+                height = obj.get.height
+                data = [obj_type,coords,width,height]
+            str1 = '/'.join(str(e) for e in data)
+            # print(str1)
+            file.write(str1 + "\n")
+        file.close()
+
+
+    def import_from_file(self,file,save_name):
+        file = open(file,'r')
+        # print(file.read())
+        print(save_name)
+        x = 1
+        for line in file:
+            result = [x.strip() for x in line.split('/')]
+            if result == "######":
+                print("End of Document")
+            elif result[0] == 'Person':
+                coords = [x.strip() for x in result[1].split(",")]
+                coordX = coords[0].translate({ord("'"): None})
+                coordY = coords[1].translate({ord("'"): None})
+                coordX = coordX.translate({ord("["): None})
+                coordY = coordY.translate({ord("]"): None})
+                coords = [int(coordX),int(coordY)]
+                newPerson = person.Person("person " + str(len(self.mapData)), coords, int(result[2]), int(result[3]))
+                self.mapData.append(newPerson)
+            elif result[0] == 'Wall':
+                newWall = wall.Wall(coords,int(result[1]),int(result[2]))
+                self.mapData.append(newWall)
+
+        file.close()
+
+    def get_map(self):
+        return self.mapData
+
+    def clear_map(self):
+        self.get_map() == []

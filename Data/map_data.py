@@ -196,25 +196,42 @@ class map_data:
     def import_from_file(self,file,save_name):
         file = open(file,'r')
         # print(file.read())
-        print(save_name)
+        # print(save_name)
         x = 1
+        running_string = ""
+        found_load = []
+        new_save_array = []
+        save_name = save_name.lower()
         for line in file:
-            result = [x.strip() for x in line.split('/')]
-            if result == "######":
-                print("End of Document")
-            elif result[0] == 'Person':
-                coords = [x.strip() for x in result[1].split(",")]
-                coordX = coords[0].translate({ord("'"): None})
-                coordY = coords[1].translate({ord("'"): None})
-                coordX = coordX.translate({ord("["): None})
-                coordY = coordY.translate({ord("]"): None})
-                coords = [int(coordX),int(coordY)]
-                newPerson = person.Person("person " + str(len(self.mapData)), coords, int(result[2]), int(result[3]))
-                self.mapData.append(newPerson)
-            elif result[0] == 'Wall':
-                newWall = wall.Wall(coords,int(result[1]),int(result[2]))
-                self.mapData.append(newWall)
+            running_string = running_string + str(line)
+        save_array = running_string.split("######")
+        # print(save_array)
+        for save in save_array:
+            single_save_array =[x.strip() for x in save.split("\n")]
+            new_save_array.append(single_save_array)
+        for save in new_save_array:
+            if save[1] == save_name:
+                found_load = save
 
+        if not found_load == []:
+            found_load.pop(0)
+            found_load.pop(0)
+            for line in found_load:
+                result = [x.strip() for x in line.split('/')]
+                if result[0] == 'Person':
+                    coords = [x.strip() for x in result[1].split(",")]
+                    coordX = coords[0].translate({ord("'"): None})
+                    coordY = coords[1].translate({ord("'"): None})
+                    coordX = coordX.translate({ord("["): None})
+                    coordY = coordY.translate({ord("]"): None})
+                    coords = [int(coordX),int(coordY)]
+                    newPerson = person.Person("person " + str(len(self.mapData)), coords, int(result[2]), int(result[3]))
+                    self.mapData.append(newPerson)
+                elif result[0] == 'Wall':
+                    newWall = wall.Wall(coords,int(result[1]),int(result[2]))
+                    self.mapData.append(newWall)
+        else:
+            print("ERROR FILE NOT FOUND")
         file.close()
 
     def get_map(self):

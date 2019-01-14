@@ -172,7 +172,7 @@ class map_data:
         :param object_name is the name of the object doing checking so it doesnt check itself
         """
 
-        ranges = self.__get_coordinates_range(coordinates, object_size)
+        ranges = self.get_coordinates_range(coordinates, object_size)
 
         for object in self.mapData:
             if object.get_name() == object_name:
@@ -216,10 +216,10 @@ class map_data:
                 # Object is instance of baseObject, i.e. Bar
                 width = obj.get_width()
                 height = obj.get_height()
-                rectangleCoordRanges = self.__get_coordinates_range(obj.get_coordinates(), [width, height])
+                rectangleCoordRanges = self.get_coordinates_range(obj.get_coordinates(), [width, height])
 
                 if self.check_circle_overlap_rectangle(edgeCoordinates, rectangleCoordRanges):
-                    print("good")
+                    return False
 
         # Coordinates are fine to move to
 
@@ -254,9 +254,9 @@ class map_data:
         """
         for edge in circleEdge:
             if rectangle["X"][0] < edge[0] and edge[0] < rectangle["X"][1] and rectangle["Y"][0] < edge[1] and edge[1] < rectangle["Y"][1]:
-                return False
+                return True
 
-        return True
+        return False
 
     def add_bar_to_map(self, barCount):
         """Adds a number of bars to the map"""
@@ -269,7 +269,7 @@ class map_data:
 
             x += 1
 
-    def __get_coordinates_range(self, coordinates, object_size):
+    def get_coordinates_range(self, coordinates, object_size):
         """ Function gets the range of spaces used by a set of coordinates
         :param coordinates is the set its checking to see if anything occupies it
         :param object_size is the object that is the size of the object currently checking coords, if it has a width and height give it as a list
@@ -347,7 +347,7 @@ class map_data:
                 width = obj.get_width()
                 height = obj.get_height()
 
-                coordsRange = self.__get_coordinates_range(coords, [width, height])
+                coordsRange = self.get_coordinates_range(coords, [width, height])
 
                 if self.point_in_coordinates_range(coords, coordsRange):
                     return obj

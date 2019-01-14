@@ -41,6 +41,9 @@ class Person:
         "Toilet" : []
     }
 
+    orderedDrink = 0
+    hasDrink = 0
+
     # Persons "needs" first value is importance second is how much they want to do it
     #Not in use currently might remove them
     needs = [["toilet", 1, 0],
@@ -112,16 +115,19 @@ class Person:
         print("stateAction " + stateAction)
 
         if stateAction == "navigateToRememberedObj":
-             print("action")
              self.navigate_to_remembered_object()
 
         elif stateAction == "rotate":
              #print("no action")
              self.person_rotate()
 
+        elif stateAction == "wait":
+            # The person sits there and waits
+            print(self.name + " waiting")
+
         else:
             self.random_move()
-        return self.random_move()
+        # return self.random_move()
 
     def navigate_to_remembered_object(self):
         """
@@ -311,15 +317,43 @@ class Person:
             print(self.name + " Person moving to object")
             action = "navigateToRememberedObj"
 
+            #If the person is next to the thing they are supposed to be on like a bar, advance the state again
+            objectSize = [self.rememberedObj.get_width(), self.rememberedObj.get_height()]
+            rectangleCoordRanges = self.map.get_coordinates_range(self.rememberedObj.get_coordinates(), objectSize)
+            selfEdge = self.get_edge_coordinates_array()
+
+            if self.map.check_circle_overlap_rectangle(selfEdge, rectangleCoordRanges):
+                print("at target")
+                self.advance_state_machine()
+            else:
+                print("not at target")
+
         elif self.currentState == "orderDrink":
             # Person is ordering their drink
             #print(self.name + " Ordering a drink")
-            x = 0
+            action = "wait"
+            if self.has_ordered_drink() == 0 and self.has_drink() is False:
+                self.order_drink()
+                self.clear_remembered_object()
+
+            elif self.has_drink():
+                self.advance_state_machine()
+
+
+        elif self.currentState == "drink":
+            # Person drinks their drink
+            self.drink_drink()
+            self.advance_state_machine()
+            # ACTION MIGHT CHANGE, LEAVE AT MOVE RANDOM FOR TIME
 
         elif self.currentState == "dance":
             # Person will dance
             #print(self.name + " is dancing")
-            self.stateMachine.get_next_state()
+            # self.stateMachine.get_next_state()
+            self.advance_state_machine()
+
+        elif self.currentState == "useToilet":
+            print("using toilet")
 
         return action
 
@@ -330,7 +364,7 @@ class Person:
             searchObject = "Bar"
 
         elif wantState == "wantDance":
-            #print("want dance")
+            #print("want dance")-
             searchObject = "DanceFloor"
 
         else:
@@ -362,28 +396,14 @@ class Person:
             self.rememberedColour = closestObj.get_colour()
             return True
 
-
-        
-
-        # # objects = self.map.get_objects_in_range(searchObject, self.coordinates, self.sight)
-        # 
-        # colourCode = self.map.get_object_colour_code(searchObject)
-        # print("object colour code : " + str(colourCode))
-        # objects = self.map.person_look_for_object(self.coordinates, self.angle, self.vision, colourCode)
-        # 
-        # print("find_object objects " + str(objects))
-        # 
-        # return False
-        # if not objects:
-        #     # This is when there are no objects in range and you want the person to wander to keep looking
-        #     print("no objects in range")
-        #     self.rememberedCoords = "search"
-        #     return False
-        # 
-        # else:
-        #     # Objects exist, find out closest
-        #     self.work_out_closest_object(objects)
-        #     return True
+    def clear_remembered_object(self):
+        """
+        Clears the remembered object
+        """
+        self.rememberedObj = ""
+        self.rememberedObjType = ""
+        self.rememberedColour = ""
+        self.rememberedCoords = []
 
     def work_out_closest_object(self, objects):
         """ Works out which of the seen objects are closest"""
@@ -398,8 +418,6 @@ class Person:
             xDiff = abs(self.coordinates[0] - objCoords[0])
             yDiff = abs(self.coordinates[1] - objCoords[1])
             totalDifference = xDiff + yDiff
-            print("Total Difference " + str(totalDifference))
-            print("Smalles Difft " + str(smallestDifference))
 
             if smallestDifference is None or totalDifference < smallestDifference:
                 smallestDifference = totalDifference
@@ -536,9 +554,6 @@ class Person:
         :param objType: The object type they are looking for
         :return: The object or false if none
         """
-        print("objType " + str(objType))
-        print("Memory " + str(self.memory))
-        print("specific " + str(self.memory[objType]))
         if self.memory[objType] is None:
             return False
 
@@ -667,3 +682,52 @@ class Person:
         left_eye = [cords[0] + left_eye[0], cords[1] + left_eye[1]]
         right_eye = [cords[0] + right_eye[0], cords[1] + right_eye[1]]
         return [left_eye,right_eye]
+
+
+    def order_drink(self):
+        """Function orders a drink from the remembered object
+        :return True on success"""
+
+        if self.rememberedObj.orderDrink(self):
+            self.orderedDrink = 1
+            return True
+
+        return False
+
+    def has_ordered_drink(self):
+        """
+        Checks to see if the person has ordered a drink
+        :return:
+        """
+        return self.orderedDrink
+
+    def served_drink(self):
+        """
+        Bar servers person drink
+        :return:
+        """
+        self.hasDrink = 1
+        self.orderedDrink = 0
+        return True
+
+    def has_drink(self):
+        """
+        Checks to see if person has a drink
+        :return:
+        """
+        if self.hasDrink:
+            return True
+
+        return False
+
+    def drink_drink(self):
+        """
+        Drinks the drink the person currently has
+        :return:
+        """
+
+        if self.has_drink():
+            self.hasDrink = 0
+            return True
+
+        return False

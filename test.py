@@ -139,7 +139,6 @@ class RunningMain:
         for obj in objectArray:
             # if obj.get_shape() == 'circle':
             if isinstance(obj, Person):
-                print("isinstance " + str(obj))
                 # Calls the person vision function that returns an array of all the cordinates on the vision lines it makes
 
                 sight = obj.get_sight()

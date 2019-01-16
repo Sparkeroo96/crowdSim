@@ -31,6 +31,8 @@ class Bar(BaseObject):
         """
         self.serve_drink()
 
+        print("Bar Coordinates = " + str(self.get_coordinates()))
+
     def barStaffWait(self, barStaff):
         """
         Bar Staff will have to serve people

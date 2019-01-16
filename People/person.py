@@ -92,7 +92,6 @@ class Person:
 
         self.currentState = self.defaultState
         self.stateMachine.set_current_state(self.currentState)
-        # #print(self.stateMachine.get_states())
 
     def add_map(self, newMap, newCoordinates):
         """Storing the generated map"""
@@ -104,10 +103,6 @@ class Person:
 
     def action(self):
         """What the person is going to do"""
-        # #print("action() Current state " + str(self.currentState))
-
-
-        # return self.random_move()
 
         self.currentState = self.stateMachine.get_current_state()
 
@@ -319,7 +314,10 @@ class Person:
 
             #If the person is next to the thing they are supposed to be on like a bar, advance the state again
             objectSize = [self.rememberedObj.get_width(), self.rememberedObj.get_height()]
-            rectangleCoordRanges = self.map.get_coordinates_range(self.rememberedObj.get_coordinates(), objectSize)
+            rememberedObjectCoords = self.rememberedObj.get_coordinates()
+            # print("rememberedObj " + str(self.rememberedObj))
+            # print("rememberedObjectCoords " + str(rememberedObjectCoords))
+            rectangleCoordRanges = self.map.get_coordinates_range(rememberedObjectCoords, objectSize)
             selfEdge = self.get_edge_coordinates_array()
 
             if self.map.check_circle_overlap_rectangle(selfEdge, rectangleCoordRanges):
@@ -433,10 +431,12 @@ class Person:
         x = 0
         xCoord = self.coordinates[0]
         yCoord = self.coordinates[1]
-
+        print(str(self.coordinates))
         while x < 360:
-            coord = self.angleMath(x, xCoord, yCoord, self.width)
-            edge_coordinates.append(coord)
+            change = self.angleMath(x, xCoord, yCoord, round(self.width / 2) )
+            temp = []
+            temp = [xCoord + change[0], yCoord + change[1]]
+            edge_coordinates.append(temp)
 
             x += 1
 
@@ -461,7 +461,7 @@ class Person:
 
         if "want" in current_state or "find" in current_state:
             keyword = ""
-            if "Drink" in current_state or "":
+            if "Drink" in current_state or "Bar" in current_state:
                 keyword = "Bar"
             elif "Dance" in current_state:
                 keyword = "DanceFloor"
@@ -642,20 +642,15 @@ class Person:
         if 1 <= angle and angle <= 90:
             veritcal = round(vision * math.sin(math.radians(90) - angle1))
             veritcal = veritcal * -1
-            # #print(veritcal)
             horizontal = round(vision * math.cos(math.radians(90) - angle1))
-            # #print(horizontal)
         if 90 < angle and angle <= 180:
-            # #print("BR")
             veritcal = round(vision * math.sin(angle1 - math.radians(90)))
             horizontal = round(vision * math.cos(angle1 - math.radians(90)))
         if 180 < angle and angle <= 270:
-            # #print("BL")
             veritcal = round(vision * math.sin(math.radians(270) - angle1))
             horizontal = round(vision * math.cos(math.radians(270) - angle1))
             horizontal = horizontal *-1
         if 270 < angle and angle <=360:
-            # #print('TL')
             veritcal = round(vision * math.cos(math.radians(360)- angle1))
             veritcal = veritcal * -1
             horizontal = round(vision * math.sin(math.radians(360) - angle1))

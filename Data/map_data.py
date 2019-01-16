@@ -214,11 +214,19 @@ class map_data:
 
             else:
                 # Object is instance of baseObject, i.e. Bar
-                width = obj.get_width()
-                height = obj.get_height()
-                rectangleCoordRanges = self.get_coordinates_range(obj.get_coordinates(), [width, height])
-
+                # width = obj.get_width()
+                # height = obj.get_height()
+                objSize = [obj.get_width(), obj.get_height()]
+                objCoords = obj.get_coordinates()
+                rectangleCoordRanges = self.get_coordinates_range(objCoords, objSize)
+                print("objCoords " + str(objCoords))
+                print("objSize " + str(objSize))
+                print("checkCoord " + str(check_coords))
+                print("Checking if overlap " + str(rectangleCoordRanges))
+                print("edgeCoords" + str(edgeCoordinates))
                 if self.check_circle_overlap_rectangle(edgeCoordinates, rectangleCoordRanges):
+                    print("Overlaps")
+                    quit()
                     return False
 
         # Coordinates are fine to move to
@@ -252,8 +260,13 @@ class map_data:
         :param rectangle: rectangle properties
         :return: True if overlap
         """
+        # print(str(circleEdge))
+        # print(str(rectangle))
+        # quit()
         for edge in circleEdge:
             if rectangle["X"][0] < edge[0] and edge[0] < rectangle["X"][1] and rectangle["Y"][0] < edge[1] and edge[1] < rectangle["Y"][1]:
+                # print("edge: " + str(edge))
+                # quit()
                 return True
 
         return False
@@ -276,6 +289,8 @@ class map_data:
         """
         xCoord = coordinates[0]
         yCoord = coordinates[1]
+        # print("object size = " +str(object_size))
+        # print("coordinates = " + str(coordinates))
         if isinstance(object_size, list):
             # If there is a width and height give it as a list
             xSize = object_size[0]
@@ -287,20 +302,23 @@ class map_data:
             ySize = object_size
 
         # X Coordinate ranges
-        if xCoord - xSize < 0:
-            lowX = 0
+        lowX = 0
+        highX = 0
+        lowY = 0
+        highY = 0
+        if xSize >= 0:
+            lowX = xCoord
+            highX = xCoord + xSize
         else:
-            lowX = xCoord - xSize
+            lowX = xCoord - abs(xSize)
+            highX = xCoord
 
-        highX = xCoord + xSize
-
-        # Y Coordinate ranges
-        if yCoord - ySize < 0:
-            lowY = 0
+        if ySize >= 0:
+            lowY = yCoord
+            highY =  yCoord + ySize
         else:
-            lowY = yCoord - ySize
-
-        highY = yCoord + ySize
+            lowY = yCoord - abs(ySize)
+            highY = yCoord
 
         xRanges = [lowX, highX]
         yRanges = [lowY, highY]
@@ -308,6 +326,7 @@ class map_data:
             "X" : xRanges,
             "Y" : yRanges
         }
+        # print("get coords range " + str(returnValue))
         # return [xRanges, yRanges]
         return returnValue
 
@@ -346,7 +365,6 @@ class map_data:
             else:
                 width = obj.get_width()
                 height = obj.get_height()
-
                 coordsRange = self.get_coordinates_range(coords, [width, height])
 
                 if self.point_in_coordinates_range(coords, coordsRange):

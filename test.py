@@ -34,6 +34,7 @@ class RunningMain:
     load_name_result = ''
     running_map_data_loc = ""
     text_done = False
+    text_running = False
 
     screen_width = 800
     screen_height = 600
@@ -62,6 +63,27 @@ class RunningMain:
                     if event.key == pygame.K_p:
                         self.pause = not self.pause
 
+                if self.get_text_running() and event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_BACKSPACE:
+                        if self.get_load_name():
+                            text = self.get_load_name_result()
+                            text = text[:-1]
+                            self.set_load_name_result(text)
+
+                    elif event.key == pygame.K_RETURN:
+                        self.set_text_done(True)
+                        self.set_text_running(False)
+
+                        if self.get_load_name():
+                            self.set_load_name(False)
+
+                    else:
+                        if self.get_load_name():
+                            running = self.get_load_name_result()
+                            new_running = running + event.unicode
+                            self.set_load_name_result(new_running)
+
+
             self.get_display().fill(self.white)
             # Function that runs the main program
             self.key_buttons()
@@ -77,7 +99,7 @@ class RunningMain:
                     objectArray = self.data.get_map()
                     if objectArray == []:
                         objectArray = self.data.map_default()
-                        print(self.data.export("maps_saves"))
+                        print(self.data.export("maps_saves","Test1"))
                     else:
                         self.draw_display()
 
@@ -101,7 +123,7 @@ class RunningMain:
                     exit = True
 
             elif self.get_menu_option() == "Builder":
-                self.buildder_menu(event)
+                self.builder_menu(event)
                 if self.get_build_menu_option() == "New":
                     self.new_build()
 
@@ -174,6 +196,8 @@ class RunningMain:
                     if event.key == pygame.K_w:
                         print("making wall")
                         wall = True
+                    if event.key == pygame.K_s:
+                        self.data.export("maps_saves","test_s_Button")
                  # Gets the starting cordinates for the walls
                 if event.type == pygame.MOUSEBUTTONDOWN and wall:
                     x1, y1 = event.pos
@@ -185,16 +209,11 @@ class RunningMain:
                     width = width * -1
                     height = y1 - y2
                     height = height * -1
-                    # print(x1)
-                    # print(y1)
-                    # print(height)
-                    # print(width)
-                    # print()
                     self.data.add_wall_to_map([x1,y1],width,height)
                     pygame.draw.rect(self.display,self.black,[x1,y1,width,height])
                     pygame.display.update()
                     drag = not drag
-                # quits if x is pressed
+                # quits if x button is pressed
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     quit()
@@ -231,9 +250,9 @@ class RunningMain:
 
             elif shape == "rectangle":
                 # objects
-                height = obj.get_ySize()
+                height = obj.get_height()
                 coordinates = obj.get_coordinates()
-                width = obj.get_xSize()
+                width = obj.get_width()
                 pygame.draw.rect(self.display, self.black, [coordinates[0], coordinates[1], width, height])
 
         for obj in objectArray:
@@ -260,7 +279,6 @@ class RunningMain:
 
     def menu(self,event):
         """Functtion that makes the menu screen with buttons all centred automaticly"""
-        sleep(0.1)
         i = 0
         button_text = ["Run Simulation", "Builder", "Exit"]
         num_buttons = len(button_text)
@@ -278,7 +296,7 @@ class RunningMain:
             if pygame.mouse.get_pos()[0] >= info[0] and pygame.mouse.get_pos()[0] <= info[0] + width_of_buttons and pygame.mouse.get_pos()[1] >= info[1] and pygame.mouse.get_pos()[1] <= info[1] + height_of_buttons:
                 colour = self.red
                 clicked = False
-                if event.type == pygame.MOUSEBUTTONDOWN and self.get_menu_option() is not None:
+                if pygame.mouse.get_pressed()[0] and self.get_menu_option() is not None:
                     clicked = True
                 if clicked:
                     self.wait()
@@ -288,8 +306,7 @@ class RunningMain:
             self.add_button(info,button,colour)
             i = i + 1
 
-    def buildder_menu(self,event):
-        sleep(0.1)
+    def builder_menu(self,event):
         i = 0
         button_text = ["New", "Load", "Back", "Exit"]
         num_buttons = len(button_text)
@@ -308,7 +325,7 @@ class RunningMain:
             if pygame.mouse.get_pos()[0] >= info[0] and pygame.mouse.get_pos()[0] <= info[0] + width_of_buttons and pygame.mouse.get_pos()[1] >= info[1] and pygame.mouse.get_pos()[1] <= info[1] + height_of_buttons:
                 colour = self.red
                 clicked = False
-                if event.type == pygame.MOUSEBUTTONDOWN and self.get_build_menu_option() is not None:
+                if pygame.mouse.get_pressed()[0] and self.get_build_menu_option() is not None:
                     clicked = True
                 if clicked:
                     self.wait()
@@ -319,7 +336,6 @@ class RunningMain:
 
     def sim_menu(self,event):
         i = 0
-        sleep(0.1)
         button_text = ["Start","Floor Plan Load", "Options", "Back", "Exit"]
         num_buttons = len(button_text)
         height_of_buttons = 50
@@ -337,7 +353,7 @@ class RunningMain:
             if pygame.mouse.get_pos()[0] >= info[0] and pygame.mouse.get_pos()[0] <= info[0] + width_of_buttons and pygame.mouse.get_pos()[1] >= info[1] and pygame.mouse.get_pos()[1] <= info[1] + height_of_buttons:
                 colour = self.red
                 clicked = False
-                if event.type == pygame.MOUSEBUTTONDOWN and self.get_sim_menu_option() is not None:
+                if pygame.mouse.get_pressed()[0] and self.get_sim_menu_option() is not None:
                     clicked = True
                 if clicked:
                     self.wait()
@@ -356,25 +372,11 @@ class RunningMain:
             i = i + 1
 
     def user_text_input(self,event,button_info, colour):
-        sleep(0.05)
+        self.set_text_running(True)
         pygame.draw.rect(self.get_display(), colour, button_info, 2)
         button_text = self.text(self.get_load_name_result())
         loaction = self.centre(button_info, [button_text[1], button_text[2]])
         self.get_display().blit(button_text[0], loaction)
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_BACKSPACE:
-                text = self.get_load_name_result()
-                text = text[:-1]
-                self.set_load_name_result(text)
-            if event.key == pygame.K_RETURN:
-                self.set_text_done(True)
-                self.set_load_name(False)
-            else:
-                running = self.get_load_name_result()
-                new_running = running + event.unicode
-                self.set_load_name_result(new_running)
-
-
 
 
     def wait(self):
@@ -468,3 +470,9 @@ class RunningMain:
 
     def get_text_done(self):
         return self.text_done
+
+    def set_text_running(self,value):
+        self.text_running = value
+
+    def get_text_running(self):
+        return self.text_running

@@ -8,8 +8,10 @@ import math
 from People import *
 from Objects import *
 
+
 # Seems to need these for allowing isinstance(example, Person), doesnt work with the above import
 from People.person import Person
+from Objects.wall import Wall
 from People.flockingPerson import FlockingPerson
 
 from Objects.bar import Bar
@@ -175,17 +177,19 @@ class map_data:
         file.write("#####" + "\n")
         file.write(save_name + "\n")
         for obj in map:
+            # print(obj)
             if isinstance(obj,Person):
+                # print("ran")
                 obj_type = 'Person'
                 coords = obj.get_coordinates()
                 angle = obj.get_angle()
                 width = obj.get_width()
                 data = [obj_type,coords,width,angle]
-            elif isinstance(obj, wall):
+            if isinstance(obj, Wall):
                 obj_type = 'Wall'
                 coords = obj.get_coordinates()
                 width = obj.get_width()
-                height = obj.get.height
+                height = obj.get_height()
                 data = [obj_type,coords,width,height]
             str1 = '/'.join(str(e) for e in data)
             # print(str1)
@@ -218,18 +222,19 @@ class map_data:
             found_load.pop(0)
             for line in found_load:
                 result = [x.strip() for x in line.split('/')]
-                if result[0] == 'Person':
+                if not result == [""]:
                     coords = [x.strip() for x in result[1].split(",")]
                     coordX = coords[0].translate({ord("'"): None})
                     coordY = coords[1].translate({ord("'"): None})
                     coordX = coordX.translate({ord("["): None})
                     coordY = coordY.translate({ord("]"): None})
-                    coords = [int(coordX),int(coordY)]
-                    newPerson = person.Person("person " + str(len(self.mapData)), coords, int(result[2]), int(result[3]))
-                    self.mapData.append(newPerson)
-                elif result[0] == 'Wall':
-                    newWall = wall.Wall(coords,int(result[1]),int(result[2]))
-                    self.mapData.append(newWall)
+                    coords = [int(float(coordX)), int(float(coordY))]
+                    if result[0] == 'Person':
+                        newPerson = person.Person("person " + str(len(self.mapData)), coords, int(result[2]), int(result[3]))
+                        self.mapData.append(newPerson)
+                    elif result[0] == 'Wall':
+                        newWall = Wall(coords,int(result[2]),int(result[3]))
+                        self.mapData.append(newWall)
         else:
             print("ERROR FILE NOT FOUND")
         file.close()

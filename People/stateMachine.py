@@ -83,9 +83,7 @@ class StateMachine:
 
     def get_next_state(self):
         """Function gets next state and moves into it"""
-        print("current state " + self.currentState)
         nextStates = self.get_state_next_states(self.currentState)
-        print("get next state " + str(nextStates))
 
         statesCount = len(nextStates)
         if statesCount == 1:
@@ -95,7 +93,8 @@ class StateMachine:
         else:
             selectedNextState = self.__get_random_next_state(nextStates, statesCount)
 
-        selectedNextState =  "wantDrink"
+        # selectedNextState =  "wantDrink"
+        # selectedNextState =  "wantToilet"
 
         print("selectedNextState = " + selectedNextState)
 

@@ -10,6 +10,9 @@ import math
 
 
 class Person:
+
+    tick_rate = 0
+
     coordinates = [0,1]
     #Was size but chris has angle and width so using that instead
     angle = 0
@@ -77,7 +80,7 @@ class Person:
     }
     # gender = "" Use this one to determine which bathroom, later
 
-    def __init__(self, name, coords, width, angle):
+    def __init__(self, name, coords, width, angle, tick_rate):
         self.name = name
 
         if coords:
@@ -93,6 +96,8 @@ class Person:
         self.currentState = self.defaultState
         self.stateMachine.set_current_state(self.currentState)
 
+        self.tick_rate = tick_rate
+
     def add_map(self, newMap, newCoordinates):
         """Storing the generated map"""
         self.map = newMap
@@ -107,7 +112,7 @@ class Person:
         self.currentState = self.stateMachine.get_current_state()
 
         stateAction = self.get_state_action()
-        print("stateAction " + stateAction)
+        print("currentState: " + self.currentState + " / stateAction " + stateAction)
 
         if stateAction == "navigateToRememberedObj":
              self.navigate_to_remembered_object()
@@ -134,6 +139,7 @@ class Person:
         x = self.coordinates[0]
         y = self.coordinates[1]
         targetCoordinates = self.rememberedObj.get_coordinates()
+        print("remeberedOBJ target: " + str(self.rememberedObj))
 
         #First move
         if targetCoordinates[0] > x:
@@ -151,22 +157,49 @@ class Person:
 
         # PHILS A* STUFF
 
+        moveReturn = self.move(nextMove)
+        if moveReturn != True:
+            # There is a colliding object
 
-        self.move(nextMove)
+        # self.move(nextMove)
 
+
+    def get_coordinates_for_move_avoiding_collision_object(self, targetCoordinates,  collisionObject, attemptedMove):
+        """
+        Try to move to an object avoiding an object
+        :param targetCoordinates: The coordinates to move too
+        :param collisionObject: The object to avoid
+        :return: The coordinates to move to
+        """
+
+        newMove = attemptedMove
+
+        collisionCoordinates = collisionObject.get_coordinates()
+        if collisionObject[0] != self.coordinates[0]:
+            if collisionObject[0] >= self.coordinates[0]:
+                newMove[0] = newMove[0] - 1
+            else :
+                newMove[0] = newMove[0] + 1
+
+        if collisionObject[1] != self.coordinates[1]:
+            if collisionObject[1] >= self.coordinates[1]:
+                # newMove[1] =
 
     def move(self, coordinates):
         """
         Moves to a given set of coordinates
         :param coordinates:
-        :return: True on successful move
+        :return: True on successful move, returns the collision object on false
         """
 
-        if self.map.check_coordinates_for_person(coordinates, self.width, self.name, self.get_edge_coordinates_array()):
+        collisionObject = self.map.check_coordinates_for_person(coordinates, self.width, self.name, self.get_edge_coordinates_array())
+
+        # if self.map.check_coordinates_for_person(coordinates, self.width, self.name, self.get_edge_coordinates_array()):
+        if collisionObject:
             self.coordinates = coordinates
             return True
 
-        return False
+        return collisionObject
 
     def person_rotate(self, clockwise = True):
         """
@@ -288,6 +321,7 @@ class Person:
         elif "find" in str(self.currentState):
             # Person trying to find an object
             #print(self.name + " finding object")
+            print("remembered obj type " + self.rememberedObjType)
             if self.find_object(self.rememberedObjType):
                 action = "navigateToRememberedObj"
                 self.rotate = 0
@@ -330,6 +364,7 @@ class Person:
             # Person is ordering their drink
             #print(self.name + " Ordering a drink")
             action = "wait"
+            # self.clear_remembered_object()
             if self.has_ordered_drink() == 0 and self.has_drink() is False:
                 self.order_drink()
                 self.clear_remembered_object()
@@ -352,6 +387,8 @@ class Person:
 
         elif self.currentState == "useToilet":
             print("using toilet")
+            self.rememberedObj.useToilet()
+            self.clear_remembered_object()
 
         return action
 
@@ -554,6 +591,9 @@ class Person:
         :param objType: The object type they are looking for
         :return: The object or false if none
         """
+
+        print("person memory " + str(self.memory))
+
         if self.memory[objType] is None:
             return False
 
@@ -703,6 +743,9 @@ class Person:
         """
         self.hasDrink = 1
         self.orderedDrink = 0
+
+        self.advance_state_machine()
+
         return True
 
     def has_drink(self):

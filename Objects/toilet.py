@@ -5,10 +5,11 @@ Created by Sam Parker
 
 from Objects.baseObject import BaseObject
 
+
 class Toilet(BaseObject):
 
     # This colour is dark grey
-    colour = [169, 169, 169]
+    colour = (255, 128, 0)
 
     def useToilet(self):
         return True

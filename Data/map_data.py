@@ -22,15 +22,23 @@ class map_data:
 
     mapData = []
     gui = None
+    tick_rate = 0
 
-    def __init__(self, gui):
+    def __init__(self, gui, tick_rate):
         self.gui = gui
+        self.tick_rate = tick_rate
 
     def map_default(self):
         """Getting default map data"""
 
         self.add_people_to_map(1)
         self.add_bar_to_map(1)
+        self.add_toilet_to_map(1)
+
+        for x in self.mapData:
+            print("obj colour " + str(x.get_colour()))
+
+        # quit()
 
         return self.mapData
 
@@ -40,7 +48,7 @@ class map_data:
         while x < peopleCount:
             coords = [50 * (x + 1), 50 * (x + 1)]
 
-            newPerson = person.Person("person " + str(len(self.mapData)), coords, 20, rand.randint(0,360))
+            newPerson = person.Person("person " + str(len(self.mapData)), coords, 20, rand.randint(0,360), self.tick_rate)
 
             newPerson.add_map(self, coords)
             self.mapData.append(newPerson)
@@ -55,6 +63,21 @@ class map_data:
             newBar = bar.Bar(coords, "bar " + str(len(self.mapData)), 100, 20)
 
             self.mapData.append(newBar)
+
+            x += 1
+
+    def add_toilet_to_map(self, toiletCount):
+        """
+        Adds a number of toilets to the map
+        :param toiletCount: the number to add
+        :return:
+        """
+        x = 0
+        while x < toiletCount:
+            coords = [100 * (x + 1), 50]
+            newToilet = toilet.Toilet(coords, "toilet " + str(len(self.mapData)), 20, 20)
+
+            self.mapData.append(newToilet)
 
             x += 1
 
@@ -210,6 +233,7 @@ class map_data:
 
                 if self.check_circle_touch(person1, person2) == 0:
                     # Circles overlap
+                    return obj
                     return False
 
             else:
@@ -219,14 +243,8 @@ class map_data:
                 objSize = [obj.get_width(), obj.get_height()]
                 objCoords = obj.get_coordinates()
                 rectangleCoordRanges = self.get_coordinates_range(objCoords, objSize)
-                print("objCoords " + str(objCoords))
-                print("objSize " + str(objSize))
-                print("checkCoord " + str(check_coords))
-                print("Checking if overlap " + str(rectangleCoordRanges))
-                print("edgeCoords" + str(edgeCoordinates))
                 if self.check_circle_overlap_rectangle(edgeCoordinates, rectangleCoordRanges):
-                    print("Overlaps")
-                    quit()
+                    return obj
                     return False
 
         # Coordinates are fine to move to
@@ -350,6 +368,8 @@ class map_data:
     def what_object(self, coords):
         """This function checks to see if a cordiante is within another person and returns a reference to the object"""
         for obj in self.mapData:
+            objCoords = obj.get_coordinates()
+
             if obj.get_shape() == "circle":
                 x = obj.coordinates[0]
                 y = obj.coordinates[1]
@@ -365,8 +385,8 @@ class map_data:
             else:
                 width = obj.get_width()
                 height = obj.get_height()
-                coordsRange = self.get_coordinates_range(coords, [width, height])
-
+                # coordsRange = self.get_coordinates_range(coords, [width, height])
+                coordsRange = self.get_coordinates_range(objCoords, [width, height])
                 if self.point_in_coordinates_range(coords, coordsRange):
                     return obj
 

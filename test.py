@@ -24,9 +24,12 @@ class RunningMain:
     display = None
     pause = None
 
+    #This is how many "frame per second"
+    tick_rate = 30
+
     def __init__(self):
         pygame.init()
-        self.data = map_data.map_data(self)
+        self.data = map_data.map_data(self, self.tick_rate)
 
         # Getting intial data to start the main loop for the simulation method
         objectArray = self.data.map_default()
@@ -54,7 +57,7 @@ class RunningMain:
             self.key_buttons()
             self.draw_display(objectArray)
             pygame.display.update()
-            clock.tick(30)
+            clock.tick(self.tick_rate)
 
         pygame.quit()
         quit()
@@ -134,7 +137,8 @@ class RunningMain:
                 # width = obj.get_xSize()
                 height = obj.get_height()
                 # width = obj.get_width()
-                pygame.draw.rect(self.display, self.black, [coordinates[0], coordinates[1], width, height])
+                # pygame.draw.rect(self.display, self.black, [coordinates[0], coordinates[1], width, height])
+                pygame.draw.rect(self.display, colour, [coordinates[0], coordinates[1], width, height])
 
         for obj in objectArray:
             # if obj.get_shape() == 'circle':
@@ -149,18 +153,25 @@ class RunningMain:
                 # clears the person vision from the previous ittoration
                 obj.clear_vision()
                 # goes though every coordinates and works out what colour is in that pixcel
+
                 for cord in vision:
                     # display.set_at((cord[0],cord[1]), black)
                     # try and catch to prevent out of array exceptions
                     try:
+                        seenObj = 0
                         # gets the colour at the cordiate
                         colour = self.display.get_at((cord[0], cord[1]))
                         # if it is red then it must be a person
 
+
+
+
                         if colour != (255, 255, 255, 255):
                             # Its an object of some kind
 
+
                             seenObj = self.data.what_object(cord)
+
                             obj.add_to_vision(seenObj)
                             obj.add_to_memory(seenObj)
 
@@ -172,3 +183,11 @@ class RunningMain:
 
                     except IndexError:
                         nothing = 0
+
+
+    def get_tick_rate(self):
+        """
+        Function gets the tick rate
+        :return: tick_rate
+        """
+        return self.tick_rate

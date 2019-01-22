@@ -96,7 +96,6 @@ class StateMachine:
         # selectedNextState =  "wantDrink"
         # selectedNextState =  "wantToilet"
 
-        print("selectedNextState = " + selectedNextState)
 
         self.set_current_state(selectedNextState)
 

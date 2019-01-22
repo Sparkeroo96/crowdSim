@@ -1,7 +1,9 @@
 # Class is the generic class for people moving around a board
 # Created by Sam 23/10/2018
 # Modified by Chris
-from random import randint
+# from random import seed
+from random import randint, seed
+# import random
 from People.stateMachine import StateMachine
 from Objects.bar import Bar
 from Objects.toilet import Toilet
@@ -12,6 +14,8 @@ import math
 class Person:
 
     tick_rate = 0
+    actionCount = None
+    currentActionCount = None
 
     coordinates = [0,1]
     #Was size but chris has angle and width so using that instead
@@ -74,13 +78,14 @@ class Person:
         "dance": [["atDanceFloor"], ["greatestNeed"]],
 
         "wantToilet": [["isGreatestNeed"], ["findToilet", "useToilet"]],
-        "findToilet": [["notAtToilet"], ["moveToilet"]],
-        "moveToilet": [["foundToilet", "notFoundToilet"], ["moveToilet", "useToilet"]],
+        "findToilet": [["notAtToilet"], ["moveToToilet"]],
+        "moveToToilet": [["foundToilet", "notFoundToilet"], ["moveToilet", "useToilet"]],
         "useToilet": [["atToilet"], ["greatestNeed"]],
     }
     # gender = "" Use this one to determine which bathroom, later
 
     def __init__(self, name, coords, width, angle, tick_rate):
+        # random.seed()
         self.name = name
 
         if coords:
@@ -108,8 +113,12 @@ class Person:
 
     def action(self):
         """What the person is going to do"""
-
+        # print(str(self))
+        # quit()
         self.currentState = self.stateMachine.get_current_state()
+
+        if self.wait_on_action_count():
+            return "Waiting"
 
         stateAction = self.get_state_action()
         print("currentState: " + self.currentState + " / stateAction " + stateAction)
@@ -139,7 +148,6 @@ class Person:
         x = self.coordinates[0]
         y = self.coordinates[1]
         targetCoordinates = self.rememberedObj.get_coordinates()
-        print("remeberedOBJ target: " + str(self.rememberedObj))
 
         #First move
         if targetCoordinates[0] > x:
@@ -160,6 +168,7 @@ class Person:
         moveReturn = self.move(nextMove)
         if moveReturn != True:
             # There is a colliding object
+            newCoords = self.get_coordinates_for_move_avoiding_collision_object(targetCoordinates, moveReturn, nextMove)
 
         # self.move(nextMove)
 
@@ -183,7 +192,11 @@ class Person:
 
         if collisionObject[1] != self.coordinates[1]:
             if collisionObject[1] >= self.coordinates[1]:
-                # newMove[1] =
+                newMove[1] = newMove[1] - 1
+            else:
+                newMove[1] = newMove[1] + 1
+
+        return newMove
 
     def move(self, coordinates):
         """
@@ -325,6 +338,7 @@ class Person:
             if self.find_object(self.rememberedObjType):
                 action = "navigateToRememberedObj"
                 self.rotate = 0
+                print("here")
                 self.advance_state_machine()
             else:
                 # Cant find object do a circle to see it
@@ -386,9 +400,11 @@ class Person:
             self.advance_state_machine()
 
         elif self.currentState == "useToilet":
-            print("using toilet")
-            self.rememberedObj.useToilet()
-            self.clear_remembered_object()
+
+            action = "wait"
+            self.use_toilet()
+                # Toilet is free and now you are using it
+            # self.clear_remembered_object()
 
         return action
 
@@ -511,7 +527,6 @@ class Person:
                 nextState = "moveTo"
 
             nextState += keyword
-
         elif "move" in current_state:
             if "Bar" in current_state:
                 nextState = "orderDrink"
@@ -591,8 +606,6 @@ class Person:
         :param objType: The object type they are looking for
         :return: The object or false if none
         """
-
-        print("person memory " + str(self.memory))
 
         if self.memory[objType] is None:
             return False
@@ -746,7 +759,7 @@ class Person:
 
         self.advance_state_machine()
 
-        return True
+        return self.set_action_count(5,10)
 
     def has_drink(self):
         """
@@ -769,3 +782,57 @@ class Person:
             return True
 
         return False
+
+    def use_toilet(self):
+        """
+        Uses the toilet, maybe adjust the persons needs,
+        tells the toilet it is in use
+        :return: the action count of how long they are going to be waiting for
+        """
+
+        if self.rememberedObj.get_person_using_toilet() == self:
+            self.rememberedObj.person_stop_using_toilet(self)
+            self.advance_state_machine()
+
+        elif self.rememberedObj.person_use_toilet(self):
+            print("using toilet")
+            self.set_action_count(8, 10)
+
+
+
+    def set_action_count(self, minRange, maxRange):
+        """
+        Sets action count to be a random int multipled by the tickRate to mean a number of seconds
+        :param minRange: Random number minimum
+        :param maxRange: Random number maximum
+        :return: No. ticks
+        """
+
+        multiplier = randint(minRange, maxRange)
+
+        self.actionCount = multiplier * self.tick_rate
+        self.currentActionCount = 0
+
+        print(self.name + " is waiting for " + str(self.actionCount) + " ticks")
+        return self.actionCount
+
+    def clear_action_count(self):
+        """Clears the set action count"""
+        self.actionCount = None
+        self.currentActionCount = None
+
+    def wait_on_action_count(self):
+        """Causes the person to wait until the currentActionCount reaches the set actionCount
+        Also incremeents the currentActionCount or clear if needs be
+        :return: True on waiting"""
+
+        if self.actionCount is None and self.currentActionCount is None:
+            return False
+
+        if self.currentActionCount < self.actionCount:
+            self.currentActionCount += 1
+            return True
+
+        self.clear_action_count()
+        return False
+

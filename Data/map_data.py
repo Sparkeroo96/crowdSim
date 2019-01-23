@@ -4,39 +4,100 @@ Created by Chris Clark cc604
 """
 import random as rand
 import math
+import string
 from People import *
 from Objects import *
+from Algorithm import a_starv2
+from Nodes import node
+import numpy
+
+astar = a_starv2
 
 class map_data:
+    counter = 0
     # The GUI currently operates at 30 FPS meaning that each second the array is cycled though 30 times
     # [personType,uniqueName, [cordinateX,cordinateY],directionLooking,width]
     # [wall,[cordinateX,cordinateY],[width,height]]
 
+    personCords = []
+    envCords = []
+
     mapDefult = [['person','id:1',[150,350],30,10],['person','id:2',[200,300],30,10],['wall',[10,10],[100,10]]]
+    nodes = []
 
     mapData = []
+    """Stores the grid replica of the surface"""
+    grid = []
+    """Path for a person to follow"""
+    path = []
+
+    nodeList = []
+    """Wall values to iterate over"""
+    values_to_append = []
 
     def __init__(self):
         print("Map_data Object Created")
+        # self.generate_nodes()
+        # self.generate_nodes()
+        # self.get_node_coords()
+        # print(self.get_node_coords())
+        # self.generate_grid()
+
+
+    """functions to append/obtain the person/env cords"""
+    def set_p_coords(self, obj):
+        self.personCords.append(obj)
+
+    def set_e_coords(self, obj):
+        self.envCords.append(obj)
+
+    def get_p_coords(self):
+        return self.personCords
+
+    def get_e_coords(self):
+        return self.envCords
 
     def map_default(self):
         """Getting default map data"""
-
-        self.add_people_to_map(1)
-
+        self.add_people_to_map(2)
+        self.add_env_obj_to_map()
+        self.add_wall_to_map()
+        self.generate_nodes()
         return self.mapData
+
+
 
     def add_people_to_map(self, peopleCount):
         """Adding people to map"""
         x = 0
         while x < peopleCount:
-            coords = [50 * (x + 1), 50 * (x + 1)]
+            if x == 0:
+                coords = [200, 300]
+            else:
+                coords = [20, 20]
+            # print(coords)
 
             newPerson = person.Person("person " + str(len(self.mapData)), coords, None)
-
+            """Update the p cooords"""
             self.mapData.append(newPerson)
 
             x += 1
+
+    def add_env_obj_to_map(self):
+        newEnvObject = bar.Bar()
+        """Update the env cooords"""
+        self.set_e_coords(newEnvObject.get_coordinates())
+        self.mapData.append(newEnvObject)
+    """Adds a wall to the map a"""
+    def add_wall_to_map(self):
+        newWall = []
+        newWall.append(wall.Wall(4, "wall1", [0, 100], 0, 400, "wall"))
+        newWall.append(wall.Wall(4, "wall2", [50, 200], 30, 500, "wall"))
+        newWall.append(wall.Wall(4, "wall3", [0, 400], 30, 400, "wall"))
+        for walls in newWall:
+            self.mapData.append(walls)
+        self.set_walls(newWall)
+
 
     def personVision(self,id):
         vision = 100
@@ -122,23 +183,6 @@ class map_data:
         array = self.mapDefult
         array.append('person',name,[cordinateX,cordinateY],angle,width)
 
-    def moveRandomly(self):
-        map = self.getMap()
-        x = rand.randint(0,4)
-        # Example of how to go UP!
-        if x == 0:
-            map[0][2][1] -= 1
-        # Example of how to go DOWN!
-        if x == 1:
-            map[0][2][1] += 1
-        # Example of going RIGHT!
-        if x == 3:
-            map[0][2][0] += 1
-        # Example of going LEFT!
-        if x == 4:
-            map[0][2][0] -= 1
-        # print(map[0][2][1])
-
     def whichPerson(self,cords):
         map = self.getMap()
         for people in map:
@@ -157,5 +201,55 @@ class map_data:
         map = self.getMap()
         map[0][3] = newAngle
         # print(map[0][3])
-test = map_data()
-test.whichPerson([205,305])
+
+    """This will set wall on the nodes, so the person cannot pass through"""
+    """Converts the coords to the required node id"""
+    """Stores in values to append"""
+    def set_walls(self, walls):
+        for wall in walls:
+            cordX = (int(wall.get_coordinates()[0] / 50))
+            cordY = (int(wall.get_coordinates()[1] / 50))
+            width = (int(wall.get_width() / 50))
+            height = (int(wall.get_height() / 50))
+            for x in range(width):
+                self.values_to_append.append([cordX + x, cordY])
+        """Check that coords are within the 10x10 grid"""
+        for v in self.values_to_append:
+            if v[0] > 9 and v[1] > 9:
+                self.values_to_append.remove(v)
+    """Generate the node objects that appear on the map"""
+    def generate_nodes(self):
+        """IDs for the nodes"""
+        listofID = []
+        """Basic 10x10 grid"""
+        simpleCords = []
+        """Actual Grid used by the map"""
+        complexCords = []
+        for number in range(0, 100):
+            listofID.append(number)
+        """Create cords for the 10x10 grid"""
+        for x in range(100):
+            simpleCords.append([math.floor(x/10), (x % 10)])
+            """Create cords for the 500x500 grid"""
+            complexCords.append([(math.floor(x / 10) * 50), (x % 10) * 50])
+        """Create 100 nodes, apply the coords"""
+        for n in range(100):
+            self.nodeList.append(node.Node(simpleCords[n], 0, complexCords[n]))
+        """Obtaining last coord in the simple grid to create the range of maze"""
+        """Create the empty node graph"""
+        graph = numpy.zeros((10, 10), int)
+        """For the values in append, apply the value of 1 to the node object"""
+        """1 Represents a wall"""
+        for v in self.values_to_append:
+            for n in self.nodeList:
+                if v == n.get_idCoords():
+                    n.set_value(1)
+        for cords in self.nodeList:
+            """if it is an environment object, show this in our graph"""
+            if cords.get_value() == 1:
+                graph[cords.get_idCoords()[0]][cords.get_idCoords()[1]] = cords.get_value()
+        """Store all the nodes in the a_star class"""
+        a_starv2.store_all_nodes(graph)
+        """Placeholder locations - Need to run the algo from the person class"""
+        # start = (self.nodeList[0].get_idCoords()[0]), (self.nodeList[0].get_idCoords()[1])
+        # dest = (self.nodeList[99].get_idCoords()[0]), (self.nodeList[99].get_idCoords()[1])

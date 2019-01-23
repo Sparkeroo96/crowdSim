@@ -6,7 +6,8 @@ Modified by Sam Parker swp5
 """
 import pygame
 from Data import map_data
-
+"""Constant for grid"""
+CONSTANT = 1
 data = map_data.map_data()
 pygame.init()
 
@@ -17,40 +18,88 @@ green = (51, 204, 51)
 red = (255, 0, 0)
 
 # Getting intial data to start the main loop for the simulation method
-array = data.getMap()
 objectArray = data.map_default()
 
-display = pygame.display.set_mode((800,600))
-pygame.display.set_caption("Crowd Simulation ")
+display = pygame.display.set_mode((500,500))
+w, h = pygame.display.get_surface().get_size()
+# print(w)
+# print(h)
+grid = []
+path = []
 
+pygame.display.set_caption("Crowd Simulation ")
+x = 0
 clock = pygame.time.Clock()
 exit = False
 while not exit:
+
+    # print(path)
     for event in pygame.event.get():
-        print(event)
+        # print(event)
         if event.type == pygame.QUIT:
             exit = True
     display.fill(white)
+    # for row in range(int(w / CONSTANT)):
+    #     grid.append([])
+    #     for column in range(int(h / CONSTANT)):
+    #         grid[row].append(0)
+    #         checkColour = display.get_at((row, column))
+    #         pygame.draw.rect(display,
+    #                          white,
+    #                          [(CONSTANT * 2) * column + CONSTANT,
+    #                           (CONSTANT * 2) * row + CONSTANT,
+    #                           CONSTANT,
+    #                           CONSTANT])
+    """Currently prints the a* path"""
+    # if x == 0:
+    #     x1 = data.get_e_coords()[0][0]
+    #     x2 = data.get_e_coords()[0][1]
+    #     y1 = data.get_p_coords()[0][0]
+    #     y2 = data.get_p_coords()[0][1]
+    #     path = astar.aStar(grid, (x1, x2), (y1, y2))
+    #     x += 1
 
+    # display.fill(white)
+    """Placeholder wall"""
+    """x, y, ?"""
+    # locations = []
+    # map_data.map_data.set_walls()
+    """Each object that gets added into the array"""
     for object in objectArray:
         object.action()
-        print("object")
+        # print("object")
         coordinates = object.get_coordinates()
         angle = object.get_angle()
         width = object.get_width()
         colour = object.get_colour()
 
         shape = object.get_shape()
-        print("shape = " + shape)
+        # print("shape = " + shape)
         if shape == "circle":
             # People
-            print("here " + str(coordinates))
+            # print("here " + str(coordinates))
             pygame.draw.circle(display, colour, coordinates, width)
-
+            """Displays the colour it currently uses"""
+            # print(display.get_at(coordinates)[:3])
+            if path != []:
+                for coord in path:
+                    pygame.draw.circle(display, colour, coord, width)
         elif shape == "rectangle":
             # objects
             height = object.get_height()
-            pygame.draw.rect(display, black, [coordinates[0], coordinates[1], width, height])
+            pygame.draw.rect(display, colour, [coordinates[0], coordinates[1], width, height])
+        elif shape == "wall":
+
+            height = object.get_height()
+            # print(angle, width, height)
+            pygame.draw.rect(display, colour, [coordinates[0], coordinates[1], width, height])
+
+
+
+
+
+    # print(display.get_at((51, 51))[:3])
+        # display.fill(red, (0, 100, 200, 200))
 
         # NEED TO ADD VISION STUFF
         # LEAVE FOR CHRIS?
@@ -90,7 +139,18 @@ while not exit:
     #         pygame.draw.rect(display,black,[xCoordinate,yCoordinate,width, height])
     # # exit = True
     # data.moveRandomly()
+    # print(display.get_at((400, 100))[:3])
+
+
+        """Prints the color at coord 200, 200"""
+        # if x < CONSTANT:
+        #     colour = display.get_at((11 + x, 11))[:3]
+        #     # if colour == (255, 255, 255):
+        #     print(colour)
+        #     x += 1
+    """Draws a white grid over the black surface"""
+
     pygame.display.update()
-    clock.tick(30)
+    clock.tick(4)
 pygame.quit()
 quit()

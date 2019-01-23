@@ -6,35 +6,49 @@ Created by Sam Parker
 """
 class BaseObject:
 
-    clipThrough = False
-    xSize = 0
-    ySize = 0
-    angle = 0
-    width = 0
-    height = 0
-
-    shape = "rectangle"
-
-    name = ""
-
-    coordinates = []
     envObjectName = ""
     id = ""
     coordX = 0
     coordY = 0
     angle = 0
     width = 0
+    shape = "rectangle"
+    colour = (0, 255, 0)
+    height = 20
+
+    def __init__(self, id, name, coords, angle, width, shape):
+        self.id = id
+        self.envObjectName = name
+        if coords:
+            self.coordX = coords[0]
+            self.coordY = coords[1]
+        self.angle = angle
+        self.width = width
+        self.shape = shape
+
 
     def get_details(self):
         return ([self.envObjectName, self.id, self.coordX, self.coordY, self.angle, self.width])
     """Cords"""
-    def get_cords(self):
+    def get_coordinates(self):
         cords = [self.coordX, self.coordY]
         return cords
 
     """Returns what object it is"""
     def get_env_object_name(self):
         return self.envObjectName
+
+    def action(self):
+        return ("")
+
+    def get_colour(self):
+        return self.colour
+
+    def get_shape(self):
+        return self.shape
+
+    def set_shape(self, shape):
+        shape = self.shape
 
     def get_id(self):
         return self.id
@@ -45,16 +59,18 @@ class BaseObject:
     def get_width(self):
         return self.width
 
+    def set_height(self, height):
+        self.height = height
+
+    def get_height(self):
+        return self.height
+
     def set_env_object_name(self, name):
         self.envObjectName = name
 
     def set_id(self, newID):
         self.id = newID
 
-    colour = []
-
-    def __init__(self, coordinates, name):
-        self.coordinates = coordinates
     def set_coordX(self, coordX):
         self.coordX = coordX
 
@@ -66,38 +82,3 @@ class BaseObject:
 
     def set_width(self, width):
         self.width = width
-
-    def get_name(self):
-        """Gets the objects unique name/id"""
-        return self.name
-
-    def get_colour(self):
-        """Functions returns the objects colour"""
-        return self.colour
-
-    def get_coordinates(self):
-        """Returns the objects coordinates"""
-        return self.coordinates
-
-    def get_angle(self):
-        """Returns the objects angle"""
-        return self.angle
-
-    def get_width(self):
-        """Returns the objects size"""
-        return self.width
-
-    def get_height(self):
-        """Returns the objects height"""
-        return self.height
-
-    def get_shape(self):
-        """Returns the shape of the object to draw"""
-        return self.shape
-
-    def action(self):
-        """
-        object does its action
-        for a bar this could be serve or something
-        """
-        return True

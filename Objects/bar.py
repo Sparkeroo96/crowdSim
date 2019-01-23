@@ -4,17 +4,19 @@ Created by Sam Parker
 """
 from Objects.baseObject import BaseObject
 
+"""May look to initialise the bar object details in init after. """
+
 
 class Bar(BaseObject):
 
-    freeBarStaff = [];
-    #Colour is Blue
-    colour = [0, 0, 153]
-
-    def __init__(self, coordinates, xSize, ySize):
-        self.coordinates = coordinates
-        self.xSize = xSize
-        self.ySize = ySize
+    def __init__(self):
+        self.set_id('id: 3')
+        self.set_env_object_name('Drinks Bar')
+        self.set_coordX(450)
+        self.set_coordY(450)
+        self.set_angle(60)
+        self.set_width(20)
+        self.set_height(20)
 
     def barStaffWait(self, barStaff):
         """

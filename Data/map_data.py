@@ -8,17 +8,15 @@ import math
 from People import *
 from Objects import *
 
+
 # Seems to need these for allowing isinstance(example, Person), doesnt work with the above import
 from People.person import Person
+from Objects.wall import Wall
 from People.flockingPerson import FlockingPerson
 
 from Objects.bar import Bar
 
 class map_data:
-    # The GUI currently operates at 30 FPS meaning that each second the array is cycled though 30 times
-    # [personType,uniqueName, [cordinateX,cordinateY],directionLooking,width]
-    # [wall,[cordinateX,cordinateY],[width,height]]
-    # mapDefult = [['person','id:1',[150,350],30,10],['person','id:2',[200,300],30,10],['wall',[10,10],[100,10]]]
 
     mapData = []
     gui = None
@@ -34,11 +32,6 @@ class map_data:
         self.add_people_to_map(1)
         self.add_bar_to_map(1)
         self.add_toilet_to_map(1)
-
-        for x in self.mapData:
-            print("obj colour " + str(x.get_colour()))
-
-        # quit()
 
         return self.mapData
 
@@ -189,19 +182,19 @@ class map_data:
             self.mapData.append(newWall)
 
     def check_space_unoccupied(self, coordinates, object_size, object_name, object_shape):
-        """Checks to see if a set of coordinates is occupied by an object or person
+        """Checks to see if a set of coordinates is occupied by an obj or person
         :param coordinates is the set its checking to see if anything occupies it
-        :param object_size is the object that is the size of the object currently checking coords, if it has a width and height give it as a list
-        :param object_name is the name of the object doing checking so it doesnt check itself
+        :param object_size is the obj that is the size of the obj currently checking coords, if it has a width and height give it as a list
+        :param object_name is the name of the obj doing checking so it doesnt check itself
         """
 
         ranges = self.get_coordinates_range(coordinates, object_size)
 
-        for object in self.mapData:
-            if object.get_name() == object_name:
+        for obj in self.mapData:
+            if obj.get_name() == object_name:
                 continue
 
-            if isinstance(object, "Person"):
+            if isinstance(obj, "Person"):
                 print("In Person")
 
     def check_coordinates_for_person(self, check_coords, radius, name, edgeCoordinates):
@@ -303,7 +296,7 @@ class map_data:
     def get_coordinates_range(self, coordinates, object_size):
         """ Function gets the range of spaces used by a set of coordinates
         :param coordinates is the set its checking to see if anything occupies it
-        :param object_size is the object that is the size of the object currently checking coords, if it has a width and height give it as a list
+        :param object_size is the obj that is the size of the obj currently checking coords, if it has a width and height give it as a list
         """
         xCoord = coordinates[0]
         yCoord = coordinates[1]
@@ -350,9 +343,9 @@ class map_data:
 
     def get_object_colour_code(self, objectType):
         """
-        Gets an object colour code
-        :param objectType: The object type you are looking for
-        :return: Returns an RGB array, false if no such object type exists
+        Gets an obj colour code
+        :param objectType: The obj type you are looking for
+        :return: Returns an RGB array, false if no such obj type exists
         """
 
         for obj in self.mapData:
@@ -371,9 +364,9 @@ class map_data:
             objCoords = obj.get_coordinates()
 
             if obj.get_shape() == "circle":
-                x = obj.coordinates[0]
-                y = obj.coordinates[1]
-                radias = obj.width / 2
+                x = objCoords[0]
+                y = objCoords[1]
+                radias = obj.get_width() / 2
                 x1 = coords[0]
                 y1 = coords[1]
                 # This is pythagorous and works out if the point is within the circle
@@ -390,19 +383,6 @@ class map_data:
                 if self.point_in_coordinates_range(coords, coordsRange):
                     return obj
 
-        # map = self.mapData
-        # for people in map:
-        #     if people.get_shape() == "circle":
-        #         x = people.coordinates[0]
-        #         y = people.coordinates[1]
-        #         radias = people.width / 2
-        #         x1 = cords[0]
-        #         y1 = cords[1]
-        #         # This is pythagorous and works out if the point is within the circle
-        #         distance = math.pow(x1 - x,2) + math.pow(y1 - y,2)
-        #         distanceRoot = math.sqrt(distance)
-        #         if distanceRoot <= radias:
-        #             return people
 
     def point_in_coordinates_range(self, coordinates, range):
         """
@@ -441,3 +421,90 @@ class map_data:
         right_eye = [cords[0] + right_eye[0], cords[1] + right_eye[1]]
 
         return [left_eye,right_eye]
+
+    def export(self,file_name,save_name):
+        """Function that outputs the map in a saveable format"""
+        map = self.get_map()
+        data = []
+        file = open(file_name, 'r')
+        line_num = 1
+        num_lines = 1
+        saved_data = []
+        for line in file:
+            num_lines = num_lines + 1
+            saved_data.append(line)
+        print(saved_data)
+        file.close()
+        file = open(file_name,'w+')
+        for line in saved_data:
+            file.write(line)
+        file.write("#####" + "\n")
+        file.write(save_name + "\n")
+        for obj in map:
+            # print(obj)
+            if isinstance(obj,Person):
+                # print("ran")
+                obj_type = 'Person'
+                coords = obj.get_coordinates()
+                angle = obj.get_angle()
+                width = obj.get_width()
+                data = [obj_type,coords,width,angle]
+            if isinstance(obj, Wall):
+                obj_type = 'Wall'
+                coords = obj.get_coordinates()
+                width = obj.get_width()
+                height = obj.get_height()
+                data = [obj_type,coords,width,height]
+            str1 = '/'.join(str(e) for e in data)
+            # print(str1)
+            file.write(str1 + "\n")
+        file.close()
+
+
+    def import_from_file(self,file,save_name):
+        file = open(file,'r')
+        # print(file.read())
+        # print(save_name)
+        x = 1
+        running_string = ""
+        found_load = []
+        new_save_array = []
+        save_name = save_name.lower()
+        for line in file:
+            running_string = running_string + str(line)
+        save_array = running_string.split("######")
+        # print(save_array)
+        for save in save_array:
+            single_save_array =[x.strip() for x in save.split("\n")]
+            new_save_array.append(single_save_array)
+        for save in new_save_array:
+            if save[1] == save_name:
+                found_load = save
+
+        if not found_load == []:
+            found_load.pop(0)
+            found_load.pop(0)
+            for line in found_load:
+                result = [x.strip() for x in line.split('/')]
+                if not result == [""]:
+                    coords = [x.strip() for x in result[1].split(",")]
+                    coordX = coords[0].translate({ord("'"): None})
+                    coordY = coords[1].translate({ord("'"): None})
+                    coordX = coordX.translate({ord("["): None})
+                    coordY = coordY.translate({ord("]"): None})
+                    coords = [int(float(coordX)), int(float(coordY))]
+                    if result[0] == 'Person':
+                        newPerson = person.Person("person " + str(len(self.mapData)), coords, int(result[2]), int(result[3]))
+                        self.mapData.append(newPerson)
+                    elif result[0] == 'Wall':
+                        newWall = Wall(coords,int(result[2]),int(result[3]))
+                        self.mapData.append(newWall)
+        else:
+            print("ERROR FILE NOT FOUND")
+        file.close()
+
+    def get_map(self):
+        return self.mapData
+
+    def clear_map(self):
+        self.get_map() == []

@@ -113,8 +113,6 @@ class Person:
 
     def action(self):
         """What the person is going to do"""
-        # print(str(self))
-        # quit()
         self.currentState = self.stateMachine.get_current_state()
 
         if self.wait_on_action_count():
@@ -634,7 +632,7 @@ class Person:
             x = x + 1
         return result
 
-    def personVision(self,x1,y1,angle, vision):
+    def personVision(self, x1, y1, angle, vision):
         """This function gets an person and returns an array of the cordinates of their vision
         :pram x1 is the cordinate of the person x cord
         :pram y1 is the cordiate of the person y cord

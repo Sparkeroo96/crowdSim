@@ -94,7 +94,7 @@ class StateMachine:
             selectedNextState = self.__get_random_next_state(nextStates, statesCount)
 
         # selectedNextState =  "wantDrink"
-        # selectedNextState =  "wantToilet"
+        selectedNextState =  "wantToilet"
 
 
         self.set_current_state(selectedNextState)

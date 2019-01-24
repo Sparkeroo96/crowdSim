@@ -1,6 +1,7 @@
 
 from Objects.baseObject import BaseObject
 
+
 class Wall(BaseObject):
 
     colour = (0, 0, 0)
@@ -9,7 +10,3 @@ class Wall(BaseObject):
         self.coordinates = coordinates
         self.width = xSize
         self.height = ySize
-
-
-    def get_coordinates(self):
-        return self.coordinates

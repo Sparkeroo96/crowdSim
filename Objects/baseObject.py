@@ -26,6 +26,14 @@ class BaseObject:
     angle = 0
     width = 0
 
+    def __init__(self, coordinates, name, width, height):
+        self.coordinates = coordinates
+        self.name = name
+        self.width = width
+        self.height = height
+
+        print("creating object " + name)
+
     def get_details(self):
         return ([self.envObjectName, self.id, self.coordX, self.coordY, self.angle, self.width])
 
@@ -44,17 +52,12 @@ class BaseObject:
     def get_angle(self):
         return self.angle
 
-    def get_width(self):
-        return self.width
-
     def set_env_object_name(self, name):
         self.envObjectName = name
 
     def set_id(self, newID):
         self.id = newID
 
-    def __init__(self, coordinates, name):
-        self.coordinates = coordinates
     def set_coordX(self, coordX):
         self.coordX = coordX
 

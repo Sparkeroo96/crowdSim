@@ -8,8 +8,7 @@ import pygame
 import math
 from Data import map_data
 from time import sleep
-
-print("in maps_saves.py")
+from People.person import Person
 
 
 class RunningMain:
@@ -40,6 +39,8 @@ class RunningMain:
 
     #Error message
     error_message = ""
+
+    tick_rate = 30
 
     def __init__(self):
         """This is the constructor that starts the main loop of the simulation"""
@@ -161,7 +162,8 @@ class RunningMain:
                 self.error_page("Menu Option has failed")
 
             pygame.display.update()
-            clock.tick(30)
+            clock.tick(self.tick_rate)
+
         pygame.quit()
         quit()
 
@@ -274,7 +276,6 @@ class RunningMain:
             angle = obj.get_angle()
             width = obj.get_width()
             colour = obj.get_colour()
-            # print(obj.get_coordinates())
             shape = obj.get_shape()
             # print("shape = " + shape)
             # the process of adding a person and the funcitons that get called
@@ -282,7 +283,7 @@ class RunningMain:
                 # Creating the cicle with the variables provided
                 pygame.draw.circle(self.display, colour, coordinates, round(width / 2))
                 # Maths to add the pixcels to represent the eyes
-                eyes = obj.person_eyes(obj.coordinates, obj.angle, round(obj.width / 2))
+                eyes = obj.person_eyes(coordinates, angle, round(width / 2))
                 self.display.set_at((eyes[0][0], eyes[0][1]), self.white)
                 self.display.set_at((eyes[1][0], eyes[1][1]), self.white)
                 # print(vision)
@@ -291,31 +292,45 @@ class RunningMain:
             elif shape == "rectangle":
                 # objects
                 height = obj.get_height()
-                coordinates = obj.get_coordinates()
-                width = obj.get_width()
-                pygame.draw.rect(self.display, self.black, [coordinates[0], coordinates[1], width, height])
+                pygame.draw.rect(self.display, colour, [coordinates[0], coordinates[1], width, height])
 
         for obj in objectArray:
-            if obj.get_shape() == "circle":
+
+            if isinstance(obj, Person):
+                objCoordinates = obj.get_coordinates()
+                angle = obj.get_angle()
+                sight = obj.get_sight()
                 # Calls the person vision function that returns an array of all the cordinates on the vision lines it makes
-                vision = obj.personVision(obj.coordinates[0], obj.coordinates[1], obj.angle)
+                vision = obj.personVision(objCoordinates[0], objCoordinates[1], angle, sight)
                 # clears the person vision from the previous ittoration
                 obj.clear_vision()
                 # goes though every coordinates and works out what colour is in that pixcel
+
                 for cord in vision:
                     # display.set_at((cord[0],cord[1]), black)
                     # try and catch to prevent out of array exceptions
                     try:
-                        # gets the colour at the cordiate
+                        seenObj = 0
                         colour = self.display.get_at((cord[0], cord[1]))
                         # if it is red then it must be a person
-                        if colour == (255, 0, 0, 255):  # Red person
-                            # calls a function that returns the id of the person they can see
-                            whichPerson = self.data.whichPerson(cord)
-                            # adds to the persons vision array in their obj
-                            obj.add_to_vision(whichPerson)
+                        if colour != (255, 255, 255, 255):
+                            # Its an object of some kind
+                            seenObj = self.data.what_object(cord)
+
+                            obj.add_to_vision(seenObj)
+                            obj.add_to_memory(seenObj)
+
+
                     except IndexError:
                         nothing = 0
+
+
+    def get_tick_rate(self):
+        """
+        Function gets the tick rate
+        :return: tick_rate
+        """
+        return self.tick_rate
 
     def home_menu(self):
         """Functtion that makes the menu screen with buttons all centred automaticly"""

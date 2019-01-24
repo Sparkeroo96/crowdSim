@@ -4,4 +4,5 @@
 
 from test import RunningMain
 
+
 main = RunningMain()

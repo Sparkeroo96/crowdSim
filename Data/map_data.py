@@ -17,10 +17,6 @@ from People.flockingPerson import FlockingPerson
 from Objects.bar import Bar
 
 class map_data:
-    # The GUI currently operates at 30 FPS meaning that each second the array is cycled though 30 times
-    # [personType,uniqueName, [cordinateX,cordinateY],directionLooking,width]
-    # [wall,[cordinateX,cordinateY],[width,height]]
-    # mapDefult = [['person','id:1',[150,350],30,10],['person','id:2',[200,300],30,10],['wall',[10,10],[100,10]]]
 
     mapData = []
     gui = None
@@ -159,48 +155,76 @@ class map_data:
                     return people
 
     def export(self,file_name,save_name):
-        """Function that outputs the map in a saveable format"""
-        map = self.get_map()
-        data = []
+        """
+        Exports the current map data into a format that can be recreated by the import onto the maps_saves.txt
+        :param file_name: The name of the target file
+        :param save_name: The name of the map you are saving
+        :return: True if it was saved sucesfully and False if it fails
+        """
+        check_name = self.check_save_name(file_name,save_name)
+        if check_name:
+            map = self.get_map()
+            data = []
+            file = open(file_name, 'r')
+            saved_data = []
+            for line in file:
+                saved_data.append(line)
+            file.close()
+            file = open(file_name,'w+')
+            for line in saved_data:
+                file.write(line)
+            file.write("######" + "\n")
+            file.write(save_name.lower() + "\n")
+            for obj in map:
+                # print(obj)
+                if isinstance(obj,Person):
+                    # print("ran")
+                    obj_type = 'Person'
+                    coords = obj.get_coordinates()
+                    angle = obj.get_angle()
+                    width = obj.get_width()
+                    data = [obj_type,coords,width,angle]
+                if isinstance(obj, Wall):
+                    obj_type = 'Wall'
+                    coords = obj.get_coordinates()
+                    width = obj.get_width()
+                    height = obj.get_height()
+                    data = [obj_type,coords,width,height]
+                str1 = '/'.join(str(e) for e in data)
+                file.write(str1 + "\n")
+            file.close()
+            return True
+        else:
+            return False
+
+    def check_save_name(self,file_name,save_name):
+        """
+        Sees if the name of the map is already taken
+        :param file_name: maps_saves.txt
+        :param save_name: the name you are testing to see if it is taken
+        :return: True for the file name is free, False for if the name is taken
+        """
         file = open(file_name, 'r')
-        line_num = 1
-        num_lines = 1
-        saved_data = []
+        running_string = ''
         for line in file:
-            num_lines = num_lines + 1
-            saved_data.append(line)
-        print(saved_data)
+            running_string = running_string + str(line)
+        search_array = running_string.split("######")
+        for save in search_array:
+            save_array = save.split("\n")
+            if str(save_array[1]) == save_name.lower():
+                return False
         file.close()
-        file = open(file_name,'w+')
-        for line in saved_data:
-            file.write(line)
-        file.write("#####" + "\n")
-        file.write(save_name + "\n")
-        for obj in map:
-            # print(obj)
-            if isinstance(obj,Person):
-                # print("ran")
-                obj_type = 'Person'
-                coords = obj.get_coordinates()
-                angle = obj.get_angle()
-                width = obj.get_width()
-                data = [obj_type,coords,width,angle]
-            if isinstance(obj, Wall):
-                obj_type = 'Wall'
-                coords = obj.get_coordinates()
-                width = obj.get_width()
-                height = obj.get_height()
-                data = [obj_type,coords,width,height]
-            str1 = '/'.join(str(e) for e in data)
-            # print(str1)
-            file.write(str1 + "\n")
-        file.close()
+        return True
 
 
     def import_from_file(self,file,save_name):
+        """
+        This takes the maps_saves.txt and a name of a map and imports it into the system
+        :param file: maps_saves.txt
+        :param save_name: the name of the map you want to load
+        :return: True if loaded succesfully, False if not
+        """
         file = open(file,'r')
-        # print(file.read())
-        # print(save_name)
         x = 1
         running_string = ""
         found_load = []
@@ -235,9 +259,11 @@ class map_data:
                     elif result[0] == 'Wall':
                         newWall = Wall(coords,int(result[2]),int(result[3]))
                         self.mapData.append(newWall)
+            return True
         else:
             print("ERROR FILE NOT FOUND")
         file.close()
+        return False
 
     def get_map(self):
         return self.mapData

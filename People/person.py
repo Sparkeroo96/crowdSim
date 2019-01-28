@@ -63,8 +63,12 @@ class Person:
     currentState = "greatestNeed"
     stateMachine = ""
 
+    # The initial key is the state
+    # the first array is the properties from the previous state that they have to be in, not currently used
+    # THe second array is the next states, must match another state or its going to break
     states = {
-        "greatestNeed": [["usedToilet", "drinkDrink", "danced"], ["wantDrink", "wantToilet", "wantDance"]],
+        # "greatestNeed": [["usedToilet", "drinkDrink", "danced"], ["wantDrink", "wantToilet", "wantDance"]],
+        "greatestNeed": [["usedToilet", "drinkDrink", "danced"], ["wantDrink", "wantToilet"]],
 
         "wantDrink": [["isGreatestNeed"], ["findBar", "orderDrink"]],
         "findBar": [["notAtBar"], ["moveToBar"]],
@@ -72,10 +76,10 @@ class Person:
         "orderDrink": [["atBar"], ["drink"]],
         "drink": [["getDrink"], ["greatestNeed"]],
 
-        "wantDance": [["isGreatestNeed"], ["dance", "findDanceFloor"]],
-        "findDanceFloor": [["notAtDanceFloor", "notFound"], ["moveToDanceFloor"]],
-        "moveToDanceFloor": [["notAtDanceFloor", "found"], ["dance", "moveToDanceFloor"]],
-        "dance": [["atDanceFloor"], ["greatestNeed"]],
+        # "wantDance": [["isGreatestNeed"], ["dance", "findDanceFloor"]],
+        # "findDanceFloor": [["notAtDanceFloor", "notFound"], ["moveToDanceFloor"]],
+        # "moveToDanceFloor": [["notAtDanceFloor", "found"], ["dance", "moveToDanceFloor"]],
+        # "dance": [["atDanceFloor"], ["greatestNeed"]],
 
         "wantToilet": [["isGreatestNeed"], ["findToilet", "useToilet"]],
         "findToilet": [["notAtToilet"], ["moveToToilet"]],
@@ -167,8 +171,7 @@ class Person:
         if moveReturn != True:
             # There is a colliding object
             newCoords = self.get_coordinates_for_move_avoiding_collision_object(targetCoordinates, moveReturn, nextMove)
-
-        # self.move(nextMove)
+            self.move(nextMove)
 
 
     def get_coordinates_for_move_avoiding_collision_object(self, targetCoordinates,  collisionObject, attemptedMove):
@@ -178,22 +181,34 @@ class Person:
         :param collisionObject: The object to avoid
         :return: The coordinates to move to
         """
-
-        newMove = attemptedMove
-
+        newMove = [0, 0]
+        newMove[0] = attemptedMove[0]
+        newMove[1] = attemptedMove[1]
+        print("og attemptedMove = " + str(attemptedMove) + " newMove = " + str(newMove))
         collisionCoordinates = collisionObject.get_coordinates()
-        if collisionObject[0] != self.coordinates[0]:
-            if collisionObject[0] >= self.coordinates[0]:
+        if collisionCoordinates[0] != self.coordinates[0]:
+            if collisionCoordinates[0] >= self.coordinates[0]:
+                print("here1 " + str(newMove[0]))
                 newMove[0] = newMove[0] - 1
-            else :
+            else:
                 newMove[0] = newMove[0] + 1
+                print("here2")
+            print("1st attemptedMove = " + str(attemptedMove) + " newMove = " + str(newMove))
+            moveResult = self.move(newMove)
+            if  moveResult != True:
+                print("moveResult " + str(moveResult))
+                newMove[0] = attemptedMove[0]
 
-        if collisionObject[1] != self.coordinates[1]:
-            if collisionObject[1] >= self.coordinates[1]:
+        if collisionCoordinates[1] != self.coordinates[1]:
+            if collisionCoordinates[1] >= self.coordinates[1]:
                 newMove[1] = newMove[1] - 1
+                print("here3")
             else:
                 newMove[1] = newMove[1] + 1
-
+                print("here4")
+            print("2nd attemptedMove = " + str(attemptedMove) + " newMove = " + str(newMove))
+            self.move(newMove)
+        print("attemptedMove = " + str(attemptedMove) + " newMove = " + str(newMove))
         return newMove
 
     def move(self, coordinates):
@@ -203,13 +218,14 @@ class Person:
         :return: True on successful move, returns the collision object on false
         """
 
-        collisionObject = self.map.check_coordinates_for_person(coordinates, self.width, self.name, self.get_edge_coordinates_array())
+        collisionObject = self.map.check_coordinates_for_person(coordinates, self.width, self.name, self.get_edge_coordinates_array(coordinates))
 
         # if self.map.check_coordinates_for_person(coordinates, self.width, self.name, self.get_edge_coordinates_array()):
-        if collisionObject:
+        if collisionObject is True:
+            print("is true")
             self.coordinates = coordinates
             return True
-
+        print("not moving")
         return collisionObject
 
     def person_rotate(self, clockwise = True):
@@ -236,6 +252,21 @@ class Person:
 
         return angleResult
 
+    def change_angle_to_move_direction(self, oldCoords, newCoords):
+        """
+        Changes the persons angle so they move in the direction they're looking
+        Based on this: https://math.stackexchange.com/questions/707673/find-angle-in-degrees-from-one-point-to-another-in-2d-space
+        :param oldCoords: The old/current coordinates
+        :param newCoords: The new ones youre moving to that you want to set the angle to face
+        :return: The new angle
+        """
+        slopeOfLine = (newCoords[1] - oldCoords[1]) / (newCoords[0] - oldCoords[0])
+
+        radians = math.atan(slopeOfLine)
+        degrees = math.degrees(radians)
+
+        self.angle = degrees
+        return degrees
 
 
     def random_move(self):
@@ -255,7 +286,9 @@ class Person:
 
         elif randomNumber <= 8: #Person move left
             newCoordinates = [self.coordinates[0] - 1, self.coordinates[1]]
-        self.coordinates = newCoordinates
+
+        if self.move(newCoordinates) is True:
+            self.coordinates = newCoordinates
         # print(self.get_coordinates())
 
         # PERSON NEEDS TO SEE IF THERE IS SOMETHING OCCUPING THIS SPACE
@@ -307,19 +340,12 @@ class Person:
 
     def get_state_action(self):
         """Causes the person to act based on their current state"""
-        # #print("get state action " + str(self.currentState))
-
         action = "moveRandom"
 
         if self.currentState == self.defaultState:
-            # #print(self.name + " in greatest need")
             self.currentState = self.stateMachine.get_next_state()
-        else:
-            #print("not greatest need")
-            x = 0
 
         if "want" in str(self.currentState):
-            # #print("here")
             # Person has a want desire
             if self.want_action(self.currentState):
                 action = "navigateToRememberedObj"
@@ -331,27 +357,7 @@ class Person:
 
         elif "find" in str(self.currentState):
             # Person trying to find an object
-            #print(self.name + " finding object")
-            print("remembered obj type " + self.rememberedObjType)
-            if self.find_object(self.rememberedObjType):
-                action = "navigateToRememberedObj"
-                self.rotate = 0
-                print("here")
-                self.advance_state_machine()
-            else:
-                # Cant find object do a circle to see it
-                if self.rotate < 12:
-                    action = "rotate"
-
-                else:
-                    #Done a circle move or rotate, dont want it to
-                    random = randint(0, 100)
-                    if random == 1:
-                        action = "rotate"
-                        self.rotate = 0
-                    else:
-                        action = "moveRandom"
-                #Move random or rotate?
+            action = self.find_action()
 
         elif "move" in str(self.currentState):
             # Person moving to object
@@ -364,9 +370,10 @@ class Person:
             # print("rememberedObj " + str(self.rememberedObj))
             # print("rememberedObjectCoords " + str(rememberedObjectCoords))
             rectangleCoordRanges = self.map.get_coordinates_range(rememberedObjectCoords, objectSize)
-            selfEdge = self.get_edge_coordinates_array()
+            selfEdge = self.get_edge_coordinates_array(self.coordinates)
 
-            if self.map.check_circle_overlap_rectangle(selfEdge, rectangleCoordRanges):
+            # if self.map.check_circle_overlap_rectangle(selfEdge, rectangleCoordRanges):
+            if self.map.check_person_touching_object(selfEdge, rectangleCoordRanges):
                 print("at target")
                 self.advance_state_machine()
             else:
@@ -405,6 +412,34 @@ class Person:
             # self.clear_remembered_object()
 
         return action
+
+    def find_action(self):
+        """
+        Does the find action for get_state_action
+        :return: String of action
+        """
+        action = "moveRandom"
+
+        if self.find_object(self.rememberedObjType):
+            action = "navigateToRememberedObj"
+            self.rotate = 0
+            self.advance_state_machine()
+        else:
+            # Cant find object do a circle to see it
+            if self.rotate < 12:
+                action = "rotate"
+
+            else:
+                # Done a circle move or rotate, dont want it to
+                random = randint(0, 100)
+                if random == 1:
+                    action = "rotate"
+                    self.rotate = 0
+                else:
+                    action = "moveRandom"
+
+        return action
+
 
     def want_action(self, wantState):
         """The people want to do something"""
@@ -476,13 +511,14 @@ class Person:
         return returnedObject
         self.rememberedCoords = newCoords
 
-    def get_edge_coordinates_array(self):
+    def get_edge_coordinates_array(self, coordinates):
         """Gets the edge coordinates of the circle"""
         edge_coordinates = []
         x = 0
-        xCoord = self.coordinates[0]
-        yCoord = self.coordinates[1]
-        print(str(self.coordinates))
+        # xCoord = self.coordinates[0]
+        # yCoord = self.coordinates[1]
+        xCoord = coordinates[0]
+        yCoord = coordinates[1]
         while x < 360:
             change = self.angleMath(x, xCoord, yCoord, round(self.width / 2) )
             temp = []

@@ -227,7 +227,6 @@ class map_data:
                 if self.check_circle_touch(person1, person2) == 0:
                     # Circles overlap
                     return obj
-                    return False
 
             else:
                 # Object is instance of baseObject, i.e. Bar
@@ -238,7 +237,6 @@ class map_data:
                 rectangleCoordRanges = self.get_coordinates_range(objCoords, objSize)
                 if self.check_circle_overlap_rectangle(edgeCoordinates, rectangleCoordRanges):
                     return obj
-                    return False
 
         # Coordinates are fine to move to
 
@@ -268,16 +266,55 @@ class map_data:
         """
         Checks to see if a circle and rectangle intersect
         :param circle: properties
-        :param rectangle: rectangle properties
+        :param rectangle: rectangle properties to be given as [[X][lowX][highX], [Y][lowY][highY]]
         :return: True if overlap
         """
         # print(str(circleEdge))
         # print(str(rectangle))
         # quit()
+
+        lowX = rectangle["X"][0]
+        highX = rectangle["X"][1]
+        if rectangle["X"][1] < rectangle["X"][0]:
+            lowX = rectangle["X"][1]
+            highX = rectangle["X"][0]
+
+        lowY = rectangle["Y"][0]
+        highY = rectangle["Y"][1]
+        if rectangle["Y"][1] < rectangle["Y"][0]:
+            lowY = rectangle["Y"][1]
+            highY = rectangle["Y"][0]
+
+        # Adjusting for diagonal movement
+        lowX -= 2
+        highX += 2
+        lowY -= 2
+        highY += 2
+
         for edge in circleEdge:
             if rectangle["X"][0] < edge[0] and edge[0] < rectangle["X"][1] and rectangle["Y"][0] < edge[1] and edge[1] < rectangle["Y"][1]:
-                # print("edge: " + str(edge))
-                # quit()
+            # if lowX < edge[0] and edge[0] < highX and lowY < edge[1] and edge[1] < highY:
+                print("edge: " + str(edge) + " rectangle " + str(rectangle))
+            #     quit()
+                return True
+
+        return False
+
+    def check_person_touching_object(self, circleEdge, rectangle):
+        """
+        Checks to see if a person is intersecting or next too an object
+        :param circleEdge: Circle edge array
+        :param rectangleCoordsRange: Rectangles coordinates to be given as [[X][lowX][highX], [Y][lowY][highY]]
+        :return: True on yes
+        """
+
+        if self.check_circle_overlap_rectangle(circleEdge, rectangle) is True:
+            return True
+
+        print("circle Edge " + str(circleEdge))
+        print("rectangle " + str(rectangle))
+        for edge in circleEdge:
+            if (edge[0] == rectangle["X"][0] or edge[0] == (rectangle["X"][0] - 1) or edge[0] == (rectangle["X"][1] + 1)) and (edge[1] == rectangle["Y"][0] or edge[1] == (rectangle["Y"][0] - 1) or edge[1] == (rectangle["Y"][0] + 1)):
                 return True
 
         return False

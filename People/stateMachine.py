@@ -93,10 +93,6 @@ class StateMachine:
         else:
             selectedNextState = self.__get_random_next_state(nextStates, statesCount)
 
-        # selectedNextState =  "wantDrink"
-        selectedNextState =  "wantToilet"
-
-
         self.set_current_state(selectedNextState)
 
         return selectedNextState

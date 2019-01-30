@@ -293,9 +293,6 @@ class map_data:
 
         for edge in circleEdge:
             if rectangle["X"][0] < edge[0] and edge[0] < rectangle["X"][1] and rectangle["Y"][0] < edge[1] and edge[1] < rectangle["Y"][1]:
-            # if lowX < edge[0] and edge[0] < highX and lowY < edge[1] and edge[1] < highY:
-                print("edge: " + str(edge) + " rectangle " + str(rectangle))
-            #     quit()
                 return True
 
         return False
@@ -311,10 +308,8 @@ class map_data:
         if self.check_circle_overlap_rectangle(circleEdge, rectangle) is True:
             return True
 
-        print("circle Edge " + str(circleEdge))
-        print("rectangle " + str(rectangle))
         for edge in circleEdge:
-            if (edge[0] == rectangle["X"][0] or edge[0] == (rectangle["X"][0] - 1) or edge[0] == (rectangle["X"][1] + 1)) and (edge[1] == rectangle["Y"][0] or edge[1] == (rectangle["Y"][0] - 1) or edge[1] == (rectangle["Y"][0] + 1)):
+            if (edge[0] == rectangle["X"][0] or edge[0] == (rectangle["X"][0] - 1) or edge[0] == rectangle["X"][1] or edge[0] == (rectangle["X"][1] + 1)) and (edge[1] == rectangle["Y"][0] or edge[1] == (rectangle["Y"][0] - 1) or edge[1] == rectangle["Y"][1] or edge[1] == (rectangle["Y"][0] + 1)):
                 return True
 
         return False

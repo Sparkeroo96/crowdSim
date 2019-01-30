@@ -67,8 +67,8 @@ class Person:
     # the first array is the properties from the previous state that they have to be in, not currently used
     # THe second array is the next states, must match another state or its going to break
     states = {
-        # "greatestNeed": [["usedToilet", "drinkDrink", "danced"], ["wantDrink", "wantToilet", "wantDance"]],
-        "greatestNeed": [["usedToilet", "drinkDrink", "danced"], ["wantDrink", "wantToilet"]],
+        "greatestNeed": [["usedToilet", "drinkDrink", "danced"], ["wantDrink", "wantToilet", "wantDance"]],
+        # "greatestNeed": [["usedToilet", "drinkDrink", "danced"], ["wantDrink", "wantToilet"]],
 
         "wantDrink": [["isGreatestNeed"], ["findBar", "orderDrink"]],
         "findBar": [["notAtBar"], ["moveToBar"]],
@@ -76,10 +76,10 @@ class Person:
         "orderDrink": [["atBar"], ["drink"]],
         "drink": [["getDrink"], ["greatestNeed"]],
 
-        # "wantDance": [["isGreatestNeed"], ["dance", "findDanceFloor"]],
-        # "findDanceFloor": [["notAtDanceFloor", "notFound"], ["moveToDanceFloor"]],
-        # "moveToDanceFloor": [["notAtDanceFloor", "found"], ["dance", "moveToDanceFloor"]],
-        # "dance": [["atDanceFloor"], ["greatestNeed"]],
+        "wantDance": [["isGreatestNeed"], ["dance", "findDanceFloor"]],
+        "findDanceFloor": [["notAtDanceFloor", "notFound"], ["moveToDanceFloor"]],
+        "moveToDanceFloor": [["notAtDanceFloor", "found"], ["dance", "moveToDanceFloor"]],
+        "dance": [["atDanceFloor"], ["greatestNeed"]],
 
         "wantToilet": [["isGreatestNeed"], ["findToilet", "useToilet"]],
         "findToilet": [["notAtToilet"], ["moveToToilet"]],
@@ -123,19 +123,17 @@ class Person:
             return "Waiting"
 
         stateAction = self.get_state_action()
-        print("currentState: " + self.currentState + " / stateAction " + stateAction)
+        # print("currentState: " + self.currentState + " / stateAction " + stateAction)
 
         if stateAction == "navigateToRememberedObj":
              self.navigate_to_remembered_object()
 
         elif stateAction == "rotate":
-             #print("no action")
              self.person_rotate()
 
         elif stateAction == "wait":
             # The person sits there and waits
-            print(self.name + " waiting")
-
+            return "Waiting"
         else:
             self.random_move()
         # return self.random_move()
@@ -184,31 +182,26 @@ class Person:
         newMove = [0, 0]
         newMove[0] = attemptedMove[0]
         newMove[1] = attemptedMove[1]
-        print("og attemptedMove = " + str(attemptedMove) + " newMove = " + str(newMove))
         collisionCoordinates = collisionObject.get_coordinates()
+
         if collisionCoordinates[0] != self.coordinates[0]:
             if collisionCoordinates[0] >= self.coordinates[0]:
-                print("here1 " + str(newMove[0]))
                 newMove[0] = newMove[0] - 1
             else:
                 newMove[0] = newMove[0] + 1
-                print("here2")
-            print("1st attemptedMove = " + str(attemptedMove) + " newMove = " + str(newMove))
+
             moveResult = self.move(newMove)
-            if  moveResult != True:
-                print("moveResult " + str(moveResult))
+
+            if moveResult != True:
                 newMove[0] = attemptedMove[0]
 
         if collisionCoordinates[1] != self.coordinates[1]:
             if collisionCoordinates[1] >= self.coordinates[1]:
                 newMove[1] = newMove[1] - 1
-                print("here3")
             else:
                 newMove[1] = newMove[1] + 1
-                print("here4")
-            print("2nd attemptedMove = " + str(attemptedMove) + " newMove = " + str(newMove))
             self.move(newMove)
-        print("attemptedMove = " + str(attemptedMove) + " newMove = " + str(newMove))
+
         return newMove
 
     def move(self, coordinates):
@@ -222,10 +215,8 @@ class Person:
 
         # if self.map.check_coordinates_for_person(coordinates, self.width, self.name, self.get_edge_coordinates_array()):
         if collisionObject is True:
-            print("is true")
             self.coordinates = coordinates
             return True
-        print("not moving")
         return collisionObject
 
     def person_rotate(self, clockwise = True):
@@ -234,7 +225,6 @@ class Person:
         :param clockwise: says whether or not to go clockwise or counter clockwise
         :return: Returns the new angle
         """
-        print(self.name + "  " + str(self.rotate))
         if clockwise:
             angleResult =  self.angle + 30
         else:
@@ -361,7 +351,6 @@ class Person:
 
         elif "move" in str(self.currentState):
             # Person moving to object
-            print(self.name + " Person moving to object")
             action = "navigateToRememberedObj"
 
             #If the person is next to the thing they are supposed to be on like a bar, advance the state again
@@ -374,10 +363,7 @@ class Person:
 
             # if self.map.check_circle_overlap_rectangle(selfEdge, rectangleCoordRanges):
             if self.map.check_person_touching_object(selfEdge, rectangleCoordRanges):
-                print("at target")
                 self.advance_state_machine()
-            else:
-                print("not at target")
 
         elif self.currentState == "orderDrink":
             # Person is ordering their drink
@@ -705,8 +691,6 @@ class Person:
                 x = x + 1
             i = i + 1
             x = 12
-            # #print(resultArray)
-            # #print( )
         return resultArray
 
     def angleMath(self, angle, xcord, ycord,vision):
@@ -829,7 +813,6 @@ class Person:
             self.advance_state_machine()
 
         elif self.rememberedObj.person_use_toilet(self):
-            print("using toilet")
             self.set_action_count(8, 10)
 
 
@@ -847,7 +830,7 @@ class Person:
         self.actionCount = multiplier * self.tick_rate
         self.currentActionCount = 0
 
-        print(self.name + " is waiting for " + str(self.actionCount) + " ticks")
+        # print(self.name + " is waiting for " + str(self.actionCount) + " ticks")
         return self.actionCount
 
     def clear_action_count(self):

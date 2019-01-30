@@ -35,10 +35,10 @@ class RunningMain:
     text_done = False
     text_running = False
 
-    screen_width = 800
-    screen_height = 600
+    screen_width = 500
+    screen_height = 500
 
-    tick_rate = 30
+    tick_rate = 60
 
     def __init__(self):
         pygame.init()
@@ -252,6 +252,12 @@ class RunningMain:
             elif shape == "rectangle":
                 # objects
                 height = obj.get_height()
+                print(obj.name)
+                print(obj.get_coordinates())
+                pygame.draw.rect(self.display, colour, [coordinates[0], coordinates[1], width, height])
+            elif shape == "wall":
+                height = obj.get_height()
+                # print(angle, width, height)
                 pygame.draw.rect(self.display, colour, [coordinates[0], coordinates[1], width, height])
 
         for obj in objectArray:

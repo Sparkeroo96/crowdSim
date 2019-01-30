@@ -8,10 +8,13 @@ from People.stateMachine import StateMachine
 from Objects.bar import Bar
 from Objects.toilet import Toilet
 from Objects.danceFloor import DanceFloor
+from Algorithm import a_starv2
 import math
 
 
 class Person:
+    """Placeholder testing"""
+    placeholder = 0
 
     tick_rate = 0
     actionCount = None
@@ -103,6 +106,10 @@ class Person:
 
         self.tick_rate = tick_rate
 
+        """These cords store waypoints needed to move using a*"""
+        cords = []
+        self.cords = cords
+
     def add_map(self, newMap, newCoordinates):
         """Storing the generated map"""
         self.map = newMap
@@ -119,7 +126,6 @@ class Person:
             return "Waiting"
 
         stateAction = self.get_state_action()
-        print("currentState: " + self.currentState + " / stateAction " + stateAction)
 
         if stateAction == "navigateToRememberedObj":
              self.navigate_to_remembered_object()
@@ -130,7 +136,8 @@ class Person:
 
         elif stateAction == "wait":
             # The person sits there and waits
-            print(self.name + " waiting")
+            print("hello")
+
 
         else:
             self.random_move()
@@ -142,33 +149,46 @@ class Person:
         :return: True on success
         """
 
-        nextMove = []
+        """PICK UP FROM HERE FOR NEXT SESSION"""
         x = self.coordinates[0]
         y = self.coordinates[1]
-        targetCoordinates = self.rememberedObj.get_coordinates()
-
-        #First move
-        if targetCoordinates[0] > x:
-            x += 1
-        elif targetCoordinates[0] < x:
-            x -=1
-
-        if targetCoordinates[1] > y:
-            y += 1
-
-        elif targetCoordinates[1] < y:
-            y -= 1
-
         nextMove = [x, y]
+        """SET CORDS from a*"""
+        if self.placeholder == 0:
+            """"""
+            self.set_cords_from_algo()
+            self.placeholder += 1
+
+        while self.cords:
+            targetCoordinates = [self.cords[0][0], self.cords[0][1]]
+            #First move
+            while targetCoordinates != nextMove:
+                if targetCoordinates[0] > x:
+                    x += 1
+                elif targetCoordinates[0] < x:
+                    x -= 1
+
+                if targetCoordinates[1] > y:
+                    y += 1
+                elif targetCoordinates[1] < y:
+                    y -= 1
+
+                nextMove = [x, y]
+                return self.move(nextMove)
+            self.cords.pop(0)
+            #
+            # if nextMove == targetCoordinates:
+            #     self.cords.pop(0)
+            # self.move(nextMove)
+            # print("CORDS LEFT: " + str(self.cords))
+
 
         # PHILS A* STUFF
+        moveReturn = []
+        # if moveReturn != True:
+        #     # There is a colliding object
+        #     newCoords = self.get_coordinates_for_move_avoiding_collision_object(targetCoordinates, moveReturn, nextMove)
 
-        moveReturn = self.move(nextMove)
-        if moveReturn != True:
-            # There is a colliding object
-            newCoords = self.get_coordinates_for_move_avoiding_collision_object(targetCoordinates, moveReturn, nextMove)
-
-        # self.move(nextMove)
 
 
     def get_coordinates_for_move_avoiding_collision_object(self, targetCoordinates,  collisionObject, attemptedMove):
@@ -202,7 +222,6 @@ class Person:
         :param coordinates:
         :return: True on successful move, returns the collision object on false
         """
-
         collisionObject = self.map.check_coordinates_for_person(coordinates, self.width, self.name, self.get_edge_coordinates_array())
 
         # if self.map.check_coordinates_for_person(coordinates, self.width, self.name, self.get_edge_coordinates_array()):
@@ -218,7 +237,6 @@ class Person:
         :param clockwise: says whether or not to go clockwise or counter clockwise
         :return: Returns the new angle
         """
-        print(self.name + "  " + str(self.rotate))
         if clockwise:
             angleResult =  self.angle + 30
         else:
@@ -834,3 +852,59 @@ class Person:
         self.clear_action_count()
         return False
 
+
+    """gets the cord from the a* stuff and returns the cords needed"""
+    def set_cords_from_algo(self):
+        locations = None
+        """If the current cords are the nearest node"""
+        if self.find_nearest_waypoint() != self.coordinates:
+            print("NOT EQUAL TO THE NEAREST NODE")
+            startingLoc = self.find_nearest_waypoint()
+        """NEED TO ADD THE DESTINATION OF REQUIRED OBJECT"""
+        locations = a_starv2.run_astar(self.coordinates, self.destination())
+        print("LOACTIONS FROM A* ARE: " + str(locations))
+        if not locations:
+            print("""NO PATH FOUND IN SET CORDS """)
+            self.action()
+            # print("me" + str(locations))
+        else:
+            for location in locations:
+                self.store_waypoints(location)
+                # locations.pop(0)
+                # self.cords.append((location[0], location[1]))
+                # coords.append((location[0] * 50, locations[1] * 50))
+            # return self.cords
+
+    """Stores the waypoints in cords var"""
+
+    def store_waypoints(self, cord):
+        print("CORDS FOR A*" + str(cord))
+        self.cords.append((cord[0], cord[1]))
+
+    """Returns the destination the person wants to achieve"""
+    """Current Placeholder"""
+
+    def destination(self):
+        random = randint(0, 10)
+        if random <= 2:
+            cords = [450, 450]
+        elif random <= 4:
+            cords = [50, 450]
+        elif random <= 6:
+            cords = [0, 0]
+        elif random <= 8:
+            cords = [50, 450]
+        else:
+            cords = [250, 250]
+        return cords
+
+    def find_nearest_waypoint(self):
+        cords = []
+        currentX = self.coordinates[0]
+        currentY = self.coordinates[1]
+        currentX = int(50 * round(float(currentX / 50)))
+        currentY = int(50 * round(float(currentY / 50)))
+        cords.append(currentX)
+        cords.append(currentY)
+        return cords
+        # print(current)

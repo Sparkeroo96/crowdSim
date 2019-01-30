@@ -7,6 +7,9 @@ import random as rand
 import math
 from People import *
 from Objects import *
+from Nodes import node
+from Algorithm import a_starv2
+import numpy
 
 
 # Seems to need these for allowing isinstance(example, Person), doesnt work with the above import
@@ -15,9 +18,14 @@ from Objects.wall import Wall
 from People.flockingPerson import FlockingPerson
 
 from Objects.bar import Bar
-
+constant = 0
 class map_data:
-
+    """TO DO"""
+    path = []
+    """TO DO"""
+    nodeList = []
+    """Wall values to iterate over"""
+    values_to_append = []
     mapData = []
     gui = None
     tick_rate = 0
@@ -28,11 +36,14 @@ class map_data:
 
     def map_default(self):
         """Getting default map data"""
-
-        self.add_people_to_map(1)
+        self.add_people_to_map(10)
         self.add_bar_to_map(1)
         self.add_toilet_to_map(1)
-
+        self.add_wall_to_map()
+        global constant
+        if constant == 0:
+            self.generate_nodes()
+            constant += 1
         return self.mapData
 
     def add_people_to_map(self, peopleCount):
@@ -40,22 +51,15 @@ class map_data:
         x = 0
         while x < peopleCount:
             coords = [50 * (x + 1), 50 * (x + 1)]
+            if x == 0:
+                coords = [0, 170]
+            if x == 1:
+                coords = [400, 25]
 
             newPerson = person.Person("person " + str(len(self.mapData)), coords, 20, rand.randint(0,360), self.tick_rate)
 
             newPerson.add_map(self, coords)
             self.mapData.append(newPerson)
-
-            x += 1
-
-    def add_bar_to_map(self, barCount):
-        """Adds a number of bars to the map"""
-        x = 0
-        while x < barCount:
-            coords = [150 * (x + 1), 150 * (x + 1)]
-            newBar = bar.Bar(coords, "bar " + str(len(self.mapData)), 100, 20)
-
-            self.mapData.append(newBar)
 
             x += 1
 
@@ -177,10 +181,6 @@ class map_data:
         return [veritcal, horizontal]
 
 
-    def add_wall_to_map(self, cords,width, height):
-            newWall = wall.Wall(cords,width,height)
-            self.mapData.append(newWall)
-
     def check_space_unoccupied(self, coordinates, object_size, object_name, object_shape):
         """Checks to see if a set of coordinates is occupied by an obj or person
         :param coordinates is the set its checking to see if anything occupies it
@@ -235,6 +235,10 @@ class map_data:
                 # height = obj.get_height()
                 objSize = [obj.get_width(), obj.get_height()]
                 objCoords = obj.get_coordinates()
+                print(obj.get_name())
+                print(obj.get_coordinates())
+                print("My obj cords are " + str(objCoords))
+                """PLACEHOLDER - need to convert to get coordinates"""
                 rectangleCoordRanges = self.get_coordinates_range(objCoords, objSize)
                 if self.check_circle_overlap_rectangle(edgeCoordinates, rectangleCoordRanges):
                     return obj
@@ -286,8 +290,8 @@ class map_data:
         """Adds a number of bars to the map"""
         x = 0
         while x < barCount:
-            coords = [100 * (x + 1), 100 * (x + 1)]
-            newBar = bar.Bar(coords, "bar " + str(len(self.mapData)), 100, 20)
+            coords = [450, 450]
+            newBar = bar.Bar(coords, "bar " + str(len(self.mapData)), 30, 20)
 
             self.mapData.append(newBar)
 
@@ -508,3 +512,65 @@ class map_data:
 
     def clear_map(self):
         self.get_map() == []
+
+    """Adds a wall to the map a"""
+
+    def add_wall_to_map(self):
+        newWall = []
+        # newWall.append(wall.Wall([0, 100], "wall 1", 400, 30))
+        newWall.append(wall.Wall([0, 300], "wall 2", 200, 10))
+        newWall.append(wall.Wall([300, 300], "wall 2", 450, 10))
+        newWall.append(wall.Wall([0, 400], "wall 3", 400, 10))
+        print("my wall coords are: " + str(newWall[0].get_cords()))
+        for walls in newWall:
+            print(walls.get_cords())
+            self.mapData.append(walls)
+        self.set_walls(newWall)
+
+    def set_walls(self, walls):
+        for wall in walls:
+            cordX = (int(wall.get_coordinates()[0] / 50))
+            cordY = (int(wall.get_coordinates()[1] / 50))
+            width = (int(wall.get_width() / 50))
+            height = (int(wall.get_height() / 50))
+            for x in range(width):
+                self.values_to_append.append([cordX + x, cordY])
+        """Check that coords are within the 10x10 grid"""
+        for v in self.values_to_append:
+            if v[0] > 9 and v[1] > 9:
+                self.values_to_append.remove(v)
+        print("APPENDED VALUES ARE: " + str(self.values_to_append))
+
+    """Generate the node objects that appear on the map"""
+
+    def generate_nodes(self):
+        """IDs for the nodes"""
+        listofID = []
+        """Basic 10x10 grid"""
+        simpleCords = []
+        for number in range(0, 100):
+            listofID.append(number)
+        """Create cords for the 10x10 grid"""
+        for x in range(100):
+            simpleCords.append([math.floor(x / 10), (x % 10)])
+        """Create 100 nodes, apply the coords"""
+        for n in range(100):
+            self.nodeList.append(node.Node(simpleCords[n], 0))
+        """Obtaining last coord in the simple grid to create the range of maze"""
+        """Create the empty node graph"""
+        graph = numpy.zeros((10, 10), int)
+        """For the values in append, apply the value of 1 to the node object"""
+        """1 Represents a wall"""
+        for v in self.values_to_append:
+            for n in self.nodeList:
+                if v == n.get_idCoords():
+                    n.set_value(1)
+        for cords in self.nodeList:
+            """if it is an environment object, show this in our graph"""
+            if cords.get_value() == 1:
+                graph[cords.get_idCoords()[0]][cords.get_idCoords()[1]] = cords.get_value()
+        """Placeholder locations - Need to run the algo from the person class"""
+        print(graph)
+
+        """Store all the nodes in the a_star class"""
+        a_starv2.store_all_nodes(graph)

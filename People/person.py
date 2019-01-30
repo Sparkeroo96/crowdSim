@@ -67,8 +67,8 @@ class Person:
     # the first array is the properties from the previous state that they have to be in, not currently used
     # THe second array is the next states, must match another state or its going to break
     states = {
-        "greatestNeed": [["usedToilet", "drinkDrink", "danced"], ["wantDrink", "wantToilet", "wantDance"]],
-        # "greatestNeed": [["usedToilet", "drinkDrink", "danced"], ["wantDrink", "wantToilet"]],
+        # "greatestNeed": [["usedToilet", "drinkDrink", "danced"], ["wantDrink", "wantToilet", "wantDance"]],
+        "greatestNeed": [["usedToilet", "drinkDrink", "danced"], ["wantDrink", "wantToilet"]],
 
         "wantDrink": [["isGreatestNeed"], ["findBar", "orderDrink"]],
         "findBar": [["notAtBar"], ["moveToBar"]],
@@ -76,10 +76,10 @@ class Person:
         "orderDrink": [["atBar"], ["drink"]],
         "drink": [["getDrink"], ["greatestNeed"]],
 
-        "wantDance": [["isGreatestNeed"], ["dance", "findDanceFloor"]],
-        "findDanceFloor": [["notAtDanceFloor", "notFound"], ["moveToDanceFloor"]],
-        "moveToDanceFloor": [["notAtDanceFloor", "found"], ["dance", "moveToDanceFloor"]],
-        "dance": [["atDanceFloor"], ["greatestNeed"]],
+        # "wantDance": [["isGreatestNeed"], ["dance", "findDanceFloor"]],
+        # "findDanceFloor": [["notAtDanceFloor", "notFound"], ["moveToDanceFloor"]],
+        # "moveToDanceFloor": [["notAtDanceFloor", "found"], ["dance", "moveToDanceFloor"]],
+        # "dance": [["atDanceFloor"], ["greatestNeed"]],
 
         "wantToilet": [["isGreatestNeed"], ["findToilet", "useToilet"]],
         "findToilet": [["notAtToilet"], ["moveToToilet"]],
@@ -123,7 +123,7 @@ class Person:
             return "Waiting"
 
         stateAction = self.get_state_action()
-        # print("currentState: " + self.currentState + " / stateAction " + stateAction)
+        print("currentState: " + self.currentState + " / stateAction " + stateAction)
 
         if stateAction == "navigateToRememberedObj":
              self.navigate_to_remembered_object()
@@ -215,6 +215,7 @@ class Person:
 
         # if self.map.check_coordinates_for_person(coordinates, self.width, self.name, self.get_edge_coordinates_array()):
         if collisionObject is True:
+            self.change_angle_to_move_direction(self.coordinates, coordinates)
             self.coordinates = coordinates
             return True
         return collisionObject
@@ -250,12 +251,59 @@ class Person:
         :param newCoords: The new ones youre moving to that you want to set the angle to face
         :return: The new angle
         """
-        slopeOfLine = (newCoords[1] - oldCoords[1]) / (newCoords[0] - oldCoords[0])
+        print("old " + str(oldCoords) + " new " + str(newCoords))
 
-        radians = math.atan(slopeOfLine)
-        degrees = math.degrees(radians)
+        newAngle = self.get_angle_between_coords(oldCoords, newCoords)
+        if newAngle is not False:
+            self.angle = newAngle
+        return self.angle
 
-        self.angle = degrees
+    def get_angle_between_coords(self, oldCoords, newCoords):
+        """Gets the angle between a pair of coordinatse
+        0 degrees is up
+        :param oldCoords: The old/current coordinates
+        :param newCoords: The new ones youre moving to that you want to set the angle to face
+        """
+        if oldCoords[0] == newCoords[0] and oldCoords[1] == newCoords[1]:
+            return False
+
+        degrees = 0
+        yDiff = newCoords[1] - oldCoords[1]
+        xDiff = newCoords[0] - oldCoords[1]
+        if xDiff != 0 and yDiff != 0:
+            # slopeOfLine = (newCoords[1] - oldCoords[1]) / (newCoords[0] - oldCoords[0])
+            slopeOfLine = yDiff / xDiff
+            radians = math.atan(slopeOfLine)
+            degrees = math.degrees(radians)
+            degrees += 90
+
+            if degrees < 0:
+                degrees += 360
+
+            elif degrees > 360:
+                degrees = degrees - 360
+                # degrees = 360 - degrees
+
+        else:
+            if xDiff != 0:
+                if newCoords[0] > oldCoords[0]:
+                    # degrees = 270
+                    degrees = 180
+
+                else:
+                    # degrees = 90
+                    degrees = 0
+
+            else:
+                if newCoords[1] > oldCoords[1]:
+                    # degrees = 180
+                    degrees = 90
+
+                else:
+                    # degrees = 0
+                    degrees = 270
+
+        print("degrees " + str(degrees))
         return degrees
 
 
@@ -364,6 +412,8 @@ class Person:
             # if self.map.check_circle_overlap_rectangle(selfEdge, rectangleCoordRanges):
             if self.map.check_person_touching_object(selfEdge, rectangleCoordRanges):
                 self.advance_state_machine()
+                print("at obj")
+                self.change_angle_to_move_direction(self.coordinates, self.rememberedObj.get_coordinates())
 
         elif self.currentState == "orderDrink":
             # Person is ordering their drink

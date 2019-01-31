@@ -42,6 +42,7 @@ class map_data:
             coords = [50 * (x + 1), 50 * (x + 1)]
 
             newPerson = person.Person("person " + str(len(self.mapData)), coords, 20, rand.randint(0,360), self.tick_rate)
+            # newPerson = person.Person("person " + str(len(self.mapData)), coords, 20, (90 * x), self.tick_rate)
 
             newPerson.add_map(self, coords)
             self.mapData.append(newPerson)
@@ -67,7 +68,7 @@ class map_data:
         """
         x = 0
         while x < toiletCount:
-            coords = [100 * (x + 1), 50]
+            coords = [150 * (x + 1), 50]
             newToilet = toilet.Toilet(coords, "toilet " + str(len(self.mapData)), 20, 20)
 
             self.mapData.append(newToilet)

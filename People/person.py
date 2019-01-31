@@ -268,15 +268,24 @@ class Person:
             return False
 
         degrees = 0
-        yDiff = newCoords[1] - oldCoords[1]
-        xDiff = newCoords[0] - oldCoords[1]
+        # yDiff = 0
+        yDiff = (0 - newCoords[1]) - (0 - oldCoords[1] )
+        xDiff = newCoords[0] - oldCoords[0]
+
+
+        # yDiff =  oldCoords[1] - newCoords[1]
+        # xDiff = oldCoords[1] - newCoords[0]
         if xDiff != 0 and yDiff != 0:
             # slopeOfLine = (newCoords[1] - oldCoords[1]) / (newCoords[0] - oldCoords[0])
             slopeOfLine = yDiff / xDiff
-            radians = math.atan(slopeOfLine)
+            # radians = math.atan(slopeOfLine)
+            radians = math.atan2(yDiff, xDiff)
             degrees = math.degrees(radians)
-            degrees += 90
+            print("old degrees " + str(degrees))
 
+            # degrees += self.de
+            degrees += 180
+            # print("degrees + 90 = " + str(degrees))
             if degrees < 0:
                 degrees += 360
 
@@ -302,7 +311,7 @@ class Person:
                 else:
                     # degrees = 0
                     degrees = 270
-
+        # degrees = 270
         print("degrees " + str(degrees))
         return degrees
 
@@ -879,6 +888,8 @@ class Person:
 
         self.actionCount = multiplier * self.tick_rate
         self.currentActionCount = 0
+
+        self.actionCount =1
 
         # print(self.name + " is waiting for " + str(self.actionCount) + " ticks")
         return self.actionCount

@@ -28,7 +28,7 @@ class RunningMain:
     pause = None
     menu = [None,"home"]
     load_name = False
-    load_name_result = ''
+    user_input_result = ''
     running_map_data_loc = ""
     text_done = False
     text_running = False
@@ -40,6 +40,18 @@ class RunningMain:
     #Error message
     error_message = ""
 
+    #Builder Functionality
+    builder_active = False
+    xCrod1 = None
+    yCord1 = None
+    width = 0
+    height = 0
+    drag = False
+
+    #Save flags
+    save_active = None
+    save_name = False
+
     tick_rate = 30
 
     def __init__(self):
@@ -47,7 +59,7 @@ class RunningMain:
         #Starts the pygame
         pygame.init()
         #Gets the location for the map data
-        self.set_map_data(map_data.map_data(self))
+        self.set_map_data(map_data.map_data(self,self.get_tick_rate()))
         # Creates a display to the size of the screen
         self.display = pygame.display.set_mode((self.get_screen_width(),self.get_screen_height()))
         # Adds name for the application
@@ -56,8 +68,11 @@ class RunningMain:
         clock = pygame.time.Clock()
         # Flag for checking if the map loaded correclty
         success = False
+
         # Main loop for the applicaion
         while not self.get_exit():
+            self.get_display().fill(self.white)
+
             # This gets all the key presses and mouse movements and passes them as events
             for event in pygame.event.get():
                 # Quit Function
@@ -67,31 +82,63 @@ class RunningMain:
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_p:
                         self.pause = not self.pause
+                    #Saves the current map
+                    if event.key == pygame.K_F1 and self.get_build_active():
+                        self.set_save_active(True)
+                        self.set_save_name(True)
+                    if event.key == pygame.K_F2:
+                        self.set_home_menu()
+                # Adding walls if the load menu is active
+                if pygame.mouse.get_pressed()[0] and self.get_build_active() and self.get_drag() == False:
+                    self.set_xCord1(pygame.mouse.get_pos()[0])
+                    self.set_yCord1(pygame.mouse.get_pos()[1])
+                    self.set_drag(True)
+
+                # gets the width and height for the walls and creates the obj
+                if event.type == pygame.MOUSEBUTTONUP and self.get_build_active() and self.get_drag():
+                    x2, y2 = pygame.mouse.get_pos()
+                    width = self.get_xCord1() - x2
+                    self.set_width(width * -1)
+                    height = self.get_yCord1() - y2
+                    self.set_height(height * -1)
+
+                    self.data.add_wall_to_map([self.get_xCord1(), self.get_yCord1()], self.get_width(), self.get_height())
+                    pygame.display.update()
+                    self.set_drag(False)
+
                 #This is the code manages the user text imput
                 if self.get_text_running() and event.type == pygame.KEYDOWN:
                     #Removes the last charater in the string
                     if event.key == pygame.K_BACKSPACE:
                         if self.get_load_name():
-                            text = self.get_load_name_result()
+                            text = self.get_user_input_result()
                             text = text[:-1]
-                            self.set_load_name_result(text)
+                            self.set_user_input_result(text)
                     # Sets the text done flag to true so the simultion can then load it
                     elif event.key == pygame.K_RETURN:
                         self.set_text_done(True)
                         self.set_text_running(False)
+                        self.set_save_name(False)
+                        self.set_load_name(False)
 
-                        if self.get_load_name():
-                            self.set_load_name(False)
                     # This is any other charactor and adds it to the running string for the user imput so it can be displayed
                     else:
-                        if self.get_load_name():
-                            running = self.get_load_name_result()
+                        if self.get_load_name() or self.get_save_name():
+                            running = self.get_user_input_result()
                             new_running = running + event.unicode
-                            self.set_load_name_result(new_running)
+                            self.set_user_input_result(new_running)
+
+            if self.get_drag():
+                width, height = pygame.mouse.get_pos()
+                width = width - self.get_xCord1()
+                height = height - self.get_yCord1()
+                self.set_width(width)
+                self.set_height(height)
+                pygame.draw.rect(self.get_display(), self.black,
+                                 [self.get_xCord1(), self.get_yCord1(), self.get_width(), self.get_height()])
+                pygame.display.update()
+
             # Resets the display to white each tick so a new information can be displayed
-            self.get_display().fill(self.white)
-            # Function that runs the main program
-            self.key_buttons()
             menu = self.get_menu()
             # Shows the first menu screen
             if menu[1] == "home":
@@ -102,7 +149,7 @@ class RunningMain:
 
                 #Checks to see if the text is completed if so then it loads that building floor plan
                 if self.get_text_done():
-                    search = self.get_load_name_result()
+                    search = self.get_user_input_result()
                     success = self.load_map('maps_saves', search)
                     self.set_text_done(False)
             # This checks to see if it is on the simulation menu options
@@ -143,9 +190,13 @@ class RunningMain:
                 # Creates a new empty map for the user to add objects
                 if menu[1] == "New":
                     self.new_build()
+                    if self.get_save_active():
+                        self.save()
                 # loads a map that the user can edit
                 if menu[1] == "Load":
-                    print("load")
+                    self.get_map_data().clear_map()
+                    self.set_load_name(True)
+                    self.set_menu("Builder")
                 # Goes back to the previous menu
                 if menu[1] == "Back":
                     self.set_home_menu()
@@ -219,7 +270,7 @@ class RunningMain:
         :return: The text object and the height and width for further calucaltions
         """
         pygame.font.init()
-        my_font = pygame.font.SysFont("Comic Sans MS", 50)
+        my_font = pygame.font.SysFont("Arial", 50)
         text_surface = my_font.render(text, False, self.black)
         return [text_surface,my_font.size(text)[0],my_font.size(text)[1]]
 
@@ -227,38 +278,13 @@ class RunningMain:
         """
         This function handeles the button presses in pygame, save, pause and creation of walls
         """
-        while self.get_pause():
-            for event in pygame.event.get():
-                # print(event)
-                #Pauses sim
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_p:
-                        self.pause = not self.pause
-                    #Allows wall adding
-                    if event.key == pygame.K_w:
-                        print("making wall")
-                        wall = True
-                    if event.key == pygame.K_s:
-                        self.data.export("maps_saves","test_s_Button")
-                 # Gets the starting cordinates for the walls
-                if event.type == pygame.MOUSEBUTTONDOWN and wall:
-                    x1, y1 = event.pos
-                    drag = True
-                # gets the width and height for the walls and creates the obj
-                if event.type == pygame.MOUSEBUTTONUP and wall:
-                    x2, y2 = event.pos
-                    width = x1 - x2
-                    width = width * -1
-                    height = y1 - y2
-                    height = height * -1
-                    self.data.add_wall_to_map([x1,y1],width,height)
-                    pygame.draw.rect(self.display,self.black,[x1,y1,width,height])
-                    pygame.display.update()
-                    drag = not drag
-                # quits if x button is pressed
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    quit()
+        for event in pygame.event.get():
+            # print(event)
+            # Gets the starting cordinates for the walls
+            # quits if x button is pressed
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                quit()
 
     def draw_display(self):
         """
@@ -378,14 +404,20 @@ class RunningMain:
             info = [option_1_x_coord, (option_1_y_coord + ((height_of_buttons + 10) * i)), width_of_buttons,
                     height_of_buttons]
             colour = self.black
-            # If statement that checks to see if the mouse is over the button
             if pygame.mouse.get_pos()[0] >= info[0] and pygame.mouse.get_pos()[0] <= info[0] + width_of_buttons and pygame.mouse.get_pos()[1] >= info[1] and pygame.mouse.get_pos()[1] <= info[1] + height_of_buttons:
                 colour = self.red
                 if pygame.mouse.get_pressed()[0]:
                     self.set_menu(button)
                     sleep(0.1)
                     pygame.display.update()
-            self.add_button(info, button, colour)
+            if button == "New" and pygame.mouse.get_pressed()[0]:
+                self.get_map_data().clear_map()
+            if self.get_load_name() and button == 'Load' and not self.get_text_done():
+                self.user_text_input(info, colour)
+            elif self.get_text_done() and button == 'Load':
+                self.add_button(info,self.get_user_input_result(),self.green)
+            else:
+                self.add_button(info, button, colour)
             i = i + 1
 
     def sim_menu(self):
@@ -417,7 +449,9 @@ class RunningMain:
             if self.get_load_name() and button == 'Floor Plan Load' and not self.get_text_done():
                 self.user_text_input(info, colour)
             elif self.get_text_done() and button == 'Floor Plan Load':
-                self.add_button(info,self.get_load_name_result(),self.green)
+                self.add_button(info,self.get_user_input_result(),self.green)
+                print("I ran")
+                # self.load_map("map_saves",self.get_user_input_result())
             else:
                 self.add_button(info, button, colour)
             i = i + 1
@@ -430,7 +464,7 @@ class RunningMain:
         """
         self.set_text_running(True)
         pygame.draw.rect(self.get_display(), colour, button_info, 2)
-        button_text = self.text(self.get_load_name_result())
+        button_text = self.text(self.get_user_input_result())
         loaction = self.centre(button_info, [button_text[1], button_text[2]])
         self.get_display().blit(button_text[0], loaction)
 
@@ -480,6 +514,29 @@ class RunningMain:
         # Adds the button with the back or
         self.add_button(info, 'Back To Main Menu', colour)
 
+    def new_build(self):
+        self.set_build_active(True);
+        self.draw_display()
+
+    def save(self):
+        cords = self.centre([0,0,self.get_screen_width(),self.get_screen_height()],[200,100])
+        info = [cords[0],cords[1], 250,50]
+        self.user_text_input(info,self.red)
+        if not self.get_save_name():
+            test_name = self.get_user_input_result()
+            result = self.get_map_data().check_save_name("maps_saves",test_name)
+            if result == True:
+                print("Name is free")
+                self.data.export("maps_saves",test_name)
+                self.set_home_menu()
+                self.set_save_active(False)
+
+            else:
+                self.clear_user_text()
+                self.set_save_name(True)
+                print("Name is taken")
+
+
     def get_map_data(self):
         return self.data
 
@@ -513,11 +570,11 @@ class RunningMain:
     def get_load_name(self):
         return self.load_name
 
-    def get_load_name_result(self):
-        return self.load_name_result
+    def get_user_input_result(self):
+        return self.user_input_result
 
-    def set_load_name_result(self, value):
-        self.load_name_result = value
+    def set_user_input_result(self, value):
+        self.user_input_result = value
 
     def set_text_done(self,value):
         self.text_done = value
@@ -548,6 +605,11 @@ class RunningMain:
     def set_home_menu(self):
         new_menu = [None, "home"]
         self.menu = new_menu
+        self.user_input_result = ""
+        self.save_name = False
+        self.load_name = False
+        self.text_running = False
+        self.text_done = False
 
     def get_exit(self):
         return self.exit
@@ -560,3 +622,54 @@ class RunningMain:
 
     def get_error_message(self):
         return self.error_message
+
+    def get_build_active(self):
+        return self.builder_active
+
+    def set_build_active(self, value):
+        self.builder_active = value
+
+    def get_xCord1(self):
+        return self.xCrod1
+
+    def get_yCord1(self):
+        return self.yCord1
+
+    def set_xCord1(self, value):
+        self.xCrod1 = value
+
+    def set_yCord1(self, value):
+        self.yCord1 = value
+
+    def get_drag(self):
+        return self.drag
+
+    def set_drag(self,value):
+        self.drag = value
+
+    def get_width(self):
+        return self.width
+
+    def set_width(self,value):
+        self.width = value
+
+    def get_height(self):
+        return self.height
+
+    def set_height(self,value):
+        self.height = value
+
+    def get_save_active(self):
+        return self.save_active
+
+    def set_save_active(self, value):
+        self.save_active = value
+
+    def clear_user_text(self):
+        self.user_input_result = ""
+
+    def get_save_name(self):
+        return self.save_name
+
+    def set_save_name(self, value):
+        self.save_name = value

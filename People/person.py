@@ -218,8 +218,9 @@ class Person:
         :param clockwise: says whether or not to go clockwise or counter clockwise
         :return: Returns the new angle
         """
-        print(self.name + "  " + str(self.rotate))
+        # print(self.name + "  " + str(self.rotate))
         if clockwise:
+
             angleResult =  self.angle + 30
         else:
             angleResult = self.angle - 30
@@ -332,11 +333,11 @@ class Person:
         elif "find" in str(self.currentState):
             # Person trying to find an object
             #print(self.name + " finding object")
-            print("remembered obj type " + self.rememberedObjType)
+            # print("remembered obj type " + self.rememberedObjType)
             if self.find_object(self.rememberedObjType):
                 action = "navigateToRememberedObj"
                 self.rotate = 0
-                print("here")
+                # print("here")
                 self.advance_state_machine()
             else:
                 # Cant find object do a circle to see it
@@ -355,7 +356,7 @@ class Person:
 
         elif "move" in str(self.currentState):
             # Person moving to object
-            print(self.name + " Person moving to object")
+            # print(self.name + " Person moving to object")
             action = "navigateToRememberedObj"
 
             #If the person is next to the thing they are supposed to be on like a bar, advance the state again

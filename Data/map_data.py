@@ -522,7 +522,7 @@ class map_data:
                     coordY = coordY.translate({ord("]"): None})
                     coords = [int(float(coordX)), int(float(coordY))]
                     if result[0] == 'Person':
-                        newPerson = person.Person("person " + str(len(self.mapData)), coords, int(result[2]), int(result[3]))
+                        newPerson = person.Person("person " + str(len(self.mapData)), coords, int(result[2]), int(result[3]),self.tick_rate)
                         self.mapData.append(newPerson)
                     elif result[0] == 'Wall':
                         newWall = Wall(coords,int(result[2]),int(result[3]))
@@ -537,4 +537,4 @@ class map_data:
         return self.mapData
 
     def clear_map(self):
-        self.get_map() == []
+        self.mapData = []

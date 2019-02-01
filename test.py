@@ -120,7 +120,6 @@ class RunningMain:
                         self.set_text_running(False)
                         self.set_save_name(False)
                         self.set_load_name(False)
-
                     # This is any other charactor and adds it to the running string for the user imput so it can be displayed
                     else:
                         if self.get_load_name() or self.get_save_name():
@@ -610,7 +609,7 @@ class RunningMain:
         self.load_name = False
         self.text_running = False
         self.text_done = False
-
+        self.builder_active = False
     def get_exit(self):
         return self.exit
 

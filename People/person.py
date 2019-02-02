@@ -128,7 +128,13 @@ class Person:
         stateAction = self.get_state_action()
 
         if stateAction == "navigateToRememberedObj":
-             self.navigate_to_remembered_object()
+            random = randint(0, 100)
+            if self.cords:
+                self.navigate_to_remembered_object()
+            elif random >= 99:
+                self.navigate_to_remembered_object()
+            else:
+                self.random_move()
 
         elif stateAction == "rotate":
              #print("no action")
@@ -150,6 +156,7 @@ class Person:
         """
 
         """PICK UP FROM HERE FOR NEXT SESSION"""
+        print("NAVIGATED TO REMEMBERED.")
         x = self.coordinates[0]
         y = self.coordinates[1]
         nextMove = [x, y]
@@ -161,7 +168,7 @@ class Person:
 
         while self.cords:
             targetCoordinates = [self.cords[0][0], self.cords[0][1]]
-            #First move
+            # First move
             while targetCoordinates != nextMove:
                 if targetCoordinates[0] > x:
                     x += 1
@@ -174,45 +181,47 @@ class Person:
                     y -= 1
 
                 nextMove = [x, y]
+                moveReturn = self.move(nextMove)
+                if moveReturn == False:
+                    newCoords = self.get_coordinates_for_move_avoiding_collision_object(targetCoordinates, moveReturn,
+                                                                                        nextMove)
+                    print("NEW CORDS ARE NOW +++ " + str(newCoords))
+                    return self.move(nextMove)
                 return self.move(nextMove)
             self.cords.pop(0)
-            #
-            # if nextMove == targetCoordinates:
-            #     self.cords.pop(0)
-            # self.move(nextMove)
-            # print("CORDS LEFT: " + str(self.cords))
 
-
-        # PHILS A* STUFF
-        moveReturn = []
-        # if moveReturn != True:
-        #     # There is a colliding object
-        #     newCoords = self.get_coordinates_for_move_avoiding_collision_object(targetCoordinates, moveReturn, nextMove)
-
-
-
-    def get_coordinates_for_move_avoiding_collision_object(self, targetCoordinates,  collisionObject, attemptedMove):
+    def get_coordinates_for_move_avoiding_collision_object(self, targetCoordinates, collisionObject, attemptedMove):
         """
         Try to move to an object avoiding an object
         :param targetCoordinates: The coordinates to move too
         :param collisionObject: The object to avoid
         :return: The coordinates to move to
         """
-
-        newMove = attemptedMove
-
+        newMove = [0, 0]
+        newMove[0] = attemptedMove[0]
+        newMove[1] = attemptedMove[1]
         collisionCoordinates = collisionObject.get_coordinates()
-        if collisionObject[0] != self.coordinates[0]:
-            if collisionObject[0] >= self.coordinates[0]:
+        print("STUCK OBJECT")
+        print(collisionCoordinates + self.coordinates)
+        print("Reach")
+
+        if collisionCoordinates[0] != self.coordinates[0]:
+            if collisionCoordinates[0] >= self.coordinates[0]:
                 newMove[0] = newMove[0] - 1
-            else :
+            else:
                 newMove[0] = newMove[0] + 1
 
-        if collisionObject[1] != self.coordinates[1]:
-            if collisionObject[1] >= self.coordinates[1]:
+            moveResult = self.move(newMove)
+
+            if moveResult != True:
+                newMove[0] = attemptedMove[0]
+
+        if collisionCoordinates[1] != self.coordinates[1]:
+            if collisionCoordinates[1] >= self.coordinates[1]:
                 newMove[1] = newMove[1] - 1
             else:
                 newMove[1] = newMove[1] + 1
+            self.move(newMove)
 
         return newMove
 
@@ -222,14 +231,59 @@ class Person:
         :param coordinates:
         :return: True on successful move, returns the collision object on false
         """
-        collisionObject = self.map.check_coordinates_for_person(coordinates, self.width, self.name, self.get_edge_coordinates_array())
+        collisionObject = self.map.check_coordinates_for_person(coordinates, self.width, self.name,
+                                                                self.get_edge_coordinates_array())
 
-        # if self.map.check_coordinates_for_person(coordinates, self.width, self.name, self.get_edge_coordinates_array()):
-        if collisionObject:
-            self.coordinates = coordinates
+        if collisionObject == True:
             return True
-
+        print("COLLISION IS" + str(collisionObject))
+        self.coordinates = coordinates
         return collisionObject
+
+    def random_move(self):
+        """Person moving randomly around the map"""
+        randomNumber = randint(0, 8)
+        # #print(self.name + " should move " + str(randomNumber))
+        newCoordinates = 0
+        # #print(self.name + " random number " + str(randomNumber) + " -- initial coords " + str(self.coordinates))
+        if randomNumber <= 2:  # person move up
+            newCoordinates = [self.coordinates[0], self.coordinates[1] + 1]
+
+        elif randomNumber <= 4:  # Person move down
+            newCoordinates = [self.coordinates[0], self.coordinates[1] - 1]
+
+        elif randomNumber <= 6:  # person move right
+            newCoordinates = [self.coordinates[0] + 1, self.coordinates[1]]
+
+        elif randomNumber <= 8:  # Person move left
+            newCoordinates = [self.coordinates[0] - 1, self.coordinates[1]]
+
+        """NEED TO FIX THIS"""
+        self.coordinates = newCoordinates
+
+        # tryMove = self.move(newCoordinates)
+        # if tryMove is True:
+        #     self.coordinates = newCoordinates
+        # else:
+        #     targetCoordinates = [self.coordinates[0], self.coordinates[1] + 5]
+        #     collision = self.get_coordinates_for_move_avoiding_collision_object(newCoordinates, tryMove,
+        #                                                                         targetCoordinates)
+        #     self.coordinates = collision
+
+        # moveReturn = self.move(newCoordinates)
+        # if moveReturn != True:
+        #     # There is a colliding object
+        #     nextMove = [100, 100]
+        #     newCoords = self.get_coordinates_for_move_avoiding_collision_object(newCoordinates, moveReturn, nextMove)
+        # return self.move(moveReturn)
+        # print(self.get_coordinates())
+
+        # PERSON NEEDS TO SEE IF THERE IS SOMETHING OCCUPING THIS SPACE
+        # ADD THAT IN
+        # if isinstance(newCoordinates, list):
+        #     edgeCoordinates = self.get_edge_coordinates_array()
+
+        # if self.map.check_coordinates_for_person(newCoordinates, self.width, self.name, edgeCoordinates):
 
     def person_rotate(self, clockwise = True):
         """
@@ -254,34 +308,6 @@ class Person:
 
         return angleResult
 
-
-
-    def random_move(self):
-        """Person moving randomly around the map"""
-        randomNumber = randint(0, 8)
-        # #print(self.name + " should move " + str(randomNumber))
-        newCoordinates = 0
-        # #print(self.name + " random number " + str(randomNumber) + " -- initial coords " + str(self.coordinates))
-        if randomNumber <= 2: #person move up
-            newCoordinates = [self.coordinates[0], self.coordinates[1] + 1]
-
-        elif randomNumber <= 4: #Person move down
-            newCoordinates = [self.coordinates[0], self.coordinates[1] - 1]
-
-        elif randomNumber <= 6: #person move right
-            newCoordinates = [self.coordinates[0] + 1, self.coordinates[1]]
-
-        elif randomNumber <= 8: #Person move left
-            newCoordinates = [self.coordinates[0] - 1, self.coordinates[1]]
-        self.coordinates = newCoordinates
-        # print(self.get_coordinates())
-
-        # PERSON NEEDS TO SEE IF THERE IS SOMETHING OCCUPING THIS SPACE
-        # ADD THAT IN
-        # if isinstance(newCoordinates, list):
-        #     edgeCoordinates = self.get_edge_coordinates_array()
-
-            # if self.map.check_coordinates_for_person(newCoordinates, self.width, self.name, edgeCoordinates):
 
     def store_coordinates(self, coordinates):
         """Storing a set of coordinates"""
@@ -385,10 +411,10 @@ class Person:
             selfEdge = self.get_edge_coordinates_array()
 
             if self.map.check_circle_overlap_rectangle(selfEdge, rectangleCoordRanges):
-                print("at target")
+                print("at the target")
                 self.advance_state_machine()
             else:
-                print("not at target")
+                print("not at targettt")
 
         elif self.currentState == "orderDrink":
             # Person is ordering their drink
@@ -860,7 +886,10 @@ class Person:
         if self.find_nearest_waypoint() != self.coordinates:
             print("NOT EQUAL TO THE NEAREST NODE")
             startingLoc = self.find_nearest_waypoint()
+            print(startingLoc)
+            self.move(startingLoc)
         """NEED TO ADD THE DESTINATION OF REQUIRED OBJECT"""
+        print("LOCATION BEFORE a*" + str(self.coordinates))
         locations = a_starv2.run_astar(self.coordinates, self.destination())
         print("LOACTIONS FROM A* ARE: " + str(locations))
         if not locations:
@@ -868,6 +897,7 @@ class Person:
             self.action()
             # print("me" + str(locations))
         else:
+            print()
             for location in locations:
                 self.store_waypoints(location)
                 # locations.pop(0)
@@ -889,19 +919,27 @@ class Person:
         if random <= 2:
             cords = [450, 450]
         elif random <= 4:
-            cords = [50, 450]
+            cords = [200, 450]
         elif random <= 6:
-            cords = [0, 0]
+            cords = [100, 50]
         elif random <= 8:
-            cords = [50, 450]
+            cords = [100, 50]
         else:
             cords = [250, 250]
         return cords
 
     def find_nearest_waypoint(self):
         cords = []
+        open = a_starv2.get_open_nodes()
         currentX = self.coordinates[0]
         currentY = self.coordinates[1]
+        notFound = True
+        # while notFound:
+        #     currentX = int(50 * round(float(currentX / 50)))
+        #     currentY = int(50 * round(float(currentY / 50)))
+        #     futurexy = [currentX, currentY]
+        #     if futurexy in open:
+        #         return futurexy
         currentX = int(50 * round(float(currentX / 50)))
         currentY = int(50 * round(float(currentY / 50)))
         cords.append(currentX)

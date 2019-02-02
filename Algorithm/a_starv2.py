@@ -5,9 +5,13 @@ mapLocations = []
 test = (1, 1), (-1, -1), (1, -1), (-1, 1)
 graph = []
 finalLocations = []
+n = []
 
 #  The binary heap keeps the open list in order
 def astar(array, start, dest):
+    """THE DESTINATION WILL BE DEEMED AS A 1"""
+    print("array in astar" + str(array))
+    array[(dest[0], dest[1])] = 0
     neighbours = [(0, 1), (0, -1), (1, 0), (-1, 0), (1, 1), (-1, -1), (1, -1), (-1, 1)]
 
     close_set = set()
@@ -122,9 +126,9 @@ def return_waypoints(locations):
     if not locations:
         return
     else:
-        """Add the destination to the waypoints"""
+        """Add the destination to the final waypoint"""
         waypoints.append(locations[-1])
-    # print(waypoints)
+    print("WAYPOINTS ARE: " + str(waypoints))
     global mapLocations
     mapLocations = waypoints
     return waypoints
@@ -166,3 +170,12 @@ def locations(path):
         finalLocations.append((p[0] * 50, p[1] * 50))
     print(finalLocations)
     return finalLocations
+
+def set_open_nodes(nodes):
+    global n
+    for node in nodes:
+        n.append([node[0] * 50, node[1] * 50])
+
+def get_open_nodes():
+    global n
+    return n

@@ -36,7 +36,7 @@ class map_data:
 
     def map_default(self):
         """Getting default map data"""
-        self.add_people_to_map(10)
+        self.add_people_to_map(30)
         self.add_bar_to_map(1)
         self.add_toilet_to_map(1)
         self.add_wall_to_map()
@@ -50,31 +50,16 @@ class map_data:
         """Adding people to map"""
         x = 0
         while x < peopleCount:
-            coords = [50 * (x + 1), 50 * (x + 1)]
+            coords = [10 * (x + 1), 10 * (x + 1)]
             if x == 0:
-                coords = [0, 170]
+                coords = [0, 50]
             if x == 1:
                 coords = [400, 25]
 
-            newPerson = person.Person("person " + str(len(self.mapData)), coords, 20, rand.randint(0,360), self.tick_rate)
+            newPerson = person.Person("person " + str(len(self.mapData)), coords, 10, rand.randint(0,360), self.tick_rate)
 
             newPerson.add_map(self, coords)
             self.mapData.append(newPerson)
-
-            x += 1
-
-    def add_toilet_to_map(self, toiletCount):
-        """
-        Adds a number of toilets to the map
-        :param toiletCount: the number to add
-        :return:
-        """
-        x = 0
-        while x < toiletCount:
-            coords = [100 * (x + 1), 50]
-            newToilet = toilet.Toilet(coords, "toilet " + str(len(self.mapData)), 20, 20)
-
-            self.mapData.append(newToilet)
 
             x += 1
 
@@ -227,7 +212,6 @@ class map_data:
                 if self.check_circle_touch(person1, person2) == 0:
                     # Circles overlap
                     return obj
-                    return False
 
             else:
                 # Object is instance of baseObject, i.e. Bar
@@ -235,18 +219,15 @@ class map_data:
                 # height = obj.get_height()
                 objSize = [obj.get_width(), obj.get_height()]
                 objCoords = obj.get_coordinates()
-                print(obj.get_name())
-                print(obj.get_coordinates())
-                print("My obj cords are " + str(objCoords))
-                """PLACEHOLDER - need to convert to get coordinates"""
                 rectangleCoordRanges = self.get_coordinates_range(objCoords, objSize)
                 if self.check_circle_overlap_rectangle(edgeCoordinates, rectangleCoordRanges):
+                    print("NAME OF OBJECT IS " + obj.get_name())
                     return obj
-                    return False
 
         # Coordinates are fine to move to
 
         return True
+
 
     def check_circle_touch(self, person1, person2):
         """Checks to see if two circles have either coordinates overlap
@@ -268,20 +249,57 @@ class map_data:
             # Circles overlap
             return 0
 
+    def check_person_touching_object(self, circleEdge, rectangle):
+        """
+        Checks to see if a person is intersecting or next too an object
+        :param circleEdge: Circle edge array
+        :param rectangleCoordsRange: Rectangles coordinates to be given as [[X][lowX][highX], [Y][lowY][highY]]
+        :return: True on yes
+        """
+
+        if self.check_circle_overlap_rectangle(circleEdge, rectangle) is True:
+            return True
+
+        for edge in circleEdge:
+            if (edge[0] == rectangle["X"][0] or edge[0] == (rectangle["X"][0] - 1) or edge[0] == rectangle["X"][1] or edge[0] == (rectangle["X"][1] + 1)) and (edge[1] == rectangle["Y"][0] or edge[1] == (rectangle["Y"][0] - 1) or edge[1] == rectangle["Y"][1] or edge[1] == (rectangle["Y"][0] + 1)):
+                return True
+
+        return False
+
+
     def check_circle_overlap_rectangle(self, circleEdge, rectangle):
         """
         Checks to see if a circle and rectangle intersect
         :param circle: properties
-        :param rectangle: rectangle properties
+        :param rectangle: rectangle properties to be given as [[X][lowX][highX], [Y][lowY][highY]]
         :return: True if overlap
         """
         # print(str(circleEdge))
         # print(str(rectangle))
         # quit()
+
+        lowX = rectangle["X"][0]
+        highX = rectangle["X"][1]
+        if rectangle["X"][1] < rectangle["X"][0]:
+            lowX = rectangle["X"][1]
+            highX = rectangle["X"][0]
+
+        lowY = rectangle["Y"][0]
+        highY = rectangle["Y"][1]
+        if rectangle["Y"][1] < rectangle["Y"][0]:
+            lowY = rectangle["Y"][1]
+            highY = rectangle["Y"][0]
+
+        # Adjusting for diagonal movement
+        lowX -= 2
+        highX += 2
+        lowY -= 2
+        highY += 2
+
         for edge in circleEdge:
-            if rectangle["X"][0] < edge[0] and edge[0] < rectangle["X"][1] and rectangle["Y"][0] < edge[1] and edge[1] < rectangle["Y"][1]:
-                # print("edge: " + str(edge))
-                # quit()
+            if rectangle["X"][0] < edge[0] and edge[0] < rectangle["X"][1] and rectangle["Y"][0] < edge[1] and edge[1] < \
+                    rectangle["Y"][1]:
+                print("OVERLAP ON THE MAP_DATA SIDE")
                 return True
 
         return False
@@ -518,23 +536,30 @@ class map_data:
     def add_wall_to_map(self):
         newWall = []
         # newWall.append(wall.Wall([0, 100], "wall 1", 400, 30))
-        newWall.append(wall.Wall([0, 300], "wall 2", 200, 10))
-        newWall.append(wall.Wall([300, 300], "wall 2", 450, 10))
-        newWall.append(wall.Wall([0, 400], "wall 3", 400, 10))
+        newWall.append(wall.Wall([0, 300], "wall 2", 102, 10))
+        # newWall.append(wall.Wall([300, 300], "wall 2", 450, 10))
+        newWall.append(wall.Wall([0, 400], "wall 3", 260, 10))
+        newWall.append(wall.Wall([0, 150], "wall 3", 300, 10))
+        newWall.append(wall.Wall([300, 100], "wall 3", 10, 120))
+        newWall.append(wall.Wall([300, 0], "wall 3", 10, 20))
+
         print("my wall coords are: " + str(newWall[0].get_cords()))
         for walls in newWall:
-            print(walls.get_cords())
             self.mapData.append(walls)
         self.set_walls(newWall)
 
+    """Set walls on the nodes"""
     def set_walls(self, walls):
         for wall in walls:
             cordX = (int(wall.get_coordinates()[0] / 50))
             cordY = (int(wall.get_coordinates()[1] / 50))
-            width = (int(wall.get_width() / 50))
-            height = (int(wall.get_height() / 50))
+            width = (math.ceil(wall.get_width() / 50))
+            height = (math.ceil(wall.get_height() / 50))
+            print("SETTING WALLS" + str(width) + str(height))
             for x in range(width):
                 self.values_to_append.append([cordX + x, cordY])
+            for y in range(height):
+                self.values_to_append.append([cordX, cordY + y])
         """Check that coords are within the 10x10 grid"""
         for v in self.values_to_append:
             if v[0] > 9 and v[1] > 9:
@@ -542,6 +567,24 @@ class map_data:
         print("APPENDED VALUES ARE: " + str(self.values_to_append))
 
     """Generate the node objects that appear on the map"""
+
+    def add_toilet_to_map(self, toiletCount):
+        """
+        Adds a number of toilets to the map
+        :param toiletCount: the number to add
+        :return:
+        """
+
+        x = 0
+        toilets = []
+        while x < toiletCount:
+            coords = [100, 50]
+            newToilet = toilet.Toilet(coords, "toilet " + str(len(self.mapData)), 100, 10)
+            toilets.append(newToilet)
+            self.set_walls(toilets)
+            self.mapData.append(newToilet)
+
+            x += 1
 
     def generate_nodes(self):
         """IDs for the nodes"""
@@ -565,12 +608,16 @@ class map_data:
             for n in self.nodeList:
                 if v == n.get_idCoords():
                     n.set_value(1)
+        openNodes = []
         for cords in self.nodeList:
             """if it is an environment object, show this in our graph"""
             if cords.get_value() == 1:
                 graph[cords.get_idCoords()[0]][cords.get_idCoords()[1]] = cords.get_value()
+            elif cords.get_value() == 0: #Cord should be added to list of open nodes
+                openNodes.append(cords.get_idCoords())
         """Placeholder locations - Need to run the algo from the person class"""
         print(graph)
-
+        """Stores all free nodes in a_star class"""
+        a_starv2.set_open_nodes(openNodes)
         """Store all the nodes in the a_star class"""
         a_starv2.store_all_nodes(graph)

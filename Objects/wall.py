@@ -11,4 +11,5 @@ class Wall(BaseObject):
         self.coordinates = coordinates
         self.width = width
         self.height = height
+        self.name = name
 

@@ -38,7 +38,7 @@ class RunningMain:
     screen_width = 500
     screen_height = 500
 
-    tick_rate = 60
+    tick_rate = 120
 
     def __init__(self):
         pygame.init()

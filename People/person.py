@@ -17,9 +17,16 @@ class Person:
     actionCount = None
     currentActionCount = None
 
+    #Current coordinates
     coordinates = [0,1]
+    #Last Coordinates, used for flocking
+    lastCoordinates = []
+
+    flockingDistance = 40
+
     #Was size but chris has angle and width so using that instead
     angle = 0
+    #This is the diameter
     width = 10
     name = ""
 
@@ -98,6 +105,9 @@ class Person:
             self.angle = angle
         if width:
             self.width = width
+            self.flockingDistance = 30 + width
+        else:
+            self.flockingDistance = 30
 
         self.stateMachine = StateMachine("person")
         self.add_states_to_machine()
@@ -216,6 +226,7 @@ class Person:
         # if self.map.check_coordinates_for_person(coordinates, self.width, self.name, self.get_edge_coordinates_array()):
         if collisionObject is True:
             self.change_angle_to_move_direction(self.coordinates, coordinates)
+            self.lastCoordinates = self.coordinates
             self.coordinates = coordinates
             return True
         return collisionObject
@@ -227,7 +238,7 @@ class Person:
         :return: Returns the new angle
         """
         if clockwise:
-            angleResult =  self.angle + 30
+            angleResult = self.angle + 30
         else:
             angleResult = self.angle - 30
 
@@ -334,16 +345,8 @@ class Person:
         elif randomNumber <= 8: #Person move left
             newCoordinates = [self.coordinates[0] - 1, self.coordinates[1]]
 
-        if self.move(newCoordinates) is True:
-            self.coordinates = newCoordinates
-        # print(self.get_coordinates())
+        self.move(newCoordinates)
 
-        # PERSON NEEDS TO SEE IF THERE IS SOMETHING OCCUPING THIS SPACE
-        # ADD THAT IN
-        # if isinstance(newCoordinates, list):
-        #     edgeCoordinates = self.get_edge_coordinates_array()
-
-            # if self.map.check_coordinates_for_person(newCoordinates, self.width, self.name, edgeCoordinates):
 
     def store_coordinates(self, coordinates):
         """Storing a set of coordinates"""
@@ -914,3 +917,81 @@ class Person:
         self.clear_action_count()
         return False
 
+
+    #FLOCKING STUFF FML
+
+    def flock(self):
+        """
+        Person flocks with others
+        Going to want an average angle of nearby people and average move direction
+        :return:
+        """
+        nearbyPeople = self.map.get_people_within_range(self.coordinates, self.flockingDistance)
+
+        if nearbyPeople is False or len(nearbyPeople) == 1:
+            # No nearby people random
+            return self.random_move()
+
+        angleTotal = 0
+        # These are the directions people are moving on the axis
+        xDirection = {
+            "positive": 0,
+            "negative": 0
+        }
+        yDirection = {
+            "positive": 0,
+            "negative": 0
+        }
+
+
+        for person in nearbyPeople:
+            if person == self:
+                # This is a reference to itself
+                continue
+
+            flockingParameters = person.get_flocking_parameters()
+
+            angleTotal += flockingParameters["angle"]
+
+
+
+        avgAngle = angleTotal / (len(nearbyPeople) - 1)
+
+    def flock_move(self, avgAngle, xDirection, yDirection):
+        """
+        Move in a direction based on the x and y direciton
+        :param avgAngle:
+        :param xDirection:
+        :param yDirection:
+        :return:
+        """
+
+
+
+
+
+    def get_flocking_parameters(self):
+        """
+        Gets the parameters for another object to flock with this one with
+        Source: http://harry.me/blog/2011/02/17/neat-algorithms-flocking/
+        Not using velocity yet as currently it only moves one space at a time
+        :return: A list of angle and move direction
+        """
+
+        returnList  = {
+            "angle" : self.angle,
+            "direction" : self.calculate_move_direction_difference()
+        }
+
+        return returnList
+
+    def calculate_move_direction_difference(self):
+        """
+        Works out the X,Y difference from the old coordiantes to the current ones
+        :return:
+        """
+
+        xDiff = self.coordinates[0] - self.lastCoordinates[0]
+        yDiff = self.coordinates[1] - self.lastCoordinates[1]
+
+        return [xDiff, yDiff]

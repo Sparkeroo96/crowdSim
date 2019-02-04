@@ -541,3 +541,39 @@ class map_data:
 
     def clear_map(self):
         self.get_map() == []
+
+    def get_people_within_range(self, coordinates, diameter):
+        """
+        Gets an array of people within a distance of coordiantes
+        :param coordinates: Coordinates to search around
+        :param diameter: Diameter to check around
+        :return: An array
+        """
+
+        returnArray = []
+
+        checkCircle = {
+            "xCoord" : coordinates[0],
+            "yCoord" : coordinates[1],
+            "radius" : (diameter / 2)
+        }
+
+        for obj in self.mapData:
+            if isinstance(obj, Person) is False:
+                continue
+
+            objCoordinates = obj.get_coordinates()
+            objWidth = obj.get_width()
+            personParameters = {
+                "xCoord": objCoordinates[0],
+                "yCoord": objCoordinates[1],
+                "radius": (objWidth / 2)
+            }
+
+            if self.check_circle_touch(checkCircle, personParameters) == 1:
+                returnArray.append(obj)
+
+        if returnArray == []:
+            return False
+
+        return returnArray

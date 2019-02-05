@@ -517,11 +517,6 @@ class map_data:
                         new_toilet = Toilet(coords,"toilet" + str(len(self.mapData)),int(result[2]),int(result[3]))
                         self.mapData.append(new_toilet)
                     elif result[0] == "bar":
-                        print(coords)
-                        print(str(len(self.get_map())))
-                        print(result[2])
-                        print(result[3])
-                        print()
                         newBar = bar.Bar(coords,str(len(self.get_map())),int(result[2]),int(result[3]))
                         self.mapData.append(newBar)
             return True

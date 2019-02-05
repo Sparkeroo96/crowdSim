@@ -119,7 +119,7 @@ class Person:
             return "Waiting"
 
         stateAction = self.get_state_action()
-        print("currentState: " + self.currentState + " / stateAction " + stateAction)
+        # print("currentState: " + self.currentState + " / stateAction " + stateAction)
 
         if stateAction == "navigateToRememberedObj":
              self.navigate_to_remembered_object()
@@ -130,8 +130,8 @@ class Person:
 
         elif stateAction == "wait":
             # The person sits there and waits
-            print(self.name + " waiting")
-
+            # print(self.name + " waiting")
+            nothing = None
         else:
             self.random_move()
         # return self.random_move()
@@ -368,10 +368,11 @@ class Person:
             selfEdge = self.get_edge_coordinates_array()
 
             if self.map.check_circle_overlap_rectangle(selfEdge, rectangleCoordRanges):
-                print("at target")
+                # print("at target")
                 self.advance_state_machine()
             else:
-                print("not at target")
+                # print("not at target")
+                nothing = None
 
         elif self.currentState == "orderDrink":
             # Person is ordering their drink
@@ -483,7 +484,7 @@ class Person:
         x = 0
         xCoord = self.coordinates[0]
         yCoord = self.coordinates[1]
-        print(str(self.coordinates))
+        # print(str(self.coordinates))
         while x < 360:
             change = self.angleMath(x, xCoord, yCoord, round(self.width / 2) )
             temp = []
@@ -794,7 +795,7 @@ class Person:
             self.advance_state_machine()
 
         elif self.rememberedObj.person_use_toilet(self):
-            print("using toilet")
+            # print("using toilet")
             self.set_action_count(8, 10)
 
 
@@ -812,7 +813,7 @@ class Person:
         self.actionCount = multiplier * self.tick_rate
         self.currentActionCount = 0
 
-        print(self.name + " is waiting for " + str(self.actionCount) + " ticks")
+        # print(self.name + " is waiting for " + str(self.actionCount) + " ticks")
         return self.actionCount
 
     def clear_action_count(self):

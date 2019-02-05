@@ -16,6 +16,8 @@ from People.flockingPerson import FlockingPerson
 
 from Objects.bar import Bar
 
+from Objects.toilet import Toilet
+
 class map_data:
 
     mapData = []
@@ -35,44 +37,29 @@ class map_data:
 
         return self.mapData
 
-    def add_people_to_map(self, peopleCount):
+    def add_people_to_map(self, coords, size, angle):
         """Adding people to map"""
-        x = 0
-        while x < peopleCount:
-            coords = [50 * (x + 1), 50 * (x + 1)]
+        newPerson = person.Person("person " + str(len(self.mapData)), coords, size, angle, self.tick_rate)
+        newPerson.add_map(self, coords)
+        self.mapData.append(newPerson)
 
-            newPerson = person.Person("person " + str(len(self.mapData)), coords, 20, rand.randint(0,360), self.tick_rate)
 
-            newPerson.add_map(self, coords)
-            self.mapData.append(newPerson)
+    def add_bar_to_map(self, coords, width, height):
+        """Adds a bar to the map when it is called buy the builder"""
+        newBar = bar.Bar(coords, "bar " + str(len(self.mapData)),width, height)
+        self.mapData.append(newBar)
 
-            x += 1
-
-    def add_bar_to_map(self, barCount):
-        """Adds a number of bars to the map"""
-        x = 0
-        while x < barCount:
-            coords = [150 * (x + 1), 150 * (x + 1)]
-            newBar = bar.Bar(coords, "bar " + str(len(self.mapData)), 100, 20)
-
-            self.mapData.append(newBar)
-
-            x += 1
-
-    def add_toilet_to_map(self, toiletCount):
+    def add_toilet_to_map(self, coords, width, height):
         """
-        Adds a number of toilets to the map
-        :param toiletCount: the number to add
-        :return:
+        This function adds a toliet to the data structure based off the map builder imput
+        :param coords: The X and Y or the base corner
+        :param hight: The height of the object
+        :param width: The width of the toilet
+        :return: None
         """
-        x = 0
-        while x < toiletCount:
-            coords = [100 * (x + 1), 50]
-            newToilet = toilet.Toilet(coords, "toilet " + str(len(self.mapData)), 20, 20)
 
-            self.mapData.append(newToilet)
-
-            x += 1
+        newToilet = toilet.Toilet(coords, "toilet " + str(len(self.mapData)), width, height)
+        self.mapData.append(newToilet)
 
     def get_object_colour_code(self, objectType):
         """
@@ -282,17 +269,6 @@ class map_data:
 
         return False
 
-    def add_bar_to_map(self, barCount):
-        """Adds a number of bars to the map"""
-        x = 0
-        while x < barCount:
-            coords = [100 * (x + 1), 100 * (x + 1)]
-            newBar = bar.Bar(coords, "bar " + str(len(self.mapData)), 100, 20)
-
-            self.mapData.append(newBar)
-
-            x += 1
-
     def get_coordinates_range(self, coordinates, object_size):
         """ Function gets the range of spaces used by a set of coordinates
         :param coordinates is the set its checking to see if anything occupies it
@@ -445,6 +421,20 @@ class map_data:
             file.write(save_name.lower() + "\n")
             for obj in map:
                 # print(obj)
+                coords = obj.get_coordinates()
+                width = obj.get_width()
+                height = obj.get_height()
+                if isinstance(obj, Wall):
+                    obj_type = 'Wall'
+
+                if isinstance(obj, Bar):
+                    obj_type = "Bar"
+                if isinstance(obj, Toilet):
+                    obj_type = "Toilet"
+
+                data = [obj_type, coords, width, height]
+                # Different data needed to record person objects
+
                 if isinstance(obj,Person):
                     # print("ran")
                     obj_type = 'Person'
@@ -452,12 +442,7 @@ class map_data:
                     angle = obj.get_angle()
                     width = obj.get_width()
                     data = [obj_type,coords,width,angle]
-                if isinstance(obj, Wall):
-                    obj_type = 'Wall'
-                    coords = obj.get_coordinates()
-                    width = obj.get_width()
-                    height = obj.get_height()
-                    data = [obj_type,coords,width,height]
+
                 str1 = '/'.join(str(e) for e in data)
                 file.write(str1 + "\n")
             file.close()
@@ -515,23 +500,85 @@ class map_data:
             for line in found_load:
                 result = [x.strip() for x in line.split('/')]
                 if not result == [""]:
+                    result[0] = result[0].lower()
                     coords = [x.strip() for x in result[1].split(",")]
                     coordX = coords[0].translate({ord("'"): None})
                     coordY = coords[1].translate({ord("'"): None})
                     coordX = coordX.translate({ord("["): None})
                     coordY = coordY.translate({ord("]"): None})
                     coords = [int(float(coordX)), int(float(coordY))]
-                    if result[0] == 'Person':
+                    if result[0] == 'person':
                         newPerson = person.Person("person " + str(len(self.mapData)), coords, int(result[2]), int(result[3]),self.tick_rate)
                         self.mapData.append(newPerson)
-                    elif result[0] == 'Wall':
+                    elif result[0] == 'wall':
                         newWall = Wall(coords,int(result[2]),int(result[3]))
                         self.mapData.append(newWall)
+                    elif result[0] == "toilet":
+                        new_toilet = Toilet(coords,"toilet" + str(len(self.mapData)),int(result[2]),int(result[3]))
+                        self.mapData.append(new_toilet)
+                    elif result[0] == "bar":
+                        print(coords)
+                        print(str(len(self.get_map())))
+                        print(result[2])
+                        print(result[3])
+                        print()
+                        newBar = bar.Bar(coords,str(len(self.get_map())),int(result[2]),int(result[3]))
+                        self.mapData.append(newBar)
             return True
         else:
             print("ERROR FILE NOT FOUND")
         file.close()
         return False
+
+    def add_to_map(self,object_type,x_cord,y_cord,width,height):
+        """
+        Takes the name of the object then creates the apropriate object to the array only works for cubes/ rectangles
+        :param object_type:
+        :param x_cord: x coordinate
+        :param y_cord: y coordinate
+        :param width: width of the object
+        :param height: height of the object
+        :return: Null
+        """
+        cords = [x_cord,y_cord]
+        objectType = object_type.lower()
+        if objectType == 'wall':
+            self.add_wall_to_map(cords,width,height)
+
+        if objectType == 'bar':
+            self.add_bar_to_map(cords, width, height)
+        if objectType == "toilet":
+            self.add_toilet_to_map(cords,width,height)
+
+    def delete_object(self,coords):
+        """
+        Function that removes rectangles by their coordinates, takes it out of the map_data
+        :param coords: the x and y cordinate of the object on the display
+        :return: Null
+        """
+        map_data = self.get_map()
+        x_coord = coords[0]
+        y_coord = coords[1]
+        index = 0;
+        for obj in map_data:
+            if obj.get_shape != "circle":
+                cords = obj.get_coordinates()
+                x1 = cords[0]
+                y1 = cords[1]
+                x2 = x1 + obj.get_width()
+                y2 = y1 + obj.get_height()
+                if obj.get_width() < 0:
+                    x2 = x1
+                    x1 = x2 + obj.get_width()
+                if obj.get_height() < 0:
+                    y2 = y1
+                    y1 = y2 + obj.get_height()
+
+
+                if x1 < x_coord and x2 > x_coord and y1 < y_coord and y2 > y_coord:
+                    map_data.pop(index)
+        index = index + 1
+
 
     def get_map(self):
         return self.mapData

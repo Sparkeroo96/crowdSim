@@ -20,6 +20,8 @@ class RunningMain:
     black = (0,0,0)
     green = (51, 204, 51)
     red = (255, 0, 0)
+    blue = (0, 0, 153)
+    orange = (255, 128, 0)
 
     exit = False
 
@@ -47,6 +49,10 @@ class RunningMain:
     width = 0
     height = 0
     drag = False
+    current_tool = None
+
+    #Debug flags
+    add_person_on_click = False
 
     #Save flags
     save_active = None
@@ -71,40 +77,54 @@ class RunningMain:
 
         # Main loop for the applicaion
         while not self.get_exit():
+            # print(self.get_map_data().get_map())
             self.get_display().fill(self.white)
 
             # This gets all the key presses and mouse movements and passes them as events
             for event in pygame.event.get():
+
                 # Quit Function
                 if event.type == pygame.QUIT:
                     self.set_exit()
+
                     # Pause function
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_p:
                         self.pause = not self.pause
+
                     #Saves the current map
                     if event.key == pygame.K_F1 and self.get_build_active():
                         self.set_save_active(True)
                         self.set_save_name(True)
                     if event.key == pygame.K_F2:
                         self.set_home_menu()
-                # Adding walls if the load menu is active
-                if pygame.mouse.get_pressed()[0] and self.get_build_active() and self.get_drag() == False:
+                    if event.key == pygame.K_F9:
+                        self.set_add_person_on_click()
+
+                # Adding objects if the load menu is active
+                if pygame.mouse.get_pressed()[0] and self.get_build_active() and self.get_drag() == False and (pygame.mouse.get_pos()[1] < self.get_screen_height() * 0.95) and self.get_current_tool() != "Remove":
                     self.set_xCord1(pygame.mouse.get_pos()[0])
                     self.set_yCord1(pygame.mouse.get_pos()[1])
                     self.set_drag(True)
 
-                # gets the width and height for the walls and creates the obj
-                if event.type == pygame.MOUSEBUTTONUP and self.get_build_active() and self.get_drag():
+                # gets the width and height for the object and creates the obj
+                if event.type == pygame.MOUSEBUTTONUP and self.get_build_active() and self.get_drag() and self.get_current_tool() != "Remove":
                     x2, y2 = pygame.mouse.get_pos()
                     width = self.get_xCord1() - x2
                     self.set_width(width * -1)
                     height = self.get_yCord1() - y2
                     self.set_height(height * -1)
-
-                    self.data.add_wall_to_map([self.get_xCord1(), self.get_yCord1()], self.get_width(), self.get_height())
+                    self.data.add_to_map(self.get_current_tool(),self.get_xCord1(), self.get_yCord1(), self.get_width(), self.get_height())
                     pygame.display.update()
                     self.set_drag(False)
+
+                # Adds a person to the map if clicked
+                if self.get_add_person_on_click() and event.type == pygame.MOUSEBUTTONUP and not self.get_build_active():
+                    self.get_map_data().add_people_to_map(pygame.mouse.get_pos(),20,0)
+
+                #The remove object function
+                if self.get_current_tool() == "Remove" and event.type == pygame.MOUSEBUTTONUP:
+                    self.get_map_data().delete_object(pygame.mouse.get_pos())
 
                 #This is the code manages the user text imput
                 if self.get_text_running() and event.type == pygame.KEYDOWN:
@@ -127,21 +147,24 @@ class RunningMain:
                             new_running = running + event.unicode
                             self.set_user_input_result(new_running)
 
-            if self.get_drag():
+            # this tracks the mouse movement when holding down the left button and puts a rectangle there each time
+            if self.get_drag() and self.get_current_tool() != "Remove":
                 width, height = pygame.mouse.get_pos()
                 width = width - self.get_xCord1()
                 height = height - self.get_yCord1()
                 self.set_width(width)
                 self.set_height(height)
-                pygame.draw.rect(self.get_display(), self.black,
+                pygame.draw.rect(self.get_display(), self.object_colour(self.get_current_tool()),
                                  [self.get_xCord1(), self.get_yCord1(), self.get_width(), self.get_height()])
                 pygame.display.update()
 
             # Resets the display to white each tick so a new information can be displayed
             menu = self.get_menu()
             # Shows the first menu screen
+
             if menu[1] == "home":
                 self.home_menu()
+
             # Displays the simulation option menu
             elif menu[1] == "Run Simulation":
                 self.sim_menu()
@@ -151,6 +174,7 @@ class RunningMain:
                     search = self.get_user_input_result()
                     success = self.load_map('maps_saves', search)
                     self.set_text_done(False)
+
             # This checks to see if it is on the simulation menu options
             elif menu[0] == "Run Simulation":
                 # Running the simulation that is chosen or the default one
@@ -165,7 +189,8 @@ class RunningMain:
                         self.draw_display()
                     else:
                         # Error management to see if it loads correct
-                        print("loading defult")
+                        # print("loading defult")
+                        self.data.export("maps_saves","default")
                         self.draw_display()
                 # Starts the user input function
                 if menu[1] == "Floor Plan Load":
@@ -287,12 +312,9 @@ class RunningMain:
 
     def draw_display(self):
         """
-        Draws the display
-        :param display: The pygame display
-        :param objectArray: The objects that you wish to draw
-        :return:
+        Draws the display for the actul simulation by going though the map array and drawing the shape that is required in the correct loactions
         """
-        # self.display.fill(self.white)
+        # print(self.get_map_data().get_map())
         # Goes though the map array obj
         objectArray = self.data.get_map()
         for obj in objectArray:
@@ -300,24 +322,22 @@ class RunningMain:
             coordinates = obj.get_coordinates()
             angle = obj.get_angle()
             width = obj.get_width()
-            colour = obj.get_colour()
+            obj_colour = obj.get_colour()
             shape = obj.get_shape()
             # print("shape = " + shape)
             # the process of adding a person and the funcitons that get called
-            if shape == "circle":
+            if isinstance(obj, Person):
                 # Creating the cicle with the variables provided
-                pygame.draw.circle(self.display, colour, coordinates, round(width / 2))
+                pygame.draw.circle(self.display, obj_colour, coordinates, round(width / 2))
                 # Maths to add the pixcels to represent the eyes
                 eyes = obj.person_eyes(coordinates, angle, round(width / 2))
                 self.display.set_at((eyes[0][0], eyes[0][1]), self.white)
                 self.display.set_at((eyes[1][0], eyes[1][1]), self.white)
-                # print(vision)
-                # print(objectArray)
 
             elif shape == "rectangle":
                 # objects
                 height = obj.get_height()
-                pygame.draw.rect(self.display, colour, [coordinates[0], coordinates[1], width, height])
+                pygame.draw.rect(self.display, obj_colour, [coordinates[0], coordinates[1], width, height])
 
         for obj in objectArray:
 
@@ -348,14 +368,6 @@ class RunningMain:
 
                     except IndexError:
                         nothing = 0
-
-
-    def get_tick_rate(self):
-        """
-        Function gets the tick rate
-        :return: tick_rate
-        """
-        return self.tick_rate
 
     def home_menu(self):
         """Functtion that makes the menu screen with buttons all centred automaticly"""
@@ -449,7 +461,6 @@ class RunningMain:
                 self.user_text_input(info, colour)
             elif self.get_text_done() and button == 'Floor Plan Load':
                 self.add_button(info,self.get_user_input_result(),self.green)
-                print("I ran")
                 # self.load_map("map_saves",self.get_user_input_result())
             else:
                 self.add_button(info, button, colour)
@@ -514,10 +525,33 @@ class RunningMain:
         self.add_button(info, 'Back To Main Menu', colour)
 
     def new_build(self):
-        self.set_build_active(True);
+        """
+        This creates a new builder map, the user can then select the buttons to add new ojects to the map
+        :return: Null
+        """
+        self.set_build_active(True)
         self.draw_display()
+        items = ['Wall','Bar','Toilet','D Floor','Remove']
+        size = len(items)
+        button_width = (self.get_screen_width() / size)
+        button_height = self.get_screen_height() * 0.05
+        i = 0;
+        for objectName in items:
+            colour = self.red
+            info = [button_width * i, self.get_screen_height() * 0.95 ,button_width,button_height]
+            if pygame.mouse.get_pos()[0] >= info[0] and pygame.mouse.get_pos()[0] <= info[0] + info[2] and pygame.mouse.get_pos()[1] >= info[1] and pygame.mouse.get_pos()[1] <= info[1] + info[3] and pygame.mouse.get_pressed()[0]:
+                colour = self.green
+                self.set_current_tool(objectName)
+                sleep(0.1)
+            if self.get_current_tool() == objectName:
+                colour = self.green
+            self.add_button(info,objectName,colour)
+            i= i + 1
+
 
     def save(self):
+        """Function that pulls up the save icon, it checks to see if the name is alread in use and then asks for a different name
+        if not then it allows the save to be made"""
         cords = self.centre([0,0,self.get_screen_width(),self.get_screen_height()],[200,100])
         info = [cords[0],cords[1], 250,50]
         self.user_text_input(info,self.red)
@@ -534,6 +568,22 @@ class RunningMain:
                 self.clear_user_text()
                 self.set_save_name(True)
                 print("Name is taken")
+
+    def object_colour(self, object):
+        """
+        This function returns what colour that object is, this is needed for the drag function beucase at that state it can't talk to the
+        objects to find out their colours
+        :param object: The object name
+        :return: The colour of that object
+        """
+        object = object.lower()
+        if object == "wall":
+            return self.black
+        if object == "bar":
+            return self.blue
+        if object == "toilet":
+            return self.orange
+        # if object == "d floor":
 
 
     def get_map_data(self):
@@ -610,6 +660,7 @@ class RunningMain:
         self.text_running = False
         self.text_done = False
         self.builder_active = False
+
     def get_exit(self):
         return self.exit
 
@@ -672,3 +723,22 @@ class RunningMain:
 
     def set_save_name(self, value):
         self.save_name = value
+
+    def get_current_tool(self):
+        return self.current_tool
+
+    def set_current_tool(self, value):
+        self.current_tool= value
+
+    def get_add_person_on_click(self):
+        return self.add_person_on_click
+
+    def set_add_person_on_click(self):
+        self.add_person_on_click= not self.add_person_on_click
+
+    def get_tick_rate(self):
+        """
+        Function gets the tick rate
+        :return: tick_rate
+        """
+        return self.tick_rate

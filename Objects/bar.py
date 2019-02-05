@@ -19,6 +19,7 @@ class Bar(BaseObject):
         self.height = height
 
         #Should the bar have a fixed width? And you make multiple instances of it
+        # Nope and yes
 
 
         self.name = name

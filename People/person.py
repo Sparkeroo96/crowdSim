@@ -8,10 +8,13 @@ from People.stateMachine import StateMachine
 from Objects.bar import Bar
 from Objects.toilet import Toilet
 from Objects.danceFloor import DanceFloor
+from Algorithm import a_starv2
 import math
 
 
 class Person:
+    """Placeholder testing"""
+    placeholder = 0
 
     tick_rate = 0
     actionCount = None
@@ -105,9 +108,9 @@ class Person:
             self.angle = angle
         if width:
             self.width = width
-            self.flockingDistance = 30 + width
+            self.flockingDistance = 100 + width
         else:
-            self.flockingDistance = 30
+            self.flockingDistance = 100
 
         self.stateMachine = StateMachine("person")
         self.add_states_to_machine()
@@ -116,6 +119,10 @@ class Person:
         self.stateMachine.set_current_state(self.currentState)
 
         self.tick_rate = tick_rate
+
+        """These cords store waypoints needed to move using a*"""
+        cords = []
+        self.cords = cords
 
     def add_map(self, newMap, newCoordinates):
         """Storing the generated map"""
@@ -136,14 +143,21 @@ class Person:
         print("currentState: " + self.currentState + " / stateAction " + stateAction)
 
         if stateAction == "navigateToRememberedObj":
-             self.navigate_to_remembered_object()
+            random = randint(0, 100)
+            if self.cords:
+                self.navigate_to_remembered_object()
+            elif random >= 99:
+                self.navigate_to_remembered_object()
+            else:
+                self.random_move()
 
         elif stateAction == "rotate":
              self.person_rotate()
 
         elif stateAction == "wait":
             # The person sits there and waits
-            return "Waiting"
+            print(self.name + " waiting")
+
         else:
             # self.random_move()
             self.flock()
@@ -155,33 +169,40 @@ class Person:
         :return: True on success
         """
 
-        nextMove = []
+        """PICK UP FROM HERE FOR NEXT SESSION"""
+        print(self.name + " Attempting to navigate to remembered")
         x = self.coordinates[0]
         y = self.coordinates[1]
-        targetCoordinates = self.rememberedObj.get_coordinates()
-
-        #First move
-        if targetCoordinates[0] > x:
-            x += 1
-        elif targetCoordinates[0] < x:
-            x -=1
-
-        if targetCoordinates[1] > y:
-            y += 1
-
-        elif targetCoordinates[1] < y:
-            y -= 1
-
         nextMove = [x, y]
+        """SET CORDS from a*"""
+        if self.placeholder == 0:
+            """"""
+            self.set_cords_from_algo()
+            self.placeholder += 1
 
-        # PHILS A* STUFF
+        while self.cords:
+            targetCoordinates = [self.cords[0][0], self.cords[0][1]]
+            # First move
+            while targetCoordinates != nextMove:
+                if targetCoordinates[0] > x:
+                    x += 1
+                elif targetCoordinates[0] < x:
+                    x -= 1
 
-        moveReturn = self.move(nextMove)
-        if moveReturn != True:
-            # There is a colliding object
-            newCoords = self.get_coordinates_for_move_avoiding_collision_object(targetCoordinates, moveReturn, nextMove)
-            self.move(nextMove)
+                if targetCoordinates[1] > y:
+                    y += 1
+                elif targetCoordinates[1] < y:
+                    y -= 1
 
+                nextMove = [x, y]
+                moveReturn = self.move(nextMove)
+                if moveReturn == False:
+                    newCoords = self.get_coordinates_for_move_avoiding_collision_object(targetCoordinates, moveReturn,
+                                                                                        nextMove)
+                    print("NEW CORDS ARE NOW +++ " + str(newCoords))
+                    return self.move(nextMove)
+                return self.move(nextMove)
+            self.cords.pop(0)
 
     def get_coordinates_for_move_avoiding_collision_object(self, targetCoordinates,  collisionObject, attemptedMove):
         """
@@ -222,14 +243,17 @@ class Person:
         :return: True on successful move, returns the collision object on false
         """
 
-        collisionObject = self.map.check_coordinates_for_person(coordinates, self.width, self.name, self.get_edge_coordinates_array(coordinates))
+        collisionObject = self.map.check_coordinates_for_person(coordinates, self.width / 2, self.name, self.get_edge_coordinates_array(coordinates))
 
         # if self.map.check_coordinates_for_person(coordinates, self.width, self.name, self.get_edge_coordinates_array()):
         if collisionObject is True:
             self.change_angle_to_move_direction(self.coordinates, coordinates)
             self.lastCoordinates = self.coordinates
             self.coordinates = coordinates
+            print("moving")
             return True
+
+        print(self.name + " not moving " + str(collisionObject) + str(self))
         return collisionObject
 
     def person_rotate(self, clockwise = True):
@@ -331,20 +355,20 @@ class Person:
         # #print(self.name + " should move " + str(randomNumber))
         newCoordinates = 0
         # #print(self.name + " random number " + str(randomNumber) + " -- initial coords " + str(self.coordinates))
-        if randomNumber <= 2: #person move up
+        if randomNumber <= 2:  # person move up
             newCoordinates = [self.coordinates[0], self.coordinates[1] + 1]
 
-        elif randomNumber <= 4: #Person move down
+        elif randomNumber <= 4:  # Person move down
             newCoordinates = [self.coordinates[0], self.coordinates[1] - 1]
 
-        elif randomNumber <= 6: #person move right
+        elif randomNumber <= 6:  # person move right
             newCoordinates = [self.coordinates[0] + 1, self.coordinates[1]]
 
-        elif randomNumber <= 8: #Person move left
+        elif randomNumber <= 8:  # Person move left
             newCoordinates = [self.coordinates[0] - 1, self.coordinates[1]]
 
+        print("random move current coords " + str(self.coordinates) + " new coords " + str(newCoordinates))
         self.move(newCoordinates)
-
 
     def store_coordinates(self, coordinates):
         """Storing a set of coordinates"""
@@ -889,7 +913,7 @@ class Person:
         self.actionCount = multiplier * self.tick_rate
         self.currentActionCount = 0
 
-        self.actionCount =1
+        # self.actionCount = 1
 
         # print(self.name + " is waiting for " + str(self.actionCount) + " ticks")
         return self.actionCount
@@ -914,7 +938,74 @@ class Person:
         self.clear_action_count()
         return False
 
+    """gets the cord from the a* stuff and returns the cords needed"""
 
+    def set_cords_from_algo(self):
+        locations = None
+        """If the current cords are the nearest node"""
+        if self.find_nearest_waypoint() != self.coordinates:
+            print("NOT EQUAL TO THE NEAREST NODE")
+            startingLoc = self.find_nearest_waypoint()
+            print(startingLoc)
+            self.move(startingLoc)
+        """NEED TO ADD THE DESTINATION OF REQUIRED OBJECT"""
+        print("LOCATION BEFORE a*" + str(self.coordinates))
+        locations = a_starv2.run_astar(self.coordinates, self.destination())
+        print("LOACTIONS FROM A* ARE: " + str(locations))
+        if not locations:
+            print("""NO PATH FOUND IN SET CORDS """)
+            self.action()
+            # print("me" + str(locations))
+        else:
+            print()
+            for location in locations:
+                self.store_waypoints(location)
+                # locations.pop(0)
+                # self.cords.append((location[0], location[1]))
+                # coords.append((location[0] * 50, locations[1] * 50))
+            # return self.cords
+
+    """Stores the waypoints in cords var"""
+
+    def store_waypoints(self, cord):
+        print("CORDS FOR A*" + str(cord))
+        self.cords.append((cord[0], cord[1]))
+
+    """Returns the destination the person wants to achieve"""
+    """Current Placeholder"""
+
+    def destination(self):
+        random = randint(0, 10)
+        if random <= 2:
+            cords = [450, 450]
+        elif random <= 4:
+            cords = [200, 450]
+        elif random <= 6:
+            cords = [100, 50]
+        elif random <= 8:
+            cords = [100, 50]
+        else:
+            cords = [250, 250]
+        return cords
+
+    def find_nearest_waypoint(self):
+        cords = []
+        open = a_starv2.get_open_nodes()
+        currentX = self.coordinates[0]
+        currentY = self.coordinates[1]
+        notFound = True
+        # while notFound:
+        #     currentX = int(50 * round(float(currentX / 50)))
+        #     currentY = int(50 * round(float(currentY / 50)))
+        #     futurexy = [currentX, currentY]
+        #     if futurexy in open:
+        #         return futurexy
+        currentX = int(50 * round(float(currentX / 50)))
+        currentY = int(50 * round(float(currentY / 50)))
+        cords.append(currentX)
+        cords.append(currentY)
+        return cords
+        # print(current)
     #FLOCKING STUFF FML
 
     def flock(self):
@@ -923,12 +1014,15 @@ class Person:
         Going to want an average angle of nearby people and average move direction
         :return:
         """
-        print("trying to flock")
+        print("trying to flocking distance " + str(self.flockingDistance))
         nearbyPeople = self.map.get_people_within_range(self.coordinates, self.flockingDistance)
 
         if nearbyPeople is False or len(nearbyPeople) == 1:
             # No nearby people random
+            print("no nearby ")
             return self.random_move()
+        else:
+            print("yes nearby")
 
         angleTotal = 0
         # These are the directions people are moving on the axis
@@ -951,18 +1045,19 @@ class Person:
 
             angleTotal += flockingParameters["angle"]
 
-            # Finding most common movement direction
-            if flockingParameters["direction"][0] > 0:
-                xDirection["positive"] += 1
+            if flockingParameters["direction"] is not False:
+                # Finding most common movement direction
+                if flockingParameters["direction"][0] > 0:
+                    xDirection["positive"] += 1
 
-            elif flockingParameters["direction"][0] < 0:
-                xDirection["negative"] += 1
+                elif flockingParameters["direction"][0] < 0:
+                    xDirection["negative"] += 1
 
-            if flockingParameters["direction"][1] > 0:
-                xDirection["positive"] += 1
+                if flockingParameters["direction"][1] > 0:
+                    xDirection["positive"] += 1
 
-            elif flockingParameters["direction"][1] < 0:
-                xDirection["negative"] += 1
+                elif flockingParameters["direction"][1] < 0:
+                    xDirection["negative"] += 1
 
 
         avgAngle = angleTotal / (len(nearbyPeople) - 1)
@@ -977,18 +1072,16 @@ class Person:
         :return:
         """
 
-        newCoordinates = []
-        newCoordinates[0] = self.coordinates[0]
-        newCoordinates[1] = self.coordinates[1]
+        newCoordinates = [self.coordinates[0], self.coordinates[1]]
 
-        if xDirection[0] > xDirection[1]:
+        if xDirection["positive"] > xDirection["negative"]:
             newCoordinates[0] += 1
-        elif xDirection[0] < xDirection[1]:
+        elif xDirection["positive"] < xDirection["negative"]:
             newCoordinates[0] -= 1
 
-        if yDirection[0] > yDirection[1]:
+        if yDirection["positive"] > yDirection["negative"]:
             newCoordinates[1] += 1
-        elif yDirection[0] < yDirection[1]:
+        elif yDirection["positive"] < yDirection["negative"]:
             newCoordinates[1] -= 1
 
         moveReturn = self.move(newCoordinates)
@@ -1022,7 +1115,77 @@ class Person:
         :return:
         """
 
-        xDiff = self.coordinates[0] - self.lastCoordinates[0]
-        yDiff = self.coordinates[1] - self.lastCoordinates[1]
-
+        try:
+            xDiff = self.coordinates[0] - self.lastCoordinates[0]
+            yDiff = self.coordinates[1] - self.lastCoordinates[1]
+        except:
+            return False
         return [xDiff, yDiff]
+
+    """gets the cord from the a* stuff and returns the cords needed"""
+    def set_cords_from_algo(self):
+        locations = None
+        """If the current cords are the nearest node"""
+        if self.find_nearest_waypoint() != self.coordinates:
+            print("NOT EQUAL TO THE NEAREST NODE")
+            startingLoc = self.find_nearest_waypoint()
+            print(startingLoc)
+            self.move(startingLoc)
+        """NEED TO ADD THE DESTINATION OF REQUIRED OBJECT"""
+        print("LOCATION BEFORE a*" + str(self.coordinates))
+        locations = a_starv2.run_astar(self.coordinates, self.destination())
+        print("LOACTIONS FROM A* ARE: " + str(locations))
+        if not locations:
+            print("""NO PATH FOUND IN SET CORDS """)
+            self.action()
+            # print("me" + str(locations))
+        else:
+            print()
+            for location in locations:
+                self.store_waypoints(location)
+                # locations.pop(0)
+                # self.cords.append((location[0], location[1]))
+                # coords.append((location[0] * 50, locations[1] * 50))
+            # return self.cords
+
+    """Stores the waypoints in cords var"""
+
+    def store_waypoints(self, cord):
+        print("CORDS FOR A*" + str(cord))
+        self.cords.append((cord[0], cord[1]))
+
+    """Returns the destination the person wants to achieve"""
+    """Current Placeholder"""
+
+    def destination(self):
+        random = randint(0, 10)
+        if random <= 2:
+            cords = [450, 450]
+        elif random <= 4:
+            cords = [200, 450]
+        elif random <= 6:
+            cords = [100, 50]
+        elif random <= 8:
+            cords = [100, 50]
+        else:
+            cords = [250, 250]
+        return cords
+
+    def find_nearest_waypoint(self):
+        cords = []
+        open = a_starv2.get_open_nodes()
+        currentX = self.coordinates[0]
+        currentY = self.coordinates[1]
+        notFound = True
+        # while notFound:
+        #     currentX = int(50 * round(float(currentX / 50)))
+        #     currentY = int(50 * round(float(currentY / 50)))
+        #     futurexy = [currentX, currentY]
+        #     if futurexy in open:
+        #         return futurexy
+        currentX = int(50 * round(float(currentX / 50)))
+        currentY = int(50 * round(float(currentY / 50)))
+        cords.append(currentX)
+        cords.append(currentY)
+        return cords
+        # print(current)

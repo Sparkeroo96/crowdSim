@@ -104,3 +104,9 @@ class BaseObject:
         for a bar this could be serve or something
         """
         return True
+
+    def set_shape(self, shape):
+        shape = self.shape
+
+    def get_shape(self):
+        return self.shape

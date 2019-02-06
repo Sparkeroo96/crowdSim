@@ -74,8 +74,8 @@ class Person:
     # the first array is the properties from the previous state that they have to be in, not currently used
     # THe second array is the next states, must match another state or its going to break
     states = {
-        # "greatestNeed": [["usedToilet", "drinkDrink", "danced"], ["wantDrink", "wantToilet", "wantDance"]],
-        "greatestNeed": [["usedToilet", "drinkDrink", "danced"], ["wantDrink", "wantToilet"]],
+        "greatestNeed": [["usedToilet", "drinkDrink", "danced"], ["wantDrink", "wantToilet", "wantDance"]],
+        # "greatestNeed": [["usedToilet", "drinkDrink", "danced"], ["wantDrink", "wantToilet"]],
 
         "wantDrink": [["isGreatestNeed"], ["findBar", "orderDrink"]],
         "findBar": [["notAtBar"], ["moveToBar"]],
@@ -83,10 +83,10 @@ class Person:
         "orderDrink": [["atBar"], ["drink"]],
         "drink": [["getDrink"], ["greatestNeed"]],
 
-        # "wantDance": [["isGreatestNeed"], ["dance", "findDanceFloor"]],
-        # "findDanceFloor": [["notAtDanceFloor", "notFound"], ["moveToDanceFloor"]],
-        # "moveToDanceFloor": [["notAtDanceFloor", "found"], ["dance", "moveToDanceFloor"]],
-        # "dance": [["atDanceFloor"], ["greatestNeed"]],
+        "wantDance": [["isGreatestNeed"], ["dance", "findDanceFloor"]],
+        "findDanceFloor": [["notAtDanceFloor", "notFound"], ["moveToDanceFloor"]],
+        "moveToDanceFloor": [["notAtDanceFloor", "found"], ["dance", "moveToDanceFloor"]],
+        "dance": [["atDanceFloor"], ["greatestNeed"]],
 
         "wantToilet": [["isGreatestNeed"], ["findToilet", "useToilet"]],
         "findToilet": [["notAtToilet"], ["moveToToilet"]],
@@ -145,7 +145,8 @@ class Person:
             # The person sits there and waits
             return "Waiting"
         else:
-            self.random_move()
+            # self.random_move()
+            self.flock()
         # return self.random_move()
 
     def navigate_to_remembered_object(self):
@@ -262,7 +263,6 @@ class Person:
         :param newCoords: The new ones youre moving to that you want to set the angle to face
         :return: The new angle
         """
-        print("old " + str(oldCoords) + " new " + str(newCoords))
 
         newAngle = self.get_angle_between_coords(oldCoords, newCoords)
         if newAngle is not False:
@@ -292,7 +292,6 @@ class Person:
             # radians = math.atan(slopeOfLine)
             radians = math.atan2(yDiff, xDiff)
             degrees = math.degrees(radians)
-            print("old degrees " + str(degrees))
 
             # degrees += self.de
             degrees += 180
@@ -323,7 +322,6 @@ class Person:
                     # degrees = 0
                     degrees = 270
         # degrees = 270
-        print("degrees " + str(degrees))
         return degrees
 
 
@@ -424,7 +422,6 @@ class Person:
             # if self.map.check_circle_overlap_rectangle(selfEdge, rectangleCoordRanges):
             if self.map.check_person_touching_object(selfEdge, rectangleCoordRanges):
                 self.advance_state_machine()
-                print("at obj")
                 self.change_angle_to_move_direction(self.coordinates, self.rememberedObj.get_coordinates())
 
         elif self.currentState == "orderDrink":
@@ -479,7 +476,7 @@ class Person:
 
             else:
                 # Done a circle move or rotate, dont want it to
-                random = randint(0, 100)
+                random = randint(0, 1000)
                 if random == 1:
                     action = "rotate"
                     self.rotate = 0
@@ -926,6 +923,7 @@ class Person:
         Going to want an average angle of nearby people and average move direction
         :return:
         """
+        print("trying to flock")
         nearbyPeople = self.map.get_people_within_range(self.coordinates, self.flockingDistance)
 
         if nearbyPeople is False or len(nearbyPeople) == 1:
@@ -953,9 +951,22 @@ class Person:
 
             angleTotal += flockingParameters["angle"]
 
+            # Finding most common movement direction
+            if flockingParameters["direction"][0] > 0:
+                xDirection["positive"] += 1
+
+            elif flockingParameters["direction"][0] < 0:
+                xDirection["negative"] += 1
+
+            if flockingParameters["direction"][1] > 0:
+                xDirection["positive"] += 1
+
+            elif flockingParameters["direction"][1] < 0:
+                xDirection["negative"] += 1
 
 
         avgAngle = angleTotal / (len(nearbyPeople) - 1)
+        self.flock_move(avgAngle, xDirection, yDirection)
 
     def flock_move(self, avgAngle, xDirection, yDirection):
         """
@@ -966,7 +977,27 @@ class Person:
         :return:
         """
 
+        newCoordinates = []
+        newCoordinates[0] = self.coordinates[0]
+        newCoordinates[1] = self.coordinates[1]
 
+        if xDirection[0] > xDirection[1]:
+            newCoordinates[0] += 1
+        elif xDirection[0] < xDirection[1]:
+            newCoordinates[0] -= 1
+
+        if yDirection[0] > yDirection[1]:
+            newCoordinates[1] += 1
+        elif yDirection[0] < yDirection[1]:
+            newCoordinates[1] -= 1
+
+        moveReturn = self.move(newCoordinates)
+        print("trying to flock too " + str(newCoordinates) + " avgAngle " + str(avgAngle) + " return " + str(moveReturn))
+        if moveReturn is True:
+            self.angle = avgAngle
+        else:
+            self.random_move()
+        # Needs a way of handling a collision
 
 
 

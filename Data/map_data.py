@@ -568,11 +568,9 @@ class map_data:
                 if obj.get_height() < 0:
                     y2 = y1
                     y1 = y2 + obj.get_height()
-
-
                 if x1 < x_coord and x2 > x_coord and y1 < y_coord and y2 > y_coord:
                     map_data.pop(index)
-        index = index + 1
+            index = index + 1
 
 
     def get_map(self):

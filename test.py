@@ -6,6 +6,7 @@ Modified by Sam Parker swp5
 """
 import pygame
 import math
+import sys
 from Data import map_data
 from time import sleep
 from People.person import Person
@@ -35,6 +36,8 @@ class RunningMain:
     text_done = False
     text_running = False
     error = False
+    show_heatmap_toggle = False
+
     # Size of the screen
     screen_width = 800
     screen_height = 600
@@ -60,10 +63,13 @@ class RunningMain:
 
     tick_rate = 30
 
+    heat_map = []
+
     def __init__(self):
         """This is the constructor that starts the main loop of the simulation"""
         #Starts the pygame
         pygame.init()
+        self.create_heatmap()
         #Gets the location for the map data
         self.set_map_data(map_data.map_data(self,self.get_tick_rate()))
         # Creates a display to the size of the screen
@@ -89,7 +95,7 @@ class RunningMain:
 
                     # Pause function
                 if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_p:
+                    if event.key == pygame.K_F10:
                         self.pause = not self.pause
 
                     #Saves the current map
@@ -100,7 +106,9 @@ class RunningMain:
                         self.set_home_menu()
                     if event.key == pygame.K_F9:
                         self.set_add_person_on_click()
-
+                    if event.key == pygame.K_F8:
+                        self.set_show_heatmap_toggle()
+                        self.pause = True
                 # Adding objects if the load menu is active
                 if pygame.mouse.get_pressed()[0] and self.get_build_active() and self.get_drag() == False and (pygame.mouse.get_pos()[1] < self.get_screen_height() * 0.95) and self.get_current_tool() != "Remove":
                     self.set_xCord1(pygame.mouse.get_pos()[0])
@@ -184,13 +192,9 @@ class RunningMain:
                     # if it is empty then it loads the default
                     if objectArray == []:
                         self.data.export("maps_saves","default")
+
                     elif success:
                         # If there was a succesful load then it uses the user chosen one
-                        self.draw_display()
-                    else:
-                        # Error management to see if it loads correct
-                        # print("loading defult")
-                        self.data.export("maps_saves","default")
                         self.draw_display()
                 # Starts the user input function
                 if menu[1] == "Floor Plan Load":
@@ -326,7 +330,8 @@ class RunningMain:
             shape = obj.get_shape()
             # print("shape = " + shape)
             # the process of adding a person and the funcitons that get called
-            if isinstance(obj, Person):
+            if isinstance(obj, Person) and not self.get_show_heatmap_toggle():
+                self.add_heatmap(coordinates)
                 # Creating the cicle with the variables provided
                 pygame.draw.circle(self.display, obj_colour, coordinates, round(width / 2))
                 # Maths to add the pixcels to represent the eyes
@@ -338,6 +343,9 @@ class RunningMain:
                 # objects
                 height = obj.get_height()
                 pygame.draw.rect(self.display, obj_colour, [coordinates[0], coordinates[1], width, height])
+
+            else:
+                self.show_heatmap()
 
         for obj in objectArray:
 
@@ -369,6 +377,7 @@ class RunningMain:
                     except IndexError:
                         nothing = 0
 
+
     def home_menu(self):
         """Functtion that makes the menu screen with buttons all centred automaticly"""
         i = 0
@@ -391,7 +400,7 @@ class RunningMain:
                 if pygame.mouse.get_pressed()[0]:
                     self.set_menu(button)
                     sleep(0.1)
-                    pygame.display.update()
+                    # pygame.display.update()
             self.add_button(info, button, colour)
             i = i + 1
         return True
@@ -420,7 +429,7 @@ class RunningMain:
                 if pygame.mouse.get_pressed()[0]:
                     self.set_menu(button)
                     sleep(0.1)
-                    pygame.display.update()
+                    # pygame.display.update()
             if button == "New" and pygame.mouse.get_pressed()[0]:
                 self.get_map_data().clear_map()
             if self.get_load_name() and button == 'Load' and not self.get_text_done():
@@ -456,7 +465,7 @@ class RunningMain:
                 if pygame.mouse.get_pressed()[0]:
                     self.set_menu(button)
                     sleep(0.1)
-                    pygame.display.update()
+                    # pygame.display.update()
             if self.get_load_name() and button == 'Floor Plan Load' and not self.get_text_done():
                 self.user_text_input(info, colour)
             elif self.get_text_done() and button == 'Floor Plan Load':
@@ -585,6 +594,69 @@ class RunningMain:
             return self.orange
         # if object == "d floor":
 
+    def create_heatmap(self):
+        heatmap = self.get_heatmap()
+        x_running = 1
+        y_running = 1
+        num_x = self.get_screen_width()
+        num_y = self.get_screen_height()
+        x_info = []
+        while x_running <= num_x:
+            x_info = []
+            y_running = 1
+            while y_running <= num_y:
+                info = [y_running,0]
+                x_info.append(info)
+                y_running = y_running + 1
+            heatmap.append([x_running,x_info])
+            x_running = x_running + 1
+
+    def add_heatmap(self,coord):
+        """Ittorates the number of times that a person has been on that pixel on the screen"""
+        x_coord = coord[0]
+        y_coord = coord[1]
+        heatmap = self.get_heatmap()
+        for heatmap_coord in heatmap:
+            if heatmap_coord[0] == x_coord:
+                for heatmap_coord_y in heatmap_coord[1]:
+                    if heatmap_coord_y[0] == y_coord:
+                        heatmap_coord_y[1] = int(heatmap_coord_y[1]) + 1
+
+    def show_heatmap(self):
+        max_heat_value = 0
+        min_heat_value = 100000
+        heat_map = self.get_heatmap()
+        for heatmap_coord_x in heat_map:
+            y_coord = 0
+            while y_coord < self.get_screen_height():
+                if heatmap_coord_x[1][y_coord][1] > max_heat_value:
+                    max_heat_value = heatmap_coord_x[1][y_coord][1]
+                if heatmap_coord_x[1][y_coord][1] < min_heat_value and heatmap_coord_x[1][y_coord][1] != 0:
+                    min_heat_value = heatmap_coord_x[1][y_coord][1]
+                y_coord = y_coord + 1
+
+        for heatmap_coord in heat_map:
+            y_coord = 0
+            while y_coord < self.get_screen_height():
+                coord_x = heatmap_coord[0]
+                coord_y = y_coord
+                heat_value = heatmap_coord[1][y_coord][1]
+                if heat_value > 0:
+                    colour = self.colour_picker(min_heat_value,max_heat_value,heat_value)
+                    print(colour)
+                    self.get_display().set_at((coord_x,coord_y),colour)
+                y_coord = y_coord + 1
+
+    def colour_picker(self,min_value,max_value,value):
+        EPSILON = sys.float_info.epsilon
+        colours = [(0, 0, 255), (0, 255, 0), (255, 0, 0)]
+        i_f = float(value - min_value) / float(max_value - min_value) * (len(colours) - 1)
+        i, f = int(i_f // 1), i_f % 1
+        if f < EPSILON:
+            return colours[i]
+        else:
+            (r1, g1, b1), (r2, g2, b2) = colours[i], colours[i + 1]
+            return (int(r1 + f * (r2 - r1)), int(g1 + f * (g2 - g1)), int(b1 + f * (b2 - b1)))
 
     def get_map_data(self):
         return self.data
@@ -660,6 +732,7 @@ class RunningMain:
         self.text_running = False
         self.text_done = False
         self.builder_active = False
+        self.clear_heat_map()
 
     def get_exit(self):
         return self.exit
@@ -742,3 +815,15 @@ class RunningMain:
         :return: tick_rate
         """
         return self.tick_rate
+
+    def get_heatmap(self):
+        return self.heat_map
+
+    def clear_heat_map(self):
+        self.heat_map = []
+
+    def get_show_heatmap_toggle(self):
+        return  self.show_heatmap_toggle
+
+    def set_show_heatmap_toggle(self):
+        self.show_heatmap_toggle = not self.show_heatmap_toggle

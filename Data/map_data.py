@@ -7,6 +7,9 @@ import random as rand
 import math
 from People import *
 from Objects import *
+from Nodes import node
+from Algorithm import a_starv2
+import numpy
 
 
 # Seems to need these for allowing isinstance(example, Person), doesnt work with the above import
@@ -18,8 +21,14 @@ from Objects.bar import Bar
 
 from Objects.toilet import Toilet
 
+constant = 0
 class map_data:
-
+    """TO DO"""
+    path = []
+    """TO DO"""
+    nodeList = []
+    """Wall values to iterate over"""
+    values_to_append = []
     mapData = []
     gui = None
     tick_rate = 0
@@ -30,11 +39,14 @@ class map_data:
 
     def map_default(self):
         """Getting default map data"""
-
-        self.add_people_to_map(1)
+        self.add_people_to_map(15)
         self.add_bar_to_map(1)
         self.add_toilet_to_map(1)
-
+        # self.add_wall_to_map()
+        global constant
+        if constant == 0:
+            self.generate_nodes()
+            constant += 1
         return self.mapData
 
     def add_people_to_map(self, coords, size, angle):
@@ -206,7 +218,7 @@ class map_data:
                     "yCoord": check_coords[1]
                 }
                 person2 = {
-                    "radius": obj.get_width(),
+                    "radius": obj.get_width() / 2,
                     "xCoord": obj.get_coordinates()[0],
                     "yCoord": obj.get_coordinates()[1]
                 }
@@ -214,7 +226,6 @@ class map_data:
                 if self.check_circle_touch(person1, person2) == 0:
                     # Circles overlap
                     return obj
-                    return False
 
             else:
                 # Object is instance of baseObject, i.e. Bar
@@ -225,7 +236,6 @@ class map_data:
                 rectangleCoordRanges = self.get_coordinates_range(objCoords, objSize)
                 if self.check_circle_overlap_rectangle(edgeCoordinates, rectangleCoordRanges):
                     return obj
-                    return False
 
         # Coordinates are fine to move to
 
@@ -239,8 +249,8 @@ class map_data:
         """
 
         distSq = (person1["xCoord"] - person2["xCoord"]) * (person1["xCoord"] - person2["xCoord"]) + (
-                    person1["yCoord"] - person2["yCoord"]) * (person1["yCoord"] - person2["yCoord"]);
-        radSumSq = (person1["radius"] + person2["radius"]) * (person1["radius"] + person2["radius"]);
+                    person1["yCoord"] - person2["yCoord"]) * (person1["yCoord"] - person2["yCoord"])
+        radSumSq = (person1["radius"] + person2["radius"]) * (person1["radius"] + person2["radius"])
         if (distSq == radSumSq):
             # Circles are touching
             return 1
@@ -255,19 +265,64 @@ class map_data:
         """
         Checks to see if a circle and rectangle intersect
         :param circle: properties
-        :param rectangle: rectangle properties
+        :param rectangle: rectangle properties to be given as [[X][lowX][highX], [Y][lowY][highY]]
         :return: True if overlap
         """
         # print(str(circleEdge))
         # print(str(rectangle))
         # quit()
+
+        lowX = rectangle["X"][0]
+        highX = rectangle["X"][1]
+        if rectangle["X"][1] < rectangle["X"][0]:
+            lowX = rectangle["X"][1]
+            highX = rectangle["X"][0]
+
+        lowY = rectangle["Y"][0]
+        highY = rectangle["Y"][1]
+        if rectangle["Y"][1] < rectangle["Y"][0]:
+            lowY = rectangle["Y"][1]
+            highY = rectangle["Y"][0]
+
+        # Adjusting for diagonal movement
+        lowX -= 2
+        highX += 2
+        lowY -= 2
+        highY += 2
+
         for edge in circleEdge:
             if rectangle["X"][0] < edge[0] and edge[0] < rectangle["X"][1] and rectangle["Y"][0] < edge[1] and edge[1] < rectangle["Y"][1]:
-                # print("edge: " + str(edge))
-                # quit()
                 return True
 
         return False
+
+    def check_person_touching_object(self, circleEdge, rectangle):
+        """
+        Checks to see if a person is intersecting or next too an object
+        :param circleEdge: Circle edge array
+        :param rectangleCoordsRange: Rectangles coordinates to be given as [[X][lowX][highX], [Y][lowY][highY]]
+        :return: True on yes
+        """
+
+        if self.check_circle_overlap_rectangle(circleEdge, rectangle) is True:
+            return True
+
+        for edge in circleEdge:
+            if (edge[0] == rectangle["X"][0] or edge[0] == (rectangle["X"][0] - 1) or edge[0] == rectangle["X"][1] or edge[0] == (rectangle["X"][1] + 1)) and (edge[1] == rectangle["Y"][0] or edge[1] == (rectangle["Y"][0] - 1) or edge[1] == rectangle["Y"][1] or edge[1] == (rectangle["Y"][0] + 1)):
+                return True
+
+        return False
+
+    def add_bar_to_map(self, barCount):
+        """Adds a number of bars to the map"""
+        x = 0
+        while x < barCount:
+            coords = [450, 450]
+            newBar = bar.Bar(coords, "bar " + str(len(self.mapData)), 30, 20)
+
+            self.mapData.append(newBar)
+
+            x += 1
 
     def get_coordinates_range(self, coordinates, object_size):
         """ Function gets the range of spaces used by a set of coordinates
@@ -375,10 +430,6 @@ class map_data:
             return True
 
         return False
-
-
-
-
 
     def person_eyes(self, cords, angle, radias):
         angle_left = angle - 25
@@ -578,3 +629,115 @@ class map_data:
 
     def clear_map(self):
         self.mapData = []
+
+    def get_people_within_range(self, coordinates, diameter):
+        """
+        Gets an array of people within a distance of coordiantes
+        :param coordinates: Coordinates to search around
+        :param diameter: Diameter to check around
+        :return: An array
+        """
+
+        returnArray = []
+
+        checkCircle = {
+            "xCoord": coordinates[0],
+            "yCoord": coordinates[1],
+            "radius": (diameter / 2)
+        }
+
+        for obj in self.mapData:
+            if isinstance(obj, Person) is False:
+                continue
+
+            objCoordinates = obj.get_coordinates()
+            objWidth = obj.get_width()
+            personParameters = {
+                "xCoord": objCoordinates[0],
+                "yCoord": objCoordinates[1],
+                "radius": (objWidth / 2)
+            }
+            if self.check_circle_touch(checkCircle, personParameters) == 0:
+                returnArray.append(obj)
+
+        if returnArray == []:
+            return False
+
+        return returnArray
+
+    """Adds a wall to the map a"""
+
+    def add_wall_to_map(self):
+        newWall = []
+        # newWall.append(wall.Wall([0, 100], "wall 1", 400, 30))
+        newWall.append(wall.Wall([0, 300], "wall 2", 102, 10))
+        # newWall.append(wall.Wall([300, 300], "wall 2", 450, 10))
+        newWall.append(wall.Wall([0, 400], "wall 3", 260, 10))
+        newWall.append(wall.Wall([0, 150], "wall 3", 300, 10))
+        newWall.append(wall.Wall([300, 100], "wall 3", 10, 120))
+        newWall.append(wall.Wall([300, 0], "wall 3", 10, 20))
+
+        print("my wall coords are: " + str(newWall[0].get_cords()))
+        for walls in newWall:
+            self.mapData.append(walls)
+        self.set_walls(newWall)
+
+    """Set walls on the nodes"""
+
+    def set_walls(self, walls):
+        for wall in walls:
+            cordX = (int(wall.get_coordinates()[0] / 50))
+            cordY = (int(wall.get_coordinates()[1] / 50))
+            width = (math.ceil(wall.get_width() / 50))
+            height = (math.ceil(wall.get_height() / 50))
+            print("SETTING WALLS" + str(width) + str(height))
+            for x in range(width):
+                self.values_to_append.append([cordX + x, cordY])
+            for y in range(height):
+                self.values_to_append.append([cordX, cordY + y])
+        """Check that coords are within the 10x10 grid"""
+        for v in self.values_to_append:
+            if v[0] > 9 and v[1] > 9:
+                self.values_to_append.remove(v)
+        print("APPENDED VALUES ARE: " + str(self.values_to_append))
+
+    """Generate the node objects that appear on the map"""
+
+
+    def generate_nodes(self):
+        """IDs for the nodes"""
+        listofID = []
+        """Basic 10x10 grid"""
+        simpleCords = []
+        for number in range(0, 100):
+            listofID.append(number)
+        """Create cords for the 10x10 grid"""
+        for x in range(100):
+            simpleCords.append([math.floor(x / 10), (x % 10)])
+        """Create 100 nodes, apply the coords"""
+        for n in range(100):
+            self.nodeList.append(node.Node(simpleCords[n], 0))
+        """Obtaining last coord in the simple grid to create the range of maze"""
+        """Create the empty node graph"""
+        graph = numpy.zeros((10, 10), int)
+        """For the values in append, apply the value of 1 to the node object"""
+        """1 Represents a wall"""
+        for v in self.values_to_append:
+            for n in self.nodeList:
+                if v == n.get_idCoords():
+                    n.set_value(1)
+        openNodes = []
+        for cords in self.nodeList:
+            """if it is an environment object, show this in our graph"""
+            if cords.get_value() == 1:
+                graph[cords.get_idCoords()[0]][cords.get_idCoords()[1]] = cords.get_value()
+            elif cords.get_value() == 0:  # Cord should be added to list of open nodes
+                openNodes.append(cords.get_idCoords())
+        """Placeholder locations - Need to run the algo from the person class"""
+        print(graph)
+        """Stores all free nodes in a_star class"""
+        a_starv2.set_open_nodes(openNodes)
+        """Store all the nodes in the a_star class"""
+
+        a_starv2.store_all_nodes(graph)
+

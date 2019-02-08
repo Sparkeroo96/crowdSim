@@ -50,7 +50,6 @@ class StateMachine:
 
     def get_state_next_states(self, stateName):
         state = self.get_state(stateName)
-        # print("stateName: " + stateName)
         return state["nextStates"]
 
     def get_state_requirment(self, stateName):
@@ -93,10 +92,6 @@ class StateMachine:
         else:
             selectedNextState = self.__get_random_next_state(nextStates, statesCount)
 
-        # selectedNextState =  "wantDrink"
-        selectedNextState =  "wantToilet"
-
-
         self.set_current_state(selectedNextState)
 
         return selectedNextState
@@ -105,7 +100,6 @@ class StateMachine:
         """Function randomly picks a next state from the given next options,
         Don't call this function call get_next_state
         """
-        # print("statesCount " + str(statesCount))
         random = randint(0, statesCount - 1)
         return nextStates[random]
 

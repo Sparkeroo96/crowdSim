@@ -344,7 +344,7 @@ class RunningMain:
                 height = obj.get_height()
                 pygame.draw.rect(self.display, obj_colour, [coordinates[0], coordinates[1], width, height])
 
-            else:
+            elif self.get_show_heatmap_toggle():
                 self.show_heatmap()
 
         for obj in objectArray:

@@ -159,8 +159,9 @@ class Person:
             # print(self.name + " waiting")
             nothing = None
         else:
+            self.random_move()
             # self.random_move()
-            self.flock()
+            # self.flock()
         # return self.random_move()
 
     def navigate_to_remembered_object(self):
@@ -242,7 +243,7 @@ class Person:
         :param coordinates:
         :return: True on successful move, returns the collision object on false
         """
-
+        return True
         collisionObject = self.map.check_coordinates_for_person(coordinates, self.width / 2, self.name, self.get_edge_coordinates_array(coordinates))
 
         # if self.map.check_coordinates_for_person(coordinates, self.width, self.name, self.get_edge_coordinates_array()):

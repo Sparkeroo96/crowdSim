@@ -36,10 +36,11 @@ class map_data:
 
     def map_default(self):
         """Getting default map data"""
-        self.add_people_to_map(30)
+        self.add_people_to_map(20)
         self.add_bar_to_map(1)
         self.add_toilet_to_map(1)
         self.add_wall_to_map()
+        self.add_dancefloor_to_map(1)
         global constant
         if constant == 0:
             self.generate_nodes()
@@ -131,7 +132,7 @@ class map_data:
             # print( )
         return resultArray
 
-    def angleMath(self, angle, xcord, ycord,vision):
+    def angleMath(self, angle, xcord, ycord, vision):
         """This is the maths that returns the amount the x and y cordianes need to change to produce the cordinates
         of the new loaction """
         # These variables will be chnaged into number to change
@@ -204,7 +205,7 @@ class map_data:
                     "yCoord": check_coords[1]
                 }
                 person2 = {
-                    "radius": obj.get_width(),
+                    "radius": obj.get_width() / 2,
                     "xCoord": obj.get_coordinates()[0],
                     "yCoord": obj.get_coordinates()[1]
                 }
@@ -220,8 +221,9 @@ class map_data:
                 objSize = [obj.get_width(), obj.get_height()]
                 objCoords = obj.get_coordinates()
                 rectangleCoordRanges = self.get_coordinates_range(objCoords, objSize)
-                if self.check_circle_overlap_rectangle(edgeCoordinates, rectangleCoordRanges):
-                    print("NAME OF OBJECT IS " + obj.get_name())
+                if obj.get_shape() == "dancefloor":
+                    return True
+                elif self.check_circle_overlap_rectangle(edgeCoordinates, rectangleCoordRanges):
                     return obj
 
         # Coordinates are fine to move to
@@ -526,6 +528,8 @@ class map_data:
         file.close()
 
     def get_map(self):
+        print("HEATMAP")
+        self.check_traffic()
         return self.mapData
 
     def clear_map(self):
@@ -546,10 +550,10 @@ class map_data:
         print("my wall coords are: " + str(newWall[0].get_cords()))
         for walls in newWall:
             self.mapData.append(walls)
-        self.set_walls(newWall)
+        self.set_nodes(newWall)
 
     """Set walls on the nodes"""
-    def set_walls(self, walls):
+    def set_nodes(self, walls):
         for wall in walls:
             cordX = (int(wall.get_coordinates()[0] / 50))
             cordY = (int(wall.get_coordinates()[1] / 50))
@@ -581,10 +585,25 @@ class map_data:
             coords = [100, 50]
             newToilet = toilet.Toilet(coords, "toilet " + str(len(self.mapData)), 100, 10)
             toilets.append(newToilet)
-            self.set_walls(toilets)
+            self.set_nodes(toilets)
             self.mapData.append(newToilet)
 
             x += 1
+
+    def add_dancefloor_to_map(self, dancefloorCount):
+        x = 0
+        dancefloors = []
+        while x < dancefloorCount:
+            coords = [350, 100]
+            newDancefloor = danceFloor.DanceFloor(coords, "dancefloor " + str(self.mapData), 200, 300)
+            self.mapData.append(newDancefloor)
+            x += 1
+
+    """Check the areas which contain the most traffic"""
+    def check_traffic(self):
+        heat_dict = a_starv2.get_heat()
+        print(heat_dict)
+
 
     def generate_nodes(self):
         """IDs for the nodes"""
@@ -621,3 +640,4 @@ class map_data:
         a_starv2.set_open_nodes(openNodes)
         """Store all the nodes in the a_star class"""
         a_starv2.store_all_nodes(graph)
+

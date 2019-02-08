@@ -4,6 +4,7 @@ class Node:
     """Value determines if the node is empty, occupied or has an object"""
     value = ""
 
+
     def __init__(self, idCoords, value):
         self.idCoordinates = idCoords
         self.value = value

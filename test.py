@@ -252,13 +252,14 @@ class RunningMain:
             elif shape == "rectangle":
                 # objects
                 height = obj.get_height()
-                print(obj.name)
-                print(obj.get_coordinates())
                 pygame.draw.rect(self.display, colour, [coordinates[0], coordinates[1], width, height])
             elif shape == "wall":
                 height = obj.get_height()
                 # print(angle, width, height)
                 pygame.draw.rect(self.display, colour, [coordinates[0], coordinates[1], width, height])
+            elif shape == "dancefloor":
+                height = obj.get_height()
+                pygame.draw.rect(self.display, colour, [coordinates[0], coordinates[1], width, height], 1)
 
         for obj in objectArray:
 

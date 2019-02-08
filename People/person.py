@@ -182,7 +182,7 @@ class Person:
 
                 nextMove = [x, y]
                 moveReturn = self.move(nextMove)
-                if moveReturn == False:
+                if moveReturn is False:
                     newCoords = self.get_coordinates_for_move_avoiding_collision_object(targetCoordinates, moveReturn,
                                                                                         nextMove)
                     print("NEW CORDS ARE NOW +++ " + str(newCoords))
@@ -201,9 +201,6 @@ class Person:
         newMove[0] = attemptedMove[0]
         newMove[1] = attemptedMove[1]
         collisionCoordinates = collisionObject.get_coordinates()
-        print("STUCK OBJECT")
-        print(collisionCoordinates + self.coordinates)
-        print("Reach")
 
         if collisionCoordinates[0] != self.coordinates[0]:
             if collisionCoordinates[0] >= self.coordinates[0]:
@@ -231,14 +228,88 @@ class Person:
         :param coordinates:
         :return: True on successful move, returns the collision object on false
         """
-        collisionObject = self.map.check_coordinates_for_person(coordinates, self.width, self.name,
-                                                                self.get_edge_coordinates_array())
 
-        if collisionObject == True:
+        collisionObject = self.map.check_coordinates_for_person(coordinates, self.width / 2, self.name,
+                                                                self.get_edge_coordinates_array(coordinates))
+
+        # if self.map.check_coordinates_for_person(coordinates, self.width, self.name, self.get_edge_coordinates_array()):
+        if collisionObject is True:
+            self.change_angle_to_move_direction(self.coordinates, coordinates)
+            self.lastCoordinates = self.coordinates
+            self.coordinates = coordinates
+            print("moving")
             return True
-        print("COLLISION IS" + str(collisionObject))
-        self.coordinates = coordinates
+
+        print(self.name + " not moving " + str(collisionObject) + str(self))
         return collisionObject
+
+    def change_angle_to_move_direction(self, oldCoords, newCoords):
+        """
+        Changes the persons angle so they move in the direction they're looking
+        Based on this: https://math.stackexchange.com/questions/707673/find-angle-in-degrees-from-one-point-to-another-in-2d-space
+        :param oldCoords: The old/current coordinates
+        :param newCoords: The new ones youre moving to that you want to set the angle to face
+        :return: The new angle
+        """
+
+        newAngle = self.get_angle_between_coords(oldCoords, newCoords)
+        if newAngle is not False:
+            self.angle = newAngle
+        return self.angle
+
+    def get_angle_between_coords(self, oldCoords, newCoords):
+        """Gets the angle between a pair of coordinatse
+        0 degrees is up
+        :param oldCoords: The old/current coordinates
+        :param newCoords: The new ones youre moving to that you want to set the angle to face
+        """
+        if oldCoords[0] == newCoords[0] and oldCoords[1] == newCoords[1]:
+            return False
+
+        degrees = 0
+        # yDiff = 0
+        yDiff = (0 - newCoords[1]) - (0 - oldCoords[1])
+        xDiff = newCoords[0] - oldCoords[0]
+
+        # yDiff =  oldCoords[1] - newCoords[1]
+        # xDiff = oldCoords[1] - newCoords[0]
+        if xDiff != 0 and yDiff != 0:
+            # slopeOfLine = (newCoords[1] - oldCoords[1]) / (newCoords[0] - oldCoords[0])
+            slopeOfLine = yDiff / xDiff
+            # radians = math.atan(slopeOfLine)
+            radians = math.atan2(yDiff, xDiff)
+            degrees = math.degrees(radians)
+
+            # degrees += self.de
+            degrees += 180
+            # print("degrees + 90 = " + str(degrees))
+            if degrees < 0:
+                degrees += 360
+
+            elif degrees > 360:
+                degrees = degrees - 360
+                # degrees = 360 - degrees
+
+        else:
+            if xDiff != 0:
+                if newCoords[0] > oldCoords[0]:
+                    # degrees = 270
+                    degrees = 180
+
+                else:
+                    # degrees = 90
+                    degrees = 0
+
+            else:
+                if newCoords[1] > oldCoords[1]:
+                    # degrees = 180
+                    degrees = 90
+
+                else:
+                    # degrees = 0
+                    degrees = 270
+        # degrees = 270
+        return degrees
 
     def random_move(self):
         """Person moving randomly around the map"""
@@ -376,7 +447,6 @@ class Person:
         elif "find" in str(self.currentState):
             # Person trying to find an object
             #print(self.name + " finding object")
-            print("remembered obj type " + self.rememberedObjType)
             if self.find_object(self.rememberedObjType):
                 action = "navigateToRememberedObj"
                 self.rotate = 0
@@ -408,7 +478,7 @@ class Person:
             # print("rememberedObj " + str(self.rememberedObj))
             # print("rememberedObjectCoords " + str(rememberedObjectCoords))
             rectangleCoordRanges = self.map.get_coordinates_range(rememberedObjectCoords, objectSize)
-            selfEdge = self.get_edge_coordinates_array()
+            selfEdge = self.get_edge_coordinates_array(self.coordinates)
 
             if self.map.check_circle_overlap_rectangle(selfEdge, rectangleCoordRanges):
                 print("at the target")
@@ -439,6 +509,7 @@ class Person:
             # Person will dance
             #print(self.name + " is dancing")
             # self.stateMachine.get_next_state()
+            self.dance()
             self.advance_state_machine()
 
         elif self.currentState == "useToilet":
@@ -520,15 +591,16 @@ class Person:
         return returnedObject
         self.rememberedCoords = newCoords
 
-    def get_edge_coordinates_array(self):
+    def get_edge_coordinates_array(self, coordinates):
         """Gets the edge coordinates of the circle"""
         edge_coordinates = []
         x = 0
-        xCoord = self.coordinates[0]
-        yCoord = self.coordinates[1]
-        print(str(self.coordinates))
+        # xCoord = self.coordinates[0]
+        # yCoord = self.coordinates[1]
+        xCoord = coordinates[0]
+        yCoord = coordinates[1]
         while x < 360:
-            change = self.angleMath(x, xCoord, yCoord, round(self.width / 2) )
+            change = self.angleMath(x, xCoord, yCoord, round(self.width / 2))
             temp = []
             temp = [xCoord + change[0], yCoord + change[1]]
             edge_coordinates.append(temp)
@@ -882,7 +954,7 @@ class Person:
     """gets the cord from the a* stuff and returns the cords needed"""
     def set_cords_from_algo(self):
         locations = None
-        """If the current cords are the nearest node"""
+        """If the current cords are not the nearest node"""
         if self.find_nearest_waypoint() != self.coordinates:
             print("NOT EQUAL TO THE NEAREST NODE")
             startingLoc = self.find_nearest_waypoint()
@@ -946,3 +1018,27 @@ class Person:
         cords.append(currentY)
         return cords
         # print(current)
+
+    def dance(self):
+        def random_move(self):
+            """Person moving randomly around the map"""
+            randomNumber = randint(0, 8)
+            # #print(self.name + " should move " + str(randomNumber))
+            newCoordinates = 0
+            # #print(self.name + " random number " + str(randomNumber) + " -- initial coords " + str(self.coordinates))
+            if randomNumber <= 2:  # person move up
+                newCoordinates = [self.coordinates[0], self.coordinates[1] + 1]
+
+            elif randomNumber <= 4:  # Person move down
+                newCoordinates = [self.coordinates[0], self.coordinates[1] - 1]
+
+            elif randomNumber <= 6:  # person move right
+                newCoordinates = [self.coordinates[0] + 1, self.coordinates[1]]
+
+            elif randomNumber <= 8:  # Person move left
+                newCoordinates = [self.coordinates[0] - 1, self.coordinates[1]]
+
+            """NEED TO FIX THIS"""
+            self.coordinates = newCoordinates
+
+

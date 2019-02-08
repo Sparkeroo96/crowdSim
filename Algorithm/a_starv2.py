@@ -6,6 +6,7 @@ test = (1, 1), (-1, -1), (1, -1), (-1, 1)
 graph = []
 finalLocations = []
 n = []
+heatmap_store = {}
 
 #  The binary heap keeps the open list in order
 def astar(array, start, dest):
@@ -168,7 +169,7 @@ def locations(path):
         return
     for p in path:
         finalLocations.append((p[0] * 50, p[1] * 50))
-    print(finalLocations)
+    increase_heat(finalLocations)
     return finalLocations
 
 def set_open_nodes(nodes):
@@ -179,3 +180,19 @@ def set_open_nodes(nodes):
 def get_open_nodes():
     global n
     return n
+
+"""Everytime a successful a* path is found, the heat increases by 1"""
+def increase_heat(node_locations):
+    global heatmap_store
+    for item in node_locations:
+        if item in heatmap_store:
+            heatmap_store[item] += 1
+        else:
+            heatmap_store[item] = 1
+
+def get_heat():
+    global heatmap_store
+    return heatmap_store
+
+
+

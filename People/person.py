@@ -182,12 +182,19 @@ class Person:
 
                 nextMove = [x, y]
                 moveReturn = self.move(nextMove)
-                if moveReturn is False:
-                    newCoords = self.get_coordinates_for_move_avoiding_collision_object(targetCoordinates, moveReturn,
-                                                                                        nextMove)
-                    print("NEW CORDS ARE NOW +++ " + str(newCoords))
+                if moveReturn is True:
                     return self.move(nextMove)
-                return self.move(nextMove)
+                else:
+                    newCoords = self.get_coordinates_for_move_avoiding_collision_object(targetCoordinates, moveReturn,
+                                                                                    nextMove)
+                    print("OLD CORDS WERE +++" + str(nextMove))
+                    print("NEW CORDS ARE NOW +++ " + str(newCoords))
+                    """THIS BUMPS THE COORDS OUT OF EACH OTHERS WAY, RATHER THAN JUST 1 PIXEL"""
+                    rand = randint(-5, 5)
+                    randY = randint(-5, 5)
+                    newCoords[0] += rand
+                    newCoords[1] += randY
+                    return self.move(newCoords)
             self.cords.pop(0)
 
     def get_coordinates_for_move_avoiding_collision_object(self, targetCoordinates, collisionObject, attemptedMove):

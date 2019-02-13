@@ -593,6 +593,27 @@ class map_data:
 
         return returnArray
 
+    def get_objects_within_range(self, coordinates, radius, edgeCoordinates):
+        """
+        Returns an array of all objects within a range
+        :param coordinates: The target coordinates
+        :param radius: The area to search
+        :return: Array of objectss
+        """
+
+        objArray = self.get_people_within_range(coordinates, radius * 2)
+
+        for obj in self.mapData:
+            if isinstance(obj, Person):
+                continue
+
+            object_size = [obj.get_width(), obj.get_height()]
+            rectangleProperties = self.get_coordinates_range(self, coordinates, object_size)
+            if self.check_circle_overlap_rectangle(edgeCoordinates, rectangleProperties):
+                objArray.append(obj)
+
+        return objArray
+
     """Adds a wall to the map a"""
 
     def add_wall_to_map(self):

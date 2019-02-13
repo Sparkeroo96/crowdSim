@@ -114,7 +114,7 @@ class VenueStaff(Person):
             objectSize = [self.rememberedObj.get_width(), self.rememberedObj.get_height()]
             rememberedObjectCoords = self.rememberedObj.get_coordinates()
             rectangleCoordRanges = self.map.get_coordinates_range(rememberedObjectCoords, objectSize)
-            selfEdge = self.get_edge_coordinates_array()
+            selfEdge = self.get_edge_coordinates_array(self.coordinates, round(self.width / 2))
 
             if self.map.check_circle_overlap_rectangle(selfEdge, rectangleCoordRanges):
                 print("at target")

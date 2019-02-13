@@ -36,6 +36,9 @@ class Person:
     # map is Noneisinstance
     map = 0
     sight = 100
+    maxSpeed = 4
+    # A flocking parameter, dont want to be within 10 pixels of a nearby object, will attempt to move out of them
+    rejectionArea = 10
 
     vision = []
 
@@ -185,14 +188,27 @@ class Person:
             # First move
             while targetCoordinates != nextMove:
                 if targetCoordinates[0] > x:
-                    x += 1
+                    if targetCoordinates[0] > x + 1:
+                        x += 2
+                    else:
+                        x += 1
+
                 elif targetCoordinates[0] < x:
-                    x -= 1
+                    if targetCoordinates[0] < x - 1:
+                        x -= 2
+                    else:
+                        x -= 1
 
                 if targetCoordinates[1] > y:
-                    y += 1
+                    if targetCoordinates[1] > y + 1:
+                        y += 2
+                    else:
+                        y += 1
                 elif targetCoordinates[1] < y:
-                    y -= 1
+                    if targetCoordinates[1] < y - 1:
+                        y -= 2
+                    else:
+                        y -= 1
 
                 nextMove = [x, y]
                 moveReturn = self.move(nextMove)
@@ -243,7 +259,7 @@ class Person:
         :return: True on successful move, returns the collision object on false
         """
 
-        collisionObject = self.map.check_coordinates_for_person(coordinates, self.width / 2, self.name, self.get_edge_coordinates_array(coordinates))
+        collisionObject = self.map.check_coordinates_for_person(coordinates, self.width / 2, self.name, self.get_edge_coordinates_array(coordinates, round(self.width / 2) ))
 
         # if self.map.check_coordinates_for_person(coordinates, self.width, self.name, self.get_edge_coordinates_array()):
         if collisionObject is True:
@@ -390,6 +406,11 @@ class Person:
         """Returns the objects size"""
         return self.width
 
+    def get_rejection_area(self):
+        """Returns the area that a person doesnt want other objects in"""
+        radius = self.width / 2
+        return radius + self.rejectionArea
+
     def get_size(self):
         """returns persons size"""
         return self.size
@@ -441,7 +462,7 @@ class Person:
             # print("rememberedObj " + str(self.rememberedObj))
             # print("rememberedObjectCoords " + str(rememberedObjectCoords))
             rectangleCoordRanges = self.map.get_coordinates_range(rememberedObjectCoords, objectSize)
-            selfEdge = self.get_edge_coordinates_array(self.coordinates)
+            selfEdge = self.get_edge_coordinates_array(self.coordinates, round(self.width / 2))
 
             # if self.map.check_circle_overlap_rectangle(selfEdge, rectangleCoordRanges):
             if self.map.check_person_touching_object(selfEdge, rectangleCoordRanges):
@@ -580,7 +601,7 @@ class Person:
         return returnedObject
         self.rememberedCoords = newCoords
 
-    def get_edge_coordinates_array(self, coordinates):
+    def get_edge_coordinates_array(self, coordinates, width):
         """Gets the edge coordinates of the circle"""
         edge_coordinates = []
         x = 0
@@ -589,7 +610,7 @@ class Person:
         xCoord = coordinates[0]
         yCoord = coordinates[1]
         while x < 360:
-            change = self.angleMath(x, xCoord, yCoord, round(self.width / 2) )
+            change = self.angleMath(x, xCoord, yCoord, width)
             temp = []
             temp = [xCoord + change[0], yCoord + change[1]]
             edge_coordinates.append(temp)
@@ -1006,6 +1027,7 @@ class Person:
         cords.append(currentY)
         return cords
         # print(current)
+
     #FLOCKING STUFF FML
 
     def flock(self):
@@ -1016,6 +1038,8 @@ class Person:
         """
         print("trying to flocking distance " + str(self.flockingDistance))
         nearbyPeople = self.map.get_people_within_range(self.coordinates, self.flockingDistance)
+
+        objectsWithinRejection = self.map.get_objects_within_range(self.coordinates, self.get_rejection_area(), self.get_edge_coordinates_array(self.coordinates, self.get_rejection_area()))
 
         if nearbyPeople is False or len(nearbyPeople) == 1:
             # No nearby people random
@@ -1038,6 +1062,7 @@ class Person:
 
         for person in nearbyPeople:
             if person == self:
+                print("Person is self")
                 # This is a reference to itself
                 continue
 
@@ -1059,9 +1084,98 @@ class Person:
                 elif flockingParameters["direction"][1] < 0:
                     xDirection["negative"] += 1
 
+        # Move away
+        for obj.rejection
 
         avgAngle = angleTotal / (len(nearbyPeople) - 1)
         self.flock_move(avgAngle, xDirection, yDirection)
+
+    def work_out_direction_to_flock_away_from(self, objects):
+        """
+        Works out the direction to move to to get away from nearby objects
+        :param objects: The objects too close
+        :return:
+        """
+
+        for obj in objects:
+            if obj == self:
+                continue
+
+            if isinstance(obj, Person):
+                print("move away from center")
+
+            else:
+                coords = self.work_out_objects_closest_point(obj)
+
+    def work_out_objects_closest_point(self, obj):
+        """
+        Work out the coordinate of an objects closest point
+        :param obj: the object in question
+        :return: a set of coordinates
+        """
+        ranges = self.map.get_coordinates_range(self, obj.get_coordinates(), [obj.get_width(), obj.get_height()])
+
+        #Need to work out which direction its in first
+        closestX = 0
+        lowXDiff = ranges["X"][0] - self.coordinates[0]
+        highXDiff = ranges["X"][1] - self.coordinates[0]
+
+        if lowXDiff > 0 and highXDiff > 0:
+            # its to the right
+            closestX = ranges["X"][0]
+
+        elif lowXDiff < 0 and highXDiff < 0:
+            # Its to the left
+            closestX = ranges["X"][1]
+
+        elif lowXDiff == 0:
+            # on the same line as low x
+            closestX = ranges["X"][0]
+
+        elif highXDiff == 0:
+            # on the same line as high x
+            closestX = ranges["X"][1]
+
+        else:
+            # got to figure out which is closest
+            if abs(lowXDiff) < abs(highXDiff):
+
+            else:
+
+    def find_closest_coordinate(self, myCoord, lowCoord, highCoord):
+        """
+        Roughly tries to find the closest coordinate
+        :param myCoord: My coordinate an x or y value that you want to compare it to
+        :param lowCoord: the low range of that x or y
+        :param highCoord: the high range value of that x or y
+        :return: an int
+        """
+
+        firstDiff = lowCoord - myCoord
+        secondDiff = highCoord - myCoord
+
+        closest = lowCoord
+        closestDiff = firstDiff
+
+        if abs(secondDiff) < abs(firstDiff):
+            closest = highCoord
+            closestDiff = secondDiff
+
+        midpoint = lowCoord + ((highCoord - lowCoord) / 2)
+
+        x = 0
+        while x < 5:
+
+            midDiff = midpoint - myCoord
+            if midDiff < closestDiff:
+                if midpoint > closest:
+
+                    midpoint = closest + ((midpoint - closest) / 2)
+
+                else:
+                    midpoint = midpoint + ((closest - midpoint) / 2)
+
+            x += 1
 
     def flock_move(self, avgAngle, xDirection, yDirection):
         """

@@ -61,6 +61,10 @@ class map_data:
         newBar = bar.Bar(coords, "bar " + str(len(self.mapData)),width, height)
         self.mapData.append(newBar)
 
+    def add_wall_to_map(self, cords, width, height):
+        newWall = wall.Wall(cords,width,height)
+        self.get_map().append(newWall)
+
     def add_toilet_to_map(self, coords, width, height):
         """
         This function adds a toliet to the data structure based off the map builder imput
@@ -174,11 +178,6 @@ class map_data:
             horizontal = math.floor(vision * math.sin(math.radians(360) - angle1))
             horizontal = horizontal * -1
         return [veritcal, horizontal]
-
-
-    def add_wall_to_map(self, cords,width, height):
-            newWall = wall.Wall(cords,width,height)
-            self.mapData.append(newWall)
 
     def check_space_unoccupied(self, coordinates, object_size, object_name, object_shape):
         """Checks to see if a set of coordinates is occupied by an obj or person
@@ -312,17 +311,6 @@ class map_data:
                 return True
 
         return False
-
-    def add_bar_to_map(self, barCount):
-        """Adds a number of bars to the map"""
-        x = 0
-        while x < barCount:
-            coords = [450, 450]
-            newBar = bar.Bar(coords, "bar " + str(len(self.mapData)), 30, 20)
-
-            self.mapData.append(newBar)
-
-            x += 1
 
     def get_coordinates_range(self, coordinates, object_size):
         """ Function gets the range of spaces used by a set of coordinates
@@ -664,25 +652,6 @@ class map_data:
             return False
 
         return returnArray
-
-    """Adds a wall to the map a"""
-
-    def add_wall_to_map(self):
-        newWall = []
-        # newWall.append(wall.Wall([0, 100], "wall 1", 400, 30))
-        newWall.append(wall.Wall([0, 300], "wall 2", 102, 10))
-        # newWall.append(wall.Wall([300, 300], "wall 2", 450, 10))
-        newWall.append(wall.Wall([0, 400], "wall 3", 260, 10))
-        newWall.append(wall.Wall([0, 150], "wall 3", 300, 10))
-        newWall.append(wall.Wall([300, 100], "wall 3", 10, 120))
-        newWall.append(wall.Wall([300, 0], "wall 3", 10, 20))
-
-        print("my wall coords are: " + str(newWall[0].get_cords()))
-        for walls in newWall:
-            self.mapData.append(walls)
-        self.set_walls(newWall)
-
-    """Set walls on the nodes"""
 
     def set_walls(self, walls):
         for wall in walls:

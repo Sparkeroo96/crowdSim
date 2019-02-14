@@ -52,7 +52,9 @@ class RunningMain:
     width = 0
     height = 0
     drag = False
-    current_tool = None
+    current_tool = "wall"
+    new_tool = False
+    size_of_menu_buttons = 0
 
     #Debug flags
     add_person_on_click = False
@@ -109,8 +111,9 @@ class RunningMain:
                     if event.key == pygame.K_F8:
                         self.set_show_heatmap_toggle()
                         self.pause = True
+
                 # Adding objects if the load menu is active
-                if pygame.mouse.get_pressed()[0] and self.get_build_active() and self.get_drag() == False and (pygame.mouse.get_pos()[1] < self.get_screen_height() * 0.95) and self.get_current_tool() != "Remove":
+                if pygame.mouse.get_pressed()[0] and self.get_build_active() and self.get_drag() == False and ((pygame.mouse.get_pos()[1] < self.get_screen_height() * 0.90) and pygame.mouse.get_pos()[0] > self.get_size_of_menu_buttons()) and self.get_current_tool() != "Remove" and not self.get_new_tool():
                     self.set_xCord1(pygame.mouse.get_pos()[0])
                     self.set_yCord1(pygame.mouse.get_pos()[1])
                     self.set_drag(True)
@@ -246,7 +249,6 @@ class RunningMain:
         pygame.quit()
         quit()
 
-
     def add_button(self,button_info, text, colour):
         """Adds a button to the screen with a given dimention and text inside and adds it to the display
         :param button_info, is the coordiate and size info
@@ -339,7 +341,7 @@ class RunningMain:
                 self.display.set_at((eyes[0][0], eyes[0][1]), self.white)
                 self.display.set_at((eyes[1][0], eyes[1][1]), self.white)
 
-            elif shape == "rectangle":
+            elif shape == "rectangle" or shape == "wall":
                 # objects
                 height = obj.get_height()
                 pygame.draw.rect(self.display, obj_colour, [coordinates[0], coordinates[1], width, height])
@@ -376,7 +378,6 @@ class RunningMain:
 
                     except IndexError:
                         nothing = 0
-
 
     def home_menu(self):
         """Functtion that makes the menu screen with buttons all centred automaticly"""
@@ -542,21 +543,32 @@ class RunningMain:
         self.draw_display()
         items = ['Wall','Bar','Toilet','D Floor','Remove']
         size = len(items)
+        self.set_size_of_menu_buttons(size)
         button_width = (self.get_screen_width() / size)
-        button_height = self.get_screen_height() * 0.05
-        i = 0;
-        for objectName in items:
-            colour = self.red
-            info = [button_width * i, self.get_screen_height() * 0.95 ,button_width,button_height]
-            if pygame.mouse.get_pos()[0] >= info[0] and pygame.mouse.get_pos()[0] <= info[0] + info[2] and pygame.mouse.get_pos()[1] >= info[1] and pygame.mouse.get_pos()[1] <= info[1] + info[3] and pygame.mouse.get_pressed()[0]:
-                colour = self.green
-                self.set_current_tool(objectName)
-                sleep(0.1)
-            if self.get_current_tool() == objectName:
-                colour = self.green
-            self.add_button(info,objectName,colour)
-            i= i + 1
+        button_height = self.get_screen_height() * 0.1
+        i = 1;
+        current = self.get_current_tool()
+        info = [0, self.get_screen_height() * 0.90, button_width,button_height]
+        colour = self.black
+        self.add_button(info,current,colour)
+        if pygame.mouse.get_pos()[0] >= info[0] and pygame.mouse.get_pos()[0] <= info[0] + info[2] and pygame.mouse.get_pos()[1] >= info[1] and pygame.mouse.get_pos()[1] <= info[1] + info[3] and pygame.mouse.get_pressed()[0]:
+            self.set_new_tool()
+            sleep(0.1)
+        if self.get_new_tool():
+            pygame.draw.rect(self.display, self.white, [0, (self.get_screen_height() * 0.90) - ((len(info) + 1) * button_height), button_width, button_height * (len(info) + 1)])
+            for objectName in items:
+                colour = self.red
+                info = [0,(self.get_screen_height() * 0.90) - (i * button_height),button_width,button_height]
+                if pygame.mouse.get_pos()[0] >= info[0] and pygame.mouse.get_pos()[0] <= info[0] + info[2] and pygame.mouse.get_pos()[1] >= info[1] and pygame.mouse.get_pos()[1] <= info[1] + info[3] and pygame.mouse.get_pressed()[0]:
+                    colour = self.green
+                    sleep(0.1)
+                    self.set_current_tool(objectName)
+                    self.set_new_tool()
 
+                if self.get_current_tool() == objectName:
+                    colour = self.green
+                self.add_button(info,objectName,colour)
+                i= i + 1
 
     def save(self):
         """Function that pulls up the save icon, it checks to see if the name is alread in use and then asks for a different name
@@ -827,3 +839,15 @@ class RunningMain:
 
     def set_show_heatmap_toggle(self):
         self.show_heatmap_toggle = not self.show_heatmap_toggle
+
+    def get_new_tool(self):
+        return self.new_tool
+
+    def set_new_tool(self):
+        self.new_tool = not self.new_tool
+
+    def set_size_of_menu_buttons(self, value):
+        self.size_of_menu_buttons = value
+
+    def get_size_of_menu_buttons(self):
+        return self.size_of_menu_buttons

@@ -608,7 +608,7 @@ class map_data:
                 continue
 
             object_size = [obj.get_width(), obj.get_height()]
-            rectangleProperties = self.get_coordinates_range(self, coordinates, object_size)
+            rectangleProperties = self.get_coordinates_range(coordinates, object_size)
             if self.check_circle_overlap_rectangle(edgeCoordinates, rectangleProperties):
                 objArray.append(obj)
 

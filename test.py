@@ -199,6 +199,7 @@ class RunningMain:
                     elif success:
                         # If there was a succesful load then it uses the user chosen one
                         self.draw_display()
+                    self.draw_display()
                 # Starts the user input function
                 if menu[1] == "Floor Plan Load":
                     self.data.clear_map()
@@ -655,7 +656,7 @@ class RunningMain:
                 heat_value = heatmap_coord[1][y_coord][1]
                 if heat_value > 0:
                     colour = self.colour_picker(min_heat_value,max_heat_value,heat_value)
-                    print(colour)
+                    # print(colour)
                     self.get_display().set_at((coord_x,coord_y),colour)
                 y_coord = y_coord + 1
 

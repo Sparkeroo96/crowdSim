@@ -108,43 +108,6 @@ class map_data:
 
         coordinatesWithColour = self.gui.check_coordinates_for_colour(visionCoordinates, colourCode)
 
-    def personVision(self, x1, y1, angle, vision):
-        """This function gets an person and returns an array of the cordinates of their vision"""
-        # # How far a person can see
-        if vision is None:
-            vision = 100
-
-        # Number the vision starts from, this stops the person from seeing themselves
-        x = 12
-        # This is the amount of rays that they produce
-        rays = 10
-        # The itorating number of rays
-        i = 0
-        angle = angle - 25
-        if angle <= 0:
-            angle = angle + 360
-        # saves the starting angle
-        originalAngle = angle
-        # results array for all the newCoordinates
-        resultArray = []
-        while i <= rays:
-            # increases the angles by 5 each intoration
-            angle = originalAngle + (i * 5)
-            # this is an if statement that stops the number being more than 360 and less than 0
-            if angle > 360:
-                angle = angle - 360
-            # this then produces the cordiantes for each line and adds them to the array
-            while vision >= x:
-                value = self.angleMath(angle,x1,y1,x)
-                value = [x1 + value[0],y1 + value[1]]
-                resultArray.append(value)
-                x = x + 1
-            i = i + 1
-            x = 12
-            # print(resultArray)
-            # print( )
-        return resultArray
-
     def angleMath(self, angle, xcord, ycord,vision):
         """This is the maths that returns the amount the x and y cordianes need to change to produce the cordinates
         of the new loaction """

@@ -771,6 +771,7 @@ class Person:
         # results array for all the newCoordinates
         resultArray = []
         while i <= rays:
+            resultRayArray = []
             # increases the angles by 5 each intoration
             angle = originalAngle + (i * 5)
             # this is an if statement that stops the number being more than 360 and less than 0
@@ -780,8 +781,9 @@ class Person:
             while vision >= x:
                 value = self.angleMath(angle,x1,y1,x)
                 value = [x1 + value[0],y1 + value[1]]
-                resultArray.append(value)
+                resultRayArray.append(value)
                 x = x + 1
+            resultArray.append(resultRayArray)
             i = i + 1
             x = 12
         return resultArray

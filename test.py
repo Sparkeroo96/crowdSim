@@ -362,23 +362,26 @@ class RunningMain:
                 obj.clear_vision()
                 # goes though every coordinates and works out what colour is in that pixcel
 
-                for cord in vision:
+                for ray in vision:
                     # display.set_at((cord[0],cord[1]), black)
                     # try and catch to prevent out of array exceptions
-                    try:
-                        seenObj = 0
-                        colour = self.display.get_at((cord[0], cord[1]))
-                        # if it is red then it must be a person
-                        if colour != (255, 255, 255, 255):
-                            # Its an object of some kind
-                            seenObj = self.data.what_object(cord)
+                    for point in ray:
+                        # print(point)
+                        try:
+                            seenObj = 0
+                            colour = self.display.get_at((point[0], point[1]))
+                            # if it is red then it must be a person
+                            if colour != (255, 255, 255, 255):
+                                # Its an object of some kind
+                                seenObj = self.data.what_object(point)
 
-                            obj.add_to_vision(seenObj)
-                            obj.add_to_memory(seenObj)
+                                obj.add_to_vision(seenObj)
+                                obj.add_to_memory(seenObj)
+                            if colour == self.black:
+                                break
+                        except IndexError:
+                            nothing = 0
 
-
-                    except IndexError:
-                        nothing = 0
 
     def home_menu(self):
         """Functtion that makes the menu screen with buttons all centred automaticly"""

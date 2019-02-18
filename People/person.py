@@ -1127,6 +1127,17 @@ class Person:
             elif coord[1] < self.coordinates[1]:
                 moveY += 1
 
+        randInc = randint(0, 8)
+        if randInc == 0:
+            moveX += 1
+        elif randInc == 1:
+            moveX -= 1
+        elif randInc == 2:
+            moveY += 1
+        elif randInc == 3:
+            moveY -= 1
+
+
         if moveX > 0:
             nextMove[0] += 1
         elif moveX < 0:
@@ -1149,7 +1160,7 @@ class Person:
         closest = []
         priorityDiff = 0
         rejectionScore = 0
-        print("coordinates " +  str(coordinates))
+        print("coordinates " + str(coordinates))
         print("objects " + str(object))
 
         x = 0

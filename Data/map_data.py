@@ -226,6 +226,9 @@ class map_data:
         :param name the persons id, so it doesnt do check against itself
         """
 
+        if self.check_coordinates_in_bounds(check_coords, radius) is False:
+            return False
+
         for obj in self.mapData:
             # Checking to see how close each object is
             if obj.get_name() == name:
@@ -260,6 +263,29 @@ class map_data:
                     return obj
 
         # Coordinates are fine to move to
+
+        return True
+
+    def check_coordinates_in_bounds(self, coordinates, radius):
+        """
+        Checks to see is a set of coordinates is out of the map bounds for the person
+        :param coordinates: the coordinates to move too
+        :param radius: the persons radius
+        :return: True if coordinates are fine
+        """
+        if coordinates[0] <= 0 or coordinates[1] <= 0:
+            return False
+
+        lowX = coordinates[0] - radius
+        lowY = coordinates[1] - radius
+        highX = coordinates[0] + radius
+        highY = coordinates[1] + radius
+
+        if lowX < 0 or lowY < 0:
+            return False
+
+        if highX > self.gui.get_screen_width() or highY > self.gui.get_screen_height():
+            return False
 
         return True
 

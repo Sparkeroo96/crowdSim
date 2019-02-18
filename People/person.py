@@ -144,28 +144,29 @@ class Person:
             return "Waiting"
 
         stateAction = self.get_state_action()
-        print("currentState: " + self.currentState + " / stateAction " + stateAction)
-
-        if stateAction == "navigateToRememberedObj":
-            random = randint(0, 100)
-            if self.cords:
-                self.navigate_to_remembered_object()
-            elif random >= 99:
-                self.navigate_to_remembered_object()
-            else:
-                self.random_move()
-
-        elif stateAction == "rotate":
-             self.person_rotate()
-
-        elif stateAction == "wait":
-            # The person sits there and waits
-            print(self.name + " waiting")
-
-        else:
-            # self.random_move()
-            self.flock()
-        # return self.random_move()
+        # print("currentState: " + self.currentState + " / stateAction " + stateAction)
+        self.random_move()
+        # if stateAction == "navigateToRememberedObj":
+        #     random = randint(0, 100)
+        #     if self.cords:
+        #         self.navigate_to_remembered_object()
+        #     elif random >= 99:
+        #         self.navigate_to_remembered_object()
+        #     else:
+        #         self.random_move()
+        #
+        # elif stateAction == "rotate":
+        #      self.person_rotate()
+        #
+        # elif stateAction == "wait":
+        #     # The person sits there and waits
+        #     # print(self.name + " waiting")
+        #     nothing = None
+        # else:
+        #     self.random_move()
+        #     # self.random_move()
+        #     # self.flock()
+        # # return self.random_move()
 
     def navigate_to_remembered_object(self):
         """
@@ -259,7 +260,6 @@ class Person:
         :param coordinates:
         :return: True on successful move, returns the collision object on false
         """
-
         collisionObject = self.map.check_coordinates_for_person(coordinates, self.width / 2, self.name, self.get_edge_coordinates_array(coordinates, round(self.width / 2) ))
 
         # if self.map.check_coordinates_for_person(coordinates, self.width, self.name, self.get_edge_coordinates_array()):
@@ -369,7 +369,7 @@ class Person:
         """Person moving randomly around the map"""
         randomNumber = randint(0, 8)
         # #print(self.name + " should move " + str(randomNumber))
-        newCoordinates = 0
+        newCoordinates = []
         # #print(self.name + " random number " + str(randomNumber) + " -- initial coords " + str(self.coordinates))
         if randomNumber <= 2:  # person move up
             newCoordinates = [self.coordinates[0], self.coordinates[1] + 1]
@@ -383,7 +383,14 @@ class Person:
         elif randomNumber <= 8:  # Person move left
             newCoordinates = [self.coordinates[0] - 1, self.coordinates[1]]
 
-        print("random move current coords " + str(self.coordinates) + " new coords " + str(newCoordinates))
+        # print("random move current coords " + str(self.coordinates) + " new coords " + str(newCoordinates))
+
+        #CHANGE TO WORK
+
+        self.coordinates = (newCoordinates[0], newCoordinates[1])
+
+        #END OF CHANGE
+
         self.move(newCoordinates)
 
     def store_coordinates(self, coordinates):

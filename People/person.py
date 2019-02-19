@@ -39,6 +39,7 @@ class Person:
     maxSpeed = 4
     # A flocking parameter, dont want to be within 10 pixels of a nearby object, will attempt to move out of them
     rejectionArea = 10
+    rejectionStrength = 1
 
     vision = []
 
@@ -143,8 +144,8 @@ class Person:
             return "Waiting"
 
         stateAction = self.get_state_action()
-        print("currentState: " + self.currentState + " / stateAction " + stateAction)
-
+        # print("currentState: " + self.currentState + " / stateAction " + stateAction)
+        # self.random_move()
         if stateAction == "navigateToRememberedObj":
             random = randint(0, 100)
             if self.cords:
@@ -159,11 +160,12 @@ class Person:
 
         elif stateAction == "wait":
             # The person sits there and waits
-            print(self.name + " waiting")
-
+            # print(self.name + " waiting")
+            nothing = None
         else:
+            self.random_move()
             # self.random_move()
-            self.flock()
+            # self.flock()
         # return self.random_move()
 
     def navigate_to_remembered_object(self):
@@ -258,7 +260,6 @@ class Person:
         :param coordinates:
         :return: True on successful move, returns the collision object on false
         """
-
         collisionObject = self.map.check_coordinates_for_person(coordinates, self.width / 2, self.name, self.get_edge_coordinates_array(coordinates, round(self.width / 2) ))
 
         # if self.map.check_coordinates_for_person(coordinates, self.width, self.name, self.get_edge_coordinates_array()):
@@ -269,7 +270,6 @@ class Person:
             print("moving")
             return True
 
-        print(self.name + " not moving " + str(collisionObject) + str(self))
         return collisionObject
 
     def person_rotate(self, clockwise = True):
@@ -369,7 +369,7 @@ class Person:
         """Person moving randomly around the map"""
         randomNumber = randint(0, 8)
         # #print(self.name + " should move " + str(randomNumber))
-        newCoordinates = 0
+        newCoordinates = []
         # #print(self.name + " random number " + str(randomNumber) + " -- initial coords " + str(self.coordinates))
         if randomNumber <= 2:  # person move up
             newCoordinates = [self.coordinates[0], self.coordinates[1] + 1]
@@ -383,7 +383,14 @@ class Person:
         elif randomNumber <= 8:  # Person move left
             newCoordinates = [self.coordinates[0] - 1, self.coordinates[1]]
 
-        print("random move current coords " + str(self.coordinates) + " new coords " + str(newCoordinates))
+        # print("random move current coords " + str(self.coordinates) + " new coords " + str(newCoordinates))
+
+        #CHANGE TO WORK
+
+        self.coordinates = (newCoordinates[0], newCoordinates[1])
+
+        #END OF CHANGE
+
         self.move(newCoordinates)
 
     def store_coordinates(self, coordinates):
@@ -410,6 +417,10 @@ class Person:
         """Returns the area that a person doesnt want other objects in"""
         radius = self.width / 2
         return radius + self.rejectionArea
+
+    def get_rejection_strength(self):
+        """Reutrns the rejectionStrength"""
+        return self.rejectionStrength
 
     def get_size(self):
         """returns persons size"""
@@ -1041,6 +1052,11 @@ class Person:
 
         objectsWithinRejection = self.map.get_objects_within_range(self.coordinates, self.get_rejection_area(), self.get_edge_coordinates_array(self.coordinates, self.get_rejection_area()))
 
+        if objectsWithinRejection:
+            print("objectsWithinRejection" + str(objectsWithinRejection))
+            return self.flock_away_from_objects(objectsWithinRejection)
+
+
         if nearbyPeople is False or len(nearbyPeople) == 1:
             # No nearby people random
             print("no nearby ")
@@ -1084,18 +1100,108 @@ class Person:
                 elif flockingParameters["direction"][1] < 0:
                     xDirection["negative"] += 1
 
-        # Move away
-        for obj.rejection
-
         avgAngle = angleTotal / (len(nearbyPeople) - 1)
         self.flock_move(avgAngle, xDirection, yDirection)
 
-    def work_out_direction_to_flock_away_from(self, objects):
+    def flock_away_from_objects(self, objects):
+        """
+        Flocks away from the array of objects
+        :param objects: Objects to avoid
+        :return: true on success
+        """
+
+        coordsToAvoid = self.coordinates_to_avoid_of_nearby_objects(objects)
+
+        priorityCoordiantes = self.priority_avoid_coordinates(objects, coordsToAvoid)
+
+        print("PriorityCoords " + str(priorityCoordiantes))
+
+        nextMove = []
+        nextMove.append(self.coordinates[0])
+        nextMove.append(self.coordinates[1])
+        moveX = 0
+        moveY = 0
+
+
+        for coord in priorityCoordiantes:
+            if coord[0] > self.coordinates[0]:
+                moveX -= 1
+            elif coord[0] < self.coordinates[0]:
+                moveX += 1
+
+            if coord[1] > self.coordinates[1]:
+                moveY -= 1
+            elif coord[1] < self.coordinates[1]:
+                moveY += 1
+
+        randInc = randint(0, 8)
+        if randInc == 0:
+            moveX += 1
+        elif randInc == 1:
+            moveX -= 1
+        elif randInc == 2:
+            moveY += 1
+        elif randInc == 3:
+            moveY -= 1
+
+
+        if moveX > 0:
+            nextMove[0] += 1
+        elif moveX < 0:
+            nextMove[0] -= 1
+
+        if moveY > 0:
+            nextMove[1] += 1
+        elif moveY < 0:
+            nextMove[1] -= 1
+
+        self.move(nextMove)
+
+    def priority_avoid_coordinates(self, objects, coordinates):
+        """
+        The coordinates to avoid as a priority
+        :param objects:
+        :param coordinates:
+        :return:
+        """
+        closest = []
+        priorityDiff = 0
+        rejectionScore = 0
+        print("coordinates " + str(coordinates))
+        print("objects " + str(object))
+
+        x = 0
+        # for key, obj in enumerate(objects):
+        for obj in objects:
+            if obj == self:
+                continue
+            # Finding closest and moving away from that
+            print(x)
+            coords = coordinates[x]
+            coordsDiff = (abs(coords[0] - self.coordinates[0]) + abs(coords[1] - self.coordinates[1]))
+            if obj.get_rejection_strength() > rejectionScore:
+                rejectionScore = obj.get_rejection_strength()
+                closest = []
+                closest.append(coordinates[x])
+                priorityDiff = coordsDiff
+
+            elif obj.get_rejection_strength() == rejectionScore and priorityDiff == coordinates:
+
+                closest.append(coordinates[x])
+
+            x += 1
+
+        return closest
+
+
+    def coordinates_to_avoid_of_nearby_objects(self, objects):
         """
         Works out the direction to move to to get away from nearby objects
         :param objects: The objects too close
         :return:
         """
+
+        coordsToAvoid = []
 
         for obj in objects:
             if obj == self:
@@ -1103,9 +1209,12 @@ class Person:
 
             if isinstance(obj, Person):
                 print("move away from center")
+                coordsToAvoid.append(obj.get_coordinates())
 
             else:
-                coords = self.work_out_objects_closest_point(obj)
+                coordsToAvoid.append(self.work_out_objects_closest_point(obj))
+
+        return coordsToAvoid
 
     def work_out_objects_closest_point(self, obj):
         """
@@ -1113,34 +1222,12 @@ class Person:
         :param obj: the object in question
         :return: a set of coordinates
         """
-        ranges = self.map.get_coordinates_range(self, obj.get_coordinates(), [obj.get_width(), obj.get_height()])
+        ranges = self.map.get_coordinates_range(obj.get_coordinates(), [obj.get_width(), obj.get_height()])
 
-        #Need to work out which direction its in first
-        closestX = 0
-        lowXDiff = ranges["X"][0] - self.coordinates[0]
-        highXDiff = ranges["X"][1] - self.coordinates[0]
+        closestX = self.find_closest_coordinate(self.coordinates[0], ranges["X"][0], ranges["X"][1])
+        closestY = self.find_closest_coordinate(self.coordinates[0], ranges["Y"][0], ranges["Y"][1])
 
-        if lowXDiff > 0 and highXDiff > 0:
-            # its to the right
-            closestX = ranges["X"][0]
-
-        elif lowXDiff < 0 and highXDiff < 0:
-            # Its to the left
-            closestX = ranges["X"][1]
-
-        elif lowXDiff == 0:
-            # on the same line as low x
-            closestX = ranges["X"][0]
-
-        elif highXDiff == 0:
-            # on the same line as high x
-            closestX = ranges["X"][1]
-
-        else:
-            # got to figure out which is closest
-            if abs(lowXDiff) < abs(highXDiff):
-
-            else:
+        return [closestX, closestY]
 
     def find_closest_coordinate(self, myCoord, lowCoord, highCoord):
         """
@@ -1150,32 +1237,17 @@ class Person:
         :param highCoord: the high range value of that x or y
         :return: an int
         """
+        returnCoord = 0
+        if myCoord <= lowCoord:
+            returnCoord = lowCoord
 
-        firstDiff = lowCoord - myCoord
-        secondDiff = highCoord - myCoord
+        elif myCoord >= highCoord:
+            returnCoord = highCoord
 
-        closest = lowCoord
-        closestDiff = firstDiff
+        else:
+            returnCoord = myCoord
 
-        if abs(secondDiff) < abs(firstDiff):
-            closest = highCoord
-            closestDiff = secondDiff
-
-        midpoint = lowCoord + ((highCoord - lowCoord) / 2)
-
-        x = 0
-        while x < 5:
-
-            midDiff = midpoint - myCoord
-            if midDiff < closestDiff:
-                if midpoint > closest:
-
-                    midpoint = closest + ((midpoint - closest) / 2)
-
-                else:
-                    midpoint = midpoint + ((closest - midpoint) / 2)
-
-            x += 1
+        return returnCoord
 
     def flock_move(self, avgAngle, xDirection, yDirection):
         """

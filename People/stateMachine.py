@@ -75,7 +75,7 @@ class StateMachine:
 
         for x in nextStates:
             if x == nextState:
-                print(nextState + " is a possible next state")
+                # print(nextState + " is a possible next state")
                 return True
 
         return False

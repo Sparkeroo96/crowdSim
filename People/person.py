@@ -1084,6 +1084,8 @@ class Person:
                 return b[0]
         return False
 
+    def get_memory(self):
+        return self.memory
 
 
 

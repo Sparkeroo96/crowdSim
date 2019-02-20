@@ -74,7 +74,7 @@ class StateMachine:
         @:param nextState the state you wish to be in
         @:return Returns true if fine, false if not
         """
-        nextStates =  self.states[self.currentState][nextState]
+        nextStates = self.states[self.currentState][nextState]
 
         for x in nextStates:
             if x == nextState:
@@ -83,13 +83,15 @@ class StateMachine:
 
         return False
 
-    """
-    Once there is a need within the idle state, we need to pass
-    the next state to start the right SM transitions.
-    
-    :param n = need of person
-    """
     def get_need_state(self, n):
+        """
+        This need state is used in the idle (greatest_need) state.
+
+        Once there is a need within the idle state, we need to pass
+        the next state to start the right SM transitions.
+
+        :param n = need of person
+        """
         nextStates = self.get_state_next_states(self.currentState)
         need = n
         for state in nextStates:
@@ -148,4 +150,9 @@ class StateMachine:
     def get_current_needs(self):
         return self.overall_needs
 
+    def get_all_states(self):
+        all_states = []
+        for key in self.states:
+            all_states.append(key)
+        return all_states
 

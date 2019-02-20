@@ -367,22 +367,6 @@ class map_data:
         # return [xRanges, yRanges]
         return returnValue
 
-    def get_object_colour_code(self, objectType):
-        """
-        Gets an obj colour code
-        :param objectType: The obj type you are looking for
-        :return: Returns an RGB array, false if no such obj type exists
-        """
-
-        for obj in self.mapData:
-            print("objType: " + str(type(obj)))
-            # if type(obj) == objectType:
-            searchString = "." + objectType + "'"
-            if searchString in str(type(obj)):
-                return obj.get_colour()
-
-        return False
-
 
     def what_object(self, coords):
         """This function checks to see if a cordiante is within another person and returns a reference to the object"""

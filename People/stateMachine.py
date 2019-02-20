@@ -7,6 +7,8 @@ class StateMachine:
     #Dictionary of possible states
     states = {}
     currentState = ""
+    #Needs of a human
+    overall_needs = None
 
     def __init__(self, machineFor):
         self.stateMachineFor = machineFor
@@ -21,7 +23,6 @@ class StateMachine:
         self.add_next_states(stateName, nextState)
 
         self.states[stateName]["requirement"] = requirement
-
 
     def create_new_state(self, stateName):
         """Function creates a brand new state, stops overwriting old data"""
@@ -51,6 +52,7 @@ class StateMachine:
     def get_state_next_states(self, stateName):
         state = self.get_state(stateName)
         print("stateName: " + stateName)
+        print("stateNameNextStates:" + str(state["nextStates"]))
         return state["nextStates"]
 
     def get_state_requirment(self, stateName):
@@ -81,6 +83,20 @@ class StateMachine:
 
         return False
 
+    """
+    Once there is a need within the idle state, we need to pass
+    the next state to start the right SM transitions.
+    
+    :param n = need of person
+    """
+    def get_need_state(self, n):
+        nextStates = self.get_state_next_states(self.currentState)
+        need = n
+        for state in nextStates:
+            if str(need) in state:
+                self.set_current_state(state)
+                return state
+
     def get_next_state(self):
         """Function gets next state and moves into it"""
         nextStates = self.get_state_next_states(self.currentState)
@@ -91,10 +107,12 @@ class StateMachine:
             selectedNextState = nextStates[0]
 
         else:
+            """Need to remove the random off the next state"""
             selectedNextState = self.__get_random_next_state(nextStates, statesCount)
 
         # selectedNextState =  "wantDrink"
-        selectedNextState =  "wantToilet"
+        """THIS IS WHERE THE STATE CHANGES"""
+        # selectedNextState =  "wantToilet"
 
 
         self.set_current_state(selectedNextState)
@@ -123,3 +141,11 @@ class StateMachine:
                 return nextState
 
         return False
+
+    def set_current_needs(self, needs):
+        self.overall_needs = needs
+
+    def get_current_needs(self):
+        return self.overall_needs
+
+

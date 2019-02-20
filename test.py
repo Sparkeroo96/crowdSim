@@ -38,7 +38,7 @@ class RunningMain:
     screen_width = 500
     screen_height = 500
 
-    tick_rate = 120
+    tick_rate = 5
 
     def __init__(self):
         pygame.init()
@@ -230,6 +230,8 @@ class RunningMain:
         # self.display.fill(self.white)
         # Goes though the map array obj
         objectArray = self.data.get_map()
+        """Prints all cords where people are"""
+        self.data.get_person_cord_info()
         for obj in objectArray:
             obj.action()
             coordinates = obj.get_coordinates()

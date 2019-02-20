@@ -10,8 +10,7 @@ heatmap_store = {}
 
 #  The binary heap keeps the open list in order
 def astar(array, start, dest):
-    """THE DESTINATION WILL BE DEEMED AS A 1"""
-    print("array in astar" + str(array))
+    """NEED TO FIX, CHECK IF NUMBERS OUT OF BOUNDS"""
     array[(dest[0], dest[1])] = 0
     neighbours = [(0, 1), (0, -1), (1, 0), (-1, 0), (1, 1), (-1, -1), (1, -1), (-1, 1)]
 
@@ -86,6 +85,7 @@ def store_all_nodes(g):
 
 def get_all_nodes():
     global graph
+    print(graph)
     if graph.any():
         return graph
     else:
@@ -122,14 +122,13 @@ def return_waypoints(locations):
             else:
                 waypoints.append(locations[i])
         except IndexError:
-                print("Error")
+                print("")
         i += 1
     if not locations:
         return
     else:
         """Add the destination to the final waypoint"""
         waypoints.append(locations[-1])
-    print("WAYPOINTS ARE: " + str(waypoints))
     global mapLocations
     mapLocations = waypoints
     return waypoints
@@ -144,6 +143,7 @@ def return_waypoints(locations):
 def run_astar(start, dest):
     a = convert_to_simple(start)
     b = convert_to_simple(dest)
+    print(a, b)
     """Convert coords to the node boys"""
     result = astar(get_all_nodes(), a, b)
     if result == None:
@@ -158,7 +158,12 @@ def run_astar(start, dest):
 def convert_to_simple(cords):
     converted = []
     for c in cords:
-        converted.append(math.floor(c / 50))
+        change = math.floor(c / 50)
+        if change <= 0:
+            change = 0
+            converted.append(change)
+        else:
+            converted.append(change)
     return converted[0], converted[1]
 
 """Returns the final location waypoints of the algorithm needed. """

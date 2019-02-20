@@ -15,6 +15,7 @@ import numpy
 # Seems to need these for allowing isinstance(example, Person), doesnt work with the above import
 from People.person import Person
 from Objects.wall import Wall
+from Objects import fireExit
 from People.flockingPerson import FlockingPerson
 
 from Objects.bar import Bar
@@ -36,11 +37,12 @@ class map_data:
 
     def map_default(self):
         """Getting default map data"""
-        self.add_people_to_map(20)
+        self.add_people_to_map(2)
         self.add_bar_to_map(1)
         self.add_toilet_to_map(1)
         self.add_wall_to_map()
-        self.add_dancefloor_to_map(1)
+        # self.add_dancefloor_to_map(1)
+        # self.add_fireEscape_to_map()
         global constant
         if constant == 0:
             self.generate_nodes()
@@ -134,7 +136,7 @@ class map_data:
 
     def angleMath(self, angle, xcord, ycord, vision):
         """This is the maths that returns the amount the x and y cordianes need to change to produce the cordinates
-        of the new loaction """
+        of the new location """
         # These variables will be chnaged into number to change
         veritcal = 0
         horizontal = 0
@@ -409,7 +411,7 @@ class map_data:
 
 
     def point_in_coordinates_range(self, coordinates, range):
-        """
+        self.ranges_ = """
         Finds out if a given point exists within a range of other coordinates
         :param coordinates: The point to check
         :param range: the range to check given as {X: [lowX, highX], Y: [lowY, highY]}
@@ -528,7 +530,6 @@ class map_data:
         file.close()
 
     def get_map(self):
-        print("HEATMAP")
         self.check_traffic()
         return self.mapData
 
@@ -599,6 +600,15 @@ class map_data:
             self.mapData.append(newDancefloor)
             x += 1
 
+    def add_fireEscape_to_map(self):
+        x = 0
+        fireEscapes = []
+        while x <= 1:
+            coords = [480, 200]
+            newFireEscape = fireExit.FireExit(coords, "fireEscape " + str(self.mapData), 20, 30)
+            self.mapData.append(newFireEscape)
+            x += 1
+
     """Check the areas which contain the most traffic"""
     def check_traffic(self):
         heat_dict = a_starv2.get_heat()
@@ -640,4 +650,19 @@ class map_data:
         a_starv2.set_open_nodes(openNodes)
         """Store all the nodes in the a_star class"""
         a_starv2.store_all_nodes(graph)
+
+    def get_person_cord_info(self):
+        personCoords = []
+        personState = []
+        personName = []
+        personNeeds = []
+        current_map = self.mapData
+        for p in current_map:
+            if "person" in p.get_name():
+                print(p.get_name())
+                personCoords.append(p.get_coordinates())
+                personName.append(p.get_name())
+                personState.append(p.get_state_action())
+                personNeeds.append(p.get_person_needs())
+        print("Map info is" + str(personNeeds))
 

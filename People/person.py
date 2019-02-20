@@ -55,19 +55,22 @@ class Person:
     hasDrink = 0
 
     # Persons "needs" first value is importance second is how much they want to do it
-    #Not in use currently might remove them
-    needs = [["toilet", 1, 0],
-             ["thirst", 2, 0],
-             ["entertainment", 3, 0],
-             ["freshAir", 3, 0]
-            ]
+    brain = [["Toilet", 1000],
+             ["Drink", 2000],
+             ["Dance", 2000]]
 
-    defaultState = "greatestNeed"
+    idleState = "greatestNeed"
     currentState = "greatestNeed"
     stateMachine = ""
 
     states = {
-        "greatestNeed": [["usedToilet", "drinkDrink", "danced"], ["wantDrink", "wantToilet", "wantDance"]],
+        #This is the starting state. It will decrease the needs.
+        # "idleState": [[]],
+
+        "greatestNeed": [["usedToilet", "drinkDrink", "danced"], ["wantDrink", "wantToilet", "wantDance", "wantSearch"]],
+
+        "wantSearch": [[], ["search"]],
+        "search": [[], ["greatestNeed"]],
 
         "wantDrink": [["isGreatestNeed"], ["findBar", "orderDrink"]],
         "findBar": [["notAtBar"], ["moveToBar"]],
@@ -101,7 +104,7 @@ class Person:
         self.stateMachine = StateMachine("person")
         self.add_states_to_machine()
 
-        self.currentState = self.defaultState
+        self.currentState = self.idleState
         self.stateMachine.set_current_state(self.currentState)
 
         self.tick_rate = tick_rate
@@ -120,7 +123,9 @@ class Person:
 
     def action(self):
         """What the person is going to do"""
+        print("CURRENT STATE IS" + str(self.stateMachine.get_current_state()))
         self.currentState = self.stateMachine.get_current_state()
+        print("WHEN IS THIS CALLED")
 
         if self.wait_on_action_count():
             return "Waiting"
@@ -134,7 +139,8 @@ class Person:
             elif random >= 99:
                 self.navigate_to_remembered_object()
             else:
-                self.random_move()
+                print("RANDOM MOVE STATE ACTION REMEMBERED OBJ")
+                self.brain[0][1] -= 1
 
         elif stateAction == "rotate":
              #print("no action")
@@ -146,6 +152,7 @@ class Person:
 
 
         else:
+            print("THIS IS NOT NAVIGATE, ROTATE OR WAIT")
             self.random_move()
         # return self.random_move()
 
@@ -154,9 +161,6 @@ class Person:
         Starts to move to the rememberd Object
         :return: True on success
         """
-
-        """PICK UP FROM HERE FOR NEXT SESSION"""
-        print("NAVIGATED TO REMEMBERED.")
         x = self.coordinates[0]
         y = self.coordinates[1]
         nextMove = [x, y]
@@ -196,6 +200,8 @@ class Person:
                     newCoords[1] += randY
                     return self.move(newCoords)
             self.cords.pop(0)
+        print(len(self.cords))
+        print("NAVIGATED TO REMEMBERED." + str(self.get_coordinates()))
 
     def get_coordinates_for_move_avoiding_collision_object(self, targetCoordinates, collisionObject, attemptedMove):
         """
@@ -244,7 +250,7 @@ class Person:
             self.change_angle_to_move_direction(self.coordinates, coordinates)
             self.lastCoordinates = self.coordinates
             self.coordinates = coordinates
-            print("moving")
+            # print("moving")
             return True
 
         print(self.name + " not moving " + str(collisionObject) + str(self))
@@ -429,16 +435,23 @@ class Person:
 
     def get_state_action(self):
         """Causes the person to act based on their current state"""
-        # #print("get state action " + str(self.currentState))
 
         action = "moveRandom"
+        print("IN get_state_action MY CURRENT STATE IS " + str(self.currentState))
 
-        if self.currentState == self.defaultState:
+        """NEED TO CHECK HERE FOR NEEDS"""
+        """IF STATE IS GREATEST NEED"""
+        if self.currentState == self.idleState:
             # #print(self.name + " in greatest need")
-            self.currentState = self.stateMachine.get_next_state()
-        else:
-            #print("not greatest need")
-            x = 0
+            """While there are no current needs, the person will relax."""
+            """relax will reduce the needs of the person"""
+            if self.check_needs() == False:
+                self.relax()
+                self.get_person_needs()
+                """RETURN THE ACTION OF DOING NOTHING, THERE IS NO NEED"""
+                return action
+            """Setting the current state to the persons needs."""
+            self.currentState = self.stateMachine.get_need_state(self.check_needs())
 
         if "want" in str(self.currentState):
             # #print("here")
@@ -551,7 +564,7 @@ class Person:
         return self.find_object(searchObject)
 
     def find_object(self, searchObject):
-        """This function does the find function of a person
+        """This function the find function of a person
         :param searchObject: The object you want to look for
         :return Returns True if there are objects, false if it cant find one
         """
@@ -618,16 +631,15 @@ class Person:
 
     def add_states_to_machine(self):
         """This is where the object will add states to its statemachine"""
-        # #print("Adding states to machine")
         for key, value in self.states.items():
-            # #print("\ncurrentState " + key)
-            # #print("currentValue " + str(value))
+            print(key, value[1], value[0])
             self.stateMachine.add_state(key, value[1], value[0])
 
     def advance_state_machine(self):
         """
         Advances the statemachine to the next logical step instead of a random one
         :return:
+
         """
 
         current_state = self.stateMachine.get_current_state()
@@ -917,7 +929,7 @@ class Person:
 
         elif self.rememberedObj.person_use_toilet(self):
             print("using toilet")
-            self.set_action_count(8, 10)
+            self.set_action_count(0, 1)
 
 
 
@@ -962,7 +974,7 @@ class Person:
     def set_cords_from_algo(self):
         locations = None
         """If the current cords are not the nearest node"""
-        if self.find_nearest_waypoint() != self.coordinates:
+        if self.find_nearest_waypoint() !=  self.coordinates:
             print("NOT EQUAL TO THE NEAREST NODE")
             startingLoc = self.find_nearest_waypoint()
             print(startingLoc)
@@ -1047,5 +1059,31 @@ class Person:
 
             """NEED TO FIX THIS"""
             self.coordinates = newCoordinates
+
+    """Returns array of persons current needs, alone with value"""
+    def get_person_needs(self):
+        print(self.brain)
+
+    """This will be in an idle state when a person has no desire of drinking, dancing or wanting the toilet"""
+    def relax(self):
+        dec_thirst = randint(0, 2)
+        dec_toilet = randint(0, 1)
+        dec_dance = randint(0, 2)
+        print(self.brain[0][0][1])
+        self.brain[0][1] -= dec_toilet
+        self.brain[1][1] -= dec_thirst
+        self.brain[2][1] -= dec_dance
+
+    """
+    This function checks the needs of the person.
+    If the value goes below the limit, it'll return that need, otherwise False
+    """
+    def check_needs(self):
+        for b in self.brain:
+            if b[1] <= 100:
+                return b[0]
+        return False
+
+
 
 

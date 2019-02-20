@@ -11,6 +11,8 @@ heatmap_store = {}
 #  The binary heap keeps the open list in order
 def astar(array, start, dest):
     """NEED TO FIX, CHECK IF NUMBERS OUT OF BOUNDS"""
+    print(array)
+    print(dest)
     array[(dest[0], dest[1])] = 0
     neighbours = [(0, 1), (0, -1), (1, 0), (-1, 0), (1, 1), (-1, -1), (1, -1), (-1, 1)]
 

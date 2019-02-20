@@ -8,7 +8,7 @@ from Objects.baseObject import BaseObject
 
 class Toilet(BaseObject):
 
-    # This colour is dark grey
+    # This colour is orange
     colour = (255, 128, 0)
 
     #Flag to say if toilet is free

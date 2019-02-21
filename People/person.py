@@ -100,6 +100,8 @@ class Person:
 
     def __init__(self, name, coords, width, angle, tick_rate):
         # random.seed()
+        self.test_values = [['thirst', 70], ['toilet', 20], ['dance', 95]]
+
         self.name = name
 
         if coords:
@@ -760,7 +762,7 @@ class Person:
         # Number the vision starts from, this stops the person from seeing themselves
         x = 12
         # This is the amount of rays that they produce
-        rays = 10
+        rays = 9
         # The itorating number of rays
         i = 0
         angle = angle - 25
@@ -782,7 +784,7 @@ class Person:
                 value = [x1 + value[0],y1 + value[1]]
                 resultArray.append(value)
                 x = x + 1
-            i = i + 1
+            i = i + 3
             x = 12
         return resultArray
 
@@ -1199,3 +1201,10 @@ class Person:
         cords.append(currentY)
         return cords
         # print(current)
+
+    def get_test_values(self):
+        return self.test_values
+
+    def set_test_values(self, index,value):
+        array = self.test_values
+        array[index][1] = value

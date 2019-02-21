@@ -1,6 +1,8 @@
 import numpy
 import math
 from heapq import *
+import numpy
+numpy.set_printoptions(threshold=numpy.nan)
 mapLocations = []
 test = (1, 1), (-1, -1), (1, -1), (-1, 1)
 graph = []
@@ -12,8 +14,11 @@ heatmap_store = {}
 def astar(array, start, dest):
     """NEED TO FIX, CHECK IF NUMBERS OUT OF BOUNDS"""
     print(array)
-    print(dest)
+    print("THIS IS IN ASTAR AND THE ABOVE ARRAY IS")
+    print(start)
     array[(dest[0], dest[1])] = 0
+    print(len(array[0]))
+
     neighbours = [(0, 1), (0, -1), (1, 0), (-1, 0), (1, 1), (-1, -1), (1, -1), (-1, 1)]
 
     close_set = set()
@@ -151,6 +156,7 @@ def run_astar(start, dest):
     if result == None:
         return print("none")
     else:
+        print("MY A* CORDS WERE GOING TO BE " + str(result))
         waypoint = return_waypoints(store_node_details(result))
         # return store_node_details(result)
         return locations(waypoint)
@@ -160,7 +166,7 @@ def run_astar(start, dest):
 def convert_to_simple(cords):
     converted = []
     for c in cords:
-        change = math.floor(c / 50)
+        change = math.floor(c / 20)
         if change <= 0:
             change = 0
             converted.append(change)
@@ -175,14 +181,14 @@ def locations(path):
     if not path:
         return
     for p in path:
-        finalLocations.append((p[0] * 50, p[1] * 50))
+        finalLocations.append((p[0] * 20, p[1] * 20))
     increase_heat(finalLocations)
     return finalLocations
 
 def set_open_nodes(nodes):
     global n
     for node in nodes:
-        n.append([node[0] * 50, node[1] * 50])
+        n.append([node[0] * 20, node[1] * 20])
 
 def get_open_nodes():
     global n

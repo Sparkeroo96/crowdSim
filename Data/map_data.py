@@ -55,7 +55,8 @@ class map_data:
 
     def add_people_to_map(self, coords, size, angle):
         """Adding people to map"""
-        newPerson = person.Person("person " + str(len(self.mapData)), coords, size, angle, self.tick_rate)
+        """MODDED THE SIZE"""
+        newPerson = person.Person("person " + str(len(self.mapData)), coords, 10, angle, self.tick_rate)
         newPerson.add_map(self, coords)
         self.mapData.append(newPerson)
 
@@ -653,28 +654,6 @@ class map_data:
 
         return returnArray
 
-    def set_nodes_values(self, wall):
-        """
-        This function sets the wall nodes value to 1.
-        In doing so, it will make the node unavailable to travel to & through.
-        :param walls: the walls to set nodes to.
-        :return:
-        """
-        boundaries = (int(math.sqrt(self.calculate_starting_nodes())) - 1)
-        cordX = (int(wall.get_coordinates()[0] / 50))
-        cordY = (int(wall.get_coordinates()[1] / 50))
-        width = (math.ceil(wall.get_width() / 50))
-        height = (math.ceil(wall.get_height() / 50))
-        print("SETTING WALLS" + str(width) + str(height))
-        for x in range(width):
-            self.values_to_append.append([cordX + x, cordY])
-        for y in range(height):
-            self.values_to_append.append([cordX, cordY + y])
-        """Check that coords are within the 10x10 grid"""
-        for v in self.values_to_append:
-            if v[0] > boundaries and v[1] > boundaries:
-                self.values_to_append.remove(v)
-        print("APPENDED VALUES ARE: " + str(self.values_to_append))
 
     def add_dancefloor_to_map(self, dancefloorCount):
         x = 0
@@ -711,13 +690,54 @@ class map_data:
         total_nodes = total_pixels / (node_distance * node_distance)
         return int(total_nodes)
 
-
+    def set_nodes_values(self, wall):
+        """
+        This function sets the wall nodes value to 1.
+        In doing so, it will make the node unavailable to travel to & through.
+        :param walls: the walls to set nodes to.
+        :return:
+        """
+        screen_width = 800
+        screen_height = 600
+        node_distance = 20 # Spacing between each node.
+        xBoundaries = int(screen_width/node_distance)
+        yBoundaries = int(screen_height/node_distance)
+        cordX = (int(wall.get_coordinates()[0] / node_distance))
+        cordY = (int(wall.get_coordinates()[1] / node_distance))
+        width = (math.ceil(wall.get_width() / node_distance))
+        height = (math.ceil(wall.get_height() / node_distance))
+        print(cordX, cordY)
+        print("SETTING WALLS " + str(width) + " AND " + str(height))
+        print(range(width))
+        for x in range(width):
+            print(x)
+            self.values_to_append.append([cordX + x, cordY])
+            # self.values_to_append.append([cordX + x, cordY + height])
+            # self.values_to_append.append([cordX + x, cordY + height - 1])
+        for y in range(height):
+            self.values_to_append.append([cordX, cordY + y])
+            self.values_to_append.append([cordX + width, cordY + y])
+            # self.values_to_append.append([cordX + width + 1, cordY + y])
+        """Check that coords are within the 10x10 grid"""
+        for v in self.values_to_append:
+            if v[0] > yBoundaries and v[1] > xBoundaries:
+                self.values_to_append.remove(v)
+        print("APPENDED VALUES ARE: " + str(self.values_to_append))
 
     def generate_nodes(self):
-        """IDs for the nodes"""
-        total_nodes = self.calculate_starting_nodes()
-        square_root = int(math.sqrt(total_nodes))
-        listofID = []
+        """
+        Generate all nodes, adding values to each node and applying this to a*
+        :return:
+        """
+        screen_width = 800
+        screen_height = 600
+        node_distance = 20
+        total_nodes = self.calculate_starting_nodes() # All nodes to being with.
+        square_root = int(math.sqrt(total_nodes)) # The total length of the node map.
+        maxX = int(screen_width/node_distance)
+        maxY = int(screen_height/node_distance)
+
+        listofID = []  # IDs for the nodes
         print(self.calculate_starting_nodes())
         """Basic 10x10 grid"""
         simpleCords = []
@@ -725,13 +745,16 @@ class map_data:
             listofID.append(number)
         """Create cords for the 10x10 grid"""
         for x in range(total_nodes):
-            simpleCords.append([math.floor(x / square_root), (x % square_root)])
+            simpleCords.append([math.floor(x / maxX), (x % maxY)])
         """Create 100 nodes, apply the coords"""
         for n in range(total_nodes):
             self.nodeList.append(node.Node(simpleCords[n], 0))
         """Obtaining last coord in the simple grid to create the range of maze"""
-        """Create the empty node graph"""
-        graph = numpy.zeros((square_root, square_root), int)
+        """Create the empty node graph, adding 0's"""
+        graph = numpy.zeros((maxY, maxX), int)
+        test_graph = numpy.zeros((60, 80), int)
+        print(test_graph)
+        print(maxX, maxY)
         """For the values in append, apply the value of 1 to the node object"""
         """1 Represents a wall"""
         for v in self.values_to_append:

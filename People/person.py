@@ -180,6 +180,7 @@ class Person:
             self.placeholder += 1
 
         while self.astar_cords:
+            print("A STAR CORDS ARE " + str(self.astar_cords))
             targetCoordinates = [self.astar_cords[0][0], self.astar_cords[0][1]]
             # First move
             while targetCoordinates != nextMove:
@@ -222,7 +223,6 @@ class Person:
         newMove[1] = attemptedMove[1]
         collisionCoordinates = collisionObject.get_coordinates()
         print("STUCK OBJECT")
-        print(collisionCoordinates + self.coordinates)
         print("Reach")
 
         if collisionCoordinates[0] != self.coordinates[0]:
@@ -1035,7 +1035,7 @@ class Person:
     """Current Placeholder"""
 
     def destination(self):
-        cords = [500, 500]
+        cords = [200, 400]
         return cords
 
     def find_nearest_waypoint(self):

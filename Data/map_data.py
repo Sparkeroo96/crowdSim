@@ -445,23 +445,7 @@ class map_data:
 
         return False
 
-    def person_eyes(self, cords, angle, radias):
-        angle_left = angle - 25
-        if angle_left <= 0:
-            angle_left = angle_left + 360
 
-        angle_right = angle + 25
-
-        if angle_right > 360:
-            angle_right = angle_right - 360
-
-        # THis is the maths for the eyes
-        left_eye = self.angleMath(angle_left,cords[0],cords[1],radias-3)
-        right_eye = self.angleMath(angle_right,cords[0],cords[1],radias-3)
-        left_eye = [cords[0] + left_eye[0], cords[1] + left_eye[1]]
-        right_eye = [cords[0] + right_eye[0], cords[1] + right_eye[1]]
-
-        return [left_eye,right_eye]
 
     def export(self,file_name,save_name):
         """
@@ -535,7 +519,7 @@ class map_data:
         return True
 
 
-    def import_from_file(self,file,save_name):
+    def import_from_file(self, file, save_name):
         """
         This takes the maps_saves.txt and a name of a map and imports it into the system
         :param file: maps_saves.txt
@@ -573,17 +557,21 @@ class map_data:
                     coordY = coordY.translate({ord("]"): None})
                     coords = [int(float(coordX)), int(float(coordY))]
                     if result[0] == 'person':
-                        newPerson = person.Person("person " + str(len(self.mapData)), coords, int(result[2]), int(result[3]),self.tick_rate)
-                        self.mapData.append(newPerson)
+                        self.add_people_to_map(coords, int(result[2]), int(result[3]))
+                        # newPerson = person.Person("person " + str(len(self.mapData)), coords, int(result[2]), int(result[3]),self.tick_rate)
+                        # self.mapData.append(newPerson)
                     elif result[0] == 'wall':
-                        newWall = Wall(coords,int(result[2]),int(result[3]))
-                        self.mapData.append(newWall)
+                        self.add_wall_to_map(coords, int(result[2]), int(result[3]))
+                        # newWall = Wall(coords,int(result[2]),int(result[3]))
+                        # self.mapData.append(newWall)
                     elif result[0] == "toilet":
-                        new_toilet = Toilet(coords,"toilet" + str(len(self.mapData)),int(result[2]),int(result[3]))
-                        self.mapData.append(new_toilet)
+                        self.add_toilet_to_map(coords, int(result[2]), int(result[3]))
+                        # new_toilet = Toilet(coords,"toilet" + str(len(self.mapData)),int(result[2]),int(result[3]))
+                        # self.mapData.append(new_toilet)
                     elif result[0] == "bar":
-                        newBar = bar.Bar(coords,str(len(self.get_map())),int(result[2]),int(result[3]))
-                        self.mapData.append(newBar)
+                        self.add_bar_to_map(coords, int(result[2]), int(result[3]))
+                        # newBar = bar.Bar(coords,str(len(self.get_map())),int(result[2]),int(result[3]))
+                        # self.mapData.append(newBar)
             return True
         else:
             print("ERROR FILE NOT FOUND")
@@ -639,9 +627,11 @@ class map_data:
 
 
     def get_map(self):
+        """Gets the map of objects"""
         return self.mapData
 
     def clear_map(self):
+        """Clears the map of objects"""
         self.mapData = []
 
     def get_people_within_range(self, coordinates, diameter):

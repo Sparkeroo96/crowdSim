@@ -1,5 +1,6 @@
 import numpy
 import math
+from random import randint
 from heapq import *
 mapLocations = []
 test = (1, 1), (-1, -1), (1, -1), (-1, 1)
@@ -179,3 +180,16 @@ def set_open_nodes(nodes):
 def get_open_nodes():
     global n
     return n
+
+def get_random_waypoint():
+    """
+    Gets a random waypoint
+    :return: A random node
+    """
+
+    global n
+    nodeCount = len(n)
+    print("nodeCount " + str(nodeCount))
+    randNodeKey = randint(0, nodeCount - 1)
+
+    return n[randNodeKey]

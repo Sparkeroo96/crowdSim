@@ -51,6 +51,9 @@ class Person:
     rememberedObjType = ""
     rememberedColour = ""
     rememberedCoords = []
+    exploreNode = []
+
+    astarCoords = []
 
     rotate = 0
 
@@ -124,9 +127,6 @@ class Person:
 
         self.tick_rate = tick_rate
 
-        """These cords store waypoints needed to move using a*"""
-        cords = []
-        self.cords = cords
 
     def add_map(self, newMap, newCoordinates):
         """Storing the generated map"""
@@ -148,7 +148,7 @@ class Person:
         # self.random_move()
         if stateAction == "navigateToRememberedObj":
             random = randint(0, 100)
-            if self.cords:
+            if self.astarCoords:
                 self.navigate_to_remembered_object()
             elif random >= 99:
                 self.navigate_to_remembered_object()
@@ -162,17 +162,32 @@ class Person:
             # The person sits there and waits
             # print(self.name + " waiting")
             nothing = None
+
+        # elif stateAction == "explore":
+        #     # Person will pick a random node and navigate to it
+        #     print(" Explore")
+        #     if self.rememberedObjType != "" and self.exploreNode == []:
+        #         self.exploreNode = a_starv2.get_random_waypoint()
+        #         self.astarCoords = a_starv2.run_astar(self.find_nearest_waypoint(), self.exploreNode)
+        #
+        #     self.navigate_to_remembered_object()
+
         else:
-            self.random_move()
             # self.random_move()
-            # self.flock()
+            self.flock()
         # return self.random_move()
 
     def navigate_to_remembered_object(self):
         """
-        Starts to move to the rememberd Object
+        Starts to move to the remembered Object
         :return: True on success
         """
+        # Hopefully this will allow someone to flock around objects in front of them, whilst navigiating to the remembered object
+        objectsWithinRejection = self.map.get_objects_within_range(self.coordinates, self.get_rejection_area(), self.get_edge_coordinates_array(self.coordinates, self.get_rejection_area()))
+
+        if objectsWithinRejection and self.rememberedObj not in objectsWithinRejection:
+            # print("objectsWithinRejection" + str(objectsWithinRejection))
+            return self.flock_away_from_objects(objectsWithinRejection)
 
         """PICK UP FROM HERE FOR NEXT SESSION"""
         print(self.name + " Attempting to navigate to remembered")
@@ -185,8 +200,8 @@ class Person:
             self.set_cords_from_algo()
             self.placeholder += 1
 
-        while self.cords:
-            targetCoordinates = [self.cords[0][0], self.cords[0][1]]
+        if self.astarCoords:
+            targetCoordinates = [self.astarCoords[0][0], self.astarCoords[0][1]]
             # First move
             while targetCoordinates != nextMove:
                 if targetCoordinates[0] > x:
@@ -214,13 +229,13 @@ class Person:
 
                 nextMove = [x, y]
                 moveReturn = self.move(nextMove)
-                if moveReturn == False:
-                    newCoords = self.get_coordinates_for_move_avoiding_collision_object(targetCoordinates, moveReturn,
-                                                                                        nextMove)
+                if moveReturn != True:
+                    newCoords = self.get_coordinates_for_move_avoiding_collision_object(targetCoordinates, moveReturn, nextMove)
                     print("NEW CORDS ARE NOW +++ " + str(newCoords))
                     return self.move(nextMove)
-                return self.move(nextMove)
-            self.cords.pop(0)
+                # return self.move(nextMove)
+            self.astarCoords.pop(0)
+
 
     def get_coordinates_for_move_avoiding_collision_object(self, targetCoordinates,  collisionObject, attemptedMove):
         """
@@ -271,6 +286,14 @@ class Person:
             return True
 
         return collisionObject
+
+    def set_explore_node(self):
+        """
+        Gets a node to navigate to in order to explore the environment they are in
+        Node cant be too close to them, or its pointless exploring
+        :return:
+        """
+
 
     def person_rotate(self, clockwise = True):
         """
@@ -531,13 +554,16 @@ class Person:
                 action = "rotate"
 
             else:
+                action = "explore"
+                #if at target dont do the rest
+
                 # Done a circle move or rotate, dont want it to
-                random = randint(0, 1000)
-                if random == 1:
-                    action = "rotate"
-                    self.rotate = 0
-                else:
-                    action = "moveRandom"
+                # random = randint(0, 1000)
+                # if random == 1:
+                #     action = "rotate"
+                #     self.rotate = 0
+                # else:
+                #     action = "moveRandom"
 
         return action
 
@@ -993,15 +1019,15 @@ class Person:
             for location in locations:
                 self.store_waypoints(location)
                 # locations.pop(0)
-                # self.cords.append((location[0], location[1]))
+                # self.astarCoords.append((location[0], location[1]))
                 # coords.append((location[0] * 50, locations[1] * 50))
-            # return self.cords
+            # return self.astarCoords
 
     """Stores the waypoints in cords var"""
 
     def store_waypoints(self, cord):
         print("CORDS FOR A*" + str(cord))
-        self.cords.append((cord[0], cord[1]))
+        self.astarCoords.append((cord[0], cord[1]))
 
     """Returns the destination the person wants to achieve"""
     """Current Placeholder"""
@@ -1053,7 +1079,7 @@ class Person:
         objectsWithinRejection = self.map.get_objects_within_range(self.coordinates, self.get_rejection_area(), self.get_edge_coordinates_array(self.coordinates, self.get_rejection_area()))
 
         if objectsWithinRejection:
-            print("objectsWithinRejection" + str(objectsWithinRejection))
+            # print("objectsWithinRejection" + str(objectsWithinRejection))
             return self.flock_away_from_objects(objectsWithinRejection)
 
 
@@ -1330,15 +1356,15 @@ class Person:
             for location in locations:
                 self.store_waypoints(location)
                 # locations.pop(0)
-                # self.cords.append((location[0], location[1]))
+                # self.astarCoords.append((location[0], location[1]))
                 # coords.append((location[0] * 50, locations[1] * 50))
-            # return self.cords
+            # return self.astarCoords
 
     """Stores the waypoints in cords var"""
 
     def store_waypoints(self, cord):
         print("CORDS FOR A*" + str(cord))
-        self.cords.append((cord[0], cord[1]))
+        self.astarCoords.append((cord[0], cord[1]))
 
     """Returns the destination the person wants to achieve"""
     """Current Placeholder"""

@@ -12,6 +12,7 @@ n = []
 def astar(array, start, dest):
     """THE DESTINATION WILL BE DEEMED AS A 1"""
     print("array in astar" + str(array))
+    print("n nodes? " + str(n))
     array[(dest[0], dest[1])] = 0
     neighbours = [(0, 1), (0, -1), (1, 0), (-1, 0), (1, 1), (-1, -1), (1, -1), (-1, 1)]
 
@@ -86,6 +87,7 @@ def store_all_nodes(g):
 
 def get_all_nodes():
     global graph
+    print("get_all_nodes " + str(graph))
     if graph.any():
         return graph
     else:
@@ -145,8 +147,12 @@ def run_astar(start, dest):
     a = convert_to_simple(start)
     b = convert_to_simple(dest)
     """Convert coords to the node boys"""
-    result = astar(get_all_nodes(), a, b)
-    if result == None:
+    allNodes = get_all_nodes()
+    result = None
+    if allNodes is not False:
+        result = astar(allNodes, a, b)
+
+    if result is None:
         return print("none")
     else:
         waypoint = return_waypoints(store_node_details(result))

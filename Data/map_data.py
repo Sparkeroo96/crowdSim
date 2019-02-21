@@ -572,6 +572,7 @@ class map_data:
                         self.add_bar_to_map(coords, int(result[2]), int(result[3]))
                         # newBar = bar.Bar(coords,str(len(self.get_map())),int(result[2]),int(result[3]))
                         # self.mapData.append(newBar)
+            self.generate_nodes()
             return True
         else:
             print("ERROR FILE NOT FOUND")
@@ -731,6 +732,7 @@ class map_data:
 
     def generate_nodes(self):
         """IDs for the nodes"""
+        print("generating nodes")
         listofID = []
         """Basic 10x10 grid"""
         simpleCords = []
@@ -759,7 +761,6 @@ class map_data:
             elif cords.get_value() == 0:  # Cord should be added to list of open nodes
                 openNodes.append(cords.get_idCoords())
         """Placeholder locations - Need to run the algo from the person class"""
-        print(graph)
         """Stores all free nodes in a_star class"""
         a_starv2.set_open_nodes(openNodes)
         """Store all the nodes in the a_star class"""

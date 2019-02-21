@@ -15,15 +15,7 @@ import math
 class Person:
     """Placeholder testing"""
     placeholder = 0
-
     tick_rate = 0
-    actionCount = None
-    currentActionCount = None
-
-    #Current coordinates
-    coordinates = [0,1]
-    #Last Coordinates, used for flocking
-    lastCoordinates = []
 
     flockingDistance = 40
 
@@ -37,55 +29,16 @@ class Person:
     map = 0
     sight = 100
     maxSpeed = 4
-    # A flocking parameter, dont want to be within 10 pixels of a nearby object, will attempt to move out of them
-    rejectionArea = 10
-    rejectionStrength = 1
 
-    vision = []
-
-    #Persons colour for display on map
-    colour = [255, 0, 0]
     shape = "circle"
 
-    rememberedObj = ""
-    rememberedObjType = ""
-    rememberedColour = ""
-    rememberedCoords = []
-    exploreNode = []
-
-    astarCoords = []
-
-    rotate = 0
-
-    headAngle = 0
-
-    memory = {
-        "Bar" : [],
-        "DanceFloor" : [],
-        "Toilet" : []
-    }
-
-    orderedDrink = 0
-    hasDrink = 0
-
-    # Persons "needs" first value is importance second is how much they want to do it
-    #Not in use currently might remove them
-    needs = [["toilet", 1, 0],
-             ["thirst", 2, 0],
-             ["entertainment", 3, 0],
-             ["freshAir", 3, 0]
-            ]
-
     defaultState = "greatestNeed"
-    currentState = "greatestNeed"
-    stateMachine = ""
-
     # The initial key is the state
     # the first array is the properties from the previous state that they have to be in, not currently used
     # THe second array is the next states, must match another state or its going to break
     states = {
-        "greatestNeed": [["usedToilet", "drinkDrink", "danced"], ["wantDrink", "wantToilet", "wantDance"]],
-        # "greatestNeed": [["usedToilet", "drinkDrink", "danced"], ["wantDrink", "wantToilet"]],
+        # "greatestNeed": [["usedToilet", "drinkDrink", "danced"], ["wantDrink", "wantToilet", "wantDance"]],
+        "greatestNeed": [["usedToilet", "drinkDrink", "danced"], ["wantDrink", "wantToilet"]],
 
         "wantDrink": [["isGreatestNeed"], ["findBar", "orderDrink"]],
         "findBar": [["notAtBar"], ["moveToBar"]],
@@ -127,6 +80,51 @@ class Person:
 
         self.tick_rate = tick_rate
 
+        # variable declaration
+        self.actionCount = None
+        self.currentActionCount = None
+        # Current coordinates
+        self.coordinates = [0, 1]
+        # Last Coordinates, used for flocking
+        self.lastCoordinates = []
+
+        # A flocking parameter, dont want to be within 10 pixels of a nearby object, will attempt to move out of them
+        self.rejectionArea = 10
+        self.rejectionStrength = 1
+
+        self.vision = []
+
+        # Persons colour for display on map
+        self.colour = [255, 0, 0]
+
+        self.rememberedObj = ""
+        self.rememberedObjType = ""
+        self.rememberedColour = ""
+        self.rememberedCoords = []
+        self.exploreNode = []
+
+        self.astarCoords = []
+
+        self.rotate = 0
+
+        self.headAngle = 0
+
+        self.memory = {
+            "Bar": [],
+            "DanceFloor": [],
+            "Toilet": []
+        }
+
+        self.orderedDrink = 0
+        self.hasDrink = 0
+
+        # Persons "needs" first value is importance second is how much they want to do it
+        # Not in use currently might remove them
+        self.needs = [["toilet", 1, 0],
+                 ["thirst", 2, 0],
+                 ["entertainment", 3, 0],
+                 ["freshAir", 3, 0]
+                 ]
 
     def add_map(self, newMap, newCoordinates):
         """Storing the generated map"""
@@ -147,13 +145,14 @@ class Person:
         # print("currentState: " + self.currentState + " / stateAction " + stateAction)
         # self.random_move()
         if stateAction == "navigateToRememberedObj":
-            random = randint(0, 100)
-            if self.astarCoords:
-                self.navigate_to_remembered_object()
-            elif random >= 99:
-                self.navigate_to_remembered_object()
-            else:
-                self.random_move()
+            self.navigate_to_remembered_object()
+            # random = randint(0, 100)
+            # if self.astarCoords:
+            #     self.navigate_to_remembered_object()
+            # elif random >= 99:
+            #     self.navigate_to_remembered_object()
+            # else:
+            #     self.random_move()
 
         elif stateAction == "rotate":
              self.person_rotate()
@@ -183,10 +182,9 @@ class Person:
         :return: True on success
         """
         # Hopefully this will allow someone to flock around objects in front of them, whilst navigiating to the remembered object
-        objectsWithinRejection = self.map.get_objects_within_range(self.coordinates, self.get_rejection_area(), self.get_edge_coordinates_array(self.coordinates, self.get_rejection_area()))
+        objectsWithinRejection = self.map.get_objects_within_range(self.coordinates, self.get_rejection_area(), self.get_edge_coordinates_array(self.coordinates, self.get_rejection_area()), self)
 
         if objectsWithinRejection and self.rememberedObj not in objectsWithinRejection:
-            # print("objectsWithinRejection" + str(objectsWithinRejection))
             return self.flock_away_from_objects(objectsWithinRejection)
 
         """PICK UP FROM HERE FOR NEXT SESSION"""
@@ -564,27 +562,21 @@ class Person:
                 #     self.rotate = 0
                 # else:
                 #     action = "moveRandom"
-
         return action
 
 
     def want_action(self, wantState):
         """The people want to do something"""
         if wantState == "wantDrink":
-            #print("wantDrink")
             searchObject = "Bar"
 
         elif wantState == "wantDance":
-            #print("want dance")-
             searchObject = "DanceFloor"
 
         else:
-            #print("want Toilet")
             searchObject = "Toilet"
 
-        #print("Search object " + searchObject)
         self.rememberedObjType = searchObject
-
         self.advance_state_machine()
         # self.currentState = self.stateMachine.choose_next_state("find" + searchObject)
 
@@ -595,9 +587,7 @@ class Person:
         :param searchObject: The object you want to look for
         :return Returns True if there are objects, false if it cant find one
         """
-
         closestObj = self.get_closest_object_from_memory(searchObject)
-
         if closestObj is False or closestObj is None:
             return False
         else:
@@ -701,7 +691,14 @@ class Person:
         else:
             return self.stateMachine.get_next_state()
 
-        return self.stateMachine.choose_next_state(nextState)
+        nextState = self.stateMachine.choose_next_state(nextState)
+
+        if nextState is not False:
+            self.currentState = nextState
+            return nextState
+
+        return False
+        # return self.stateMachine.choose_next_state(nextState)
 
 
 
@@ -1012,7 +1009,7 @@ class Person:
         print("LOACTIONS FROM A* ARE: " + str(locations))
         if not locations:
             print("""NO PATH FOUND IN SET CORDS """)
-            self.action()
+            # self.action()
             # print("me" + str(locations))
         else:
             print()
@@ -1074,9 +1071,9 @@ class Person:
         :return:
         """
         print("trying to flocking distance " + str(self.flockingDistance))
-        nearbyPeople = self.map.get_people_within_range(self.coordinates, self.flockingDistance)
+        nearbyPeople = self.map.get_people_within_range(self.coordinates, self.flockingDistance, self)
 
-        objectsWithinRejection = self.map.get_objects_within_range(self.coordinates, self.get_rejection_area(), self.get_edge_coordinates_array(self.coordinates, self.get_rejection_area()))
+        objectsWithinRejection = self.map.get_objects_within_range(self.coordinates, self.get_rejection_area(), self.get_edge_coordinates_array(self.coordinates, self.get_rejection_area()), self)
 
         if objectsWithinRejection:
             # print("objectsWithinRejection" + str(objectsWithinRejection))
@@ -1135,7 +1132,6 @@ class Person:
         :param objects: Objects to avoid
         :return: true on success
         """
-
         coordsToAvoid = self.coordinates_to_avoid_of_nearby_objects(objects)
 
         priorityCoordiantes = self.priority_avoid_coordinates(objects, coordsToAvoid)
@@ -1339,16 +1335,12 @@ class Person:
         locations = None
         """If the current cords are the nearest node"""
         if self.find_nearest_waypoint() != self.coordinates:
-            print("NOT EQUAL TO THE NEAREST NODE")
             startingLoc = self.find_nearest_waypoint()
             print(startingLoc)
             self.move(startingLoc)
         """NEED TO ADD THE DESTINATION OF REQUIRED OBJECT"""
-        print("LOCATION BEFORE a*" + str(self.coordinates))
         locations = a_starv2.run_astar(self.coordinates, self.destination())
-        print("LOACTIONS FROM A* ARE: " + str(locations))
         if not locations:
-            print("""NO PATH FOUND IN SET CORDS """)
             self.action()
             # print("me" + str(locations))
         else:

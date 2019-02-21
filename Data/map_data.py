@@ -635,7 +635,7 @@ class map_data:
         """Clears the map of objects"""
         self.mapData = []
 
-    def get_people_within_range(self, coordinates, diameter):
+    def get_people_within_range(self, coordinates, diameter, ignorePerson):
         """
         Gets an array of people within a distance of coordiantes
         :param coordinates: Coordinates to search around
@@ -652,7 +652,7 @@ class map_data:
         }
 
         for obj in self.mapData:
-            if isinstance(obj, Person) is False:
+            if isinstance(obj, Person) is False or obj == ignorePerson:
                 continue
 
             objCoordinates = obj.get_coordinates()
@@ -670,7 +670,7 @@ class map_data:
 
         return returnArray
 
-    def get_objects_within_range(self, coordinates, radius, edgeCoordinates):
+    def get_objects_within_range(self, coordinates, radius, edgeCoordinates, ignorePerson):
         """
         Returns an array of all objects within a range
         :param coordinates: The target coordinates
@@ -678,7 +678,9 @@ class map_data:
         :return: Array of objectss
         """
 
-        objArray = self.get_people_within_range(coordinates, radius * 2)
+        objArray = self.get_people_within_range(coordinates, radius * 2, ignorePerson)
+        if objArray is False:
+            objArray = []
 
         for obj in self.mapData:
             if isinstance(obj, Person):

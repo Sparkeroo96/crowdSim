@@ -82,6 +82,7 @@ class RunningMain:
     new_value_for_need = None
     dragging_bar = False
     selected_button = None
+    temp_width = None
 
     def __init__(self):
         self.set_offset(self.centre([0, 0, self.get_screen_width(), self.get_screen_height()],[self.get_sim_screen_width(), self.get_sim_screen_height()]))
@@ -302,7 +303,27 @@ class RunningMain:
             # Prints an error that no selection was found with that name
             else:
                 self.error_page("Menu Option has failed")
+            if self.get_dragging_bar():
+                info_size = self.get_size_info_pannel()
 
+                width = pygame.mouse.get_pos()[0]
+                starting_coord = (info_size[2] / 100) * self.get_startAmount_of_need()
+                width = ((width - self.get_x1_first_click()) / info_size[2]) * 100
+                width = starting_coord + width
+
+                if width > info_size[2]:
+                    width = info_size[2]
+                if width < 0:
+                    width = 0
+
+                self.set_temp_width(width)
+                button_num = self.get_selected_button()
+                info_size = [info_size[0] / info_size[4],info_size[1] / info_size[4], info_size[2], info_size[3] / info_size[4]]
+                info = [0, info_size[1] + info_size[3] + (info_size[3] * button_num) - (info_size[3] / 5), info_size[2], info_size[3] / 5]
+                pygame.draw.rect(self.get_display(),self.red,info)
+
+                info = [0, info_size[1] + info_size[3] + (info_size[3] * button_num) - (info_size[3] / 5), self.get_temp_width(), info_size[3] / 5]
+                pygame.draw.rect(self.get_display(),self.green,info)
             pygame.display.update()
             clock.tick(self.tick_rate)
 
@@ -702,7 +723,7 @@ class RunningMain:
                 y_running = y_running + 1
             heatmap.append([x_running,x_info])
             x_running = x_running + 1
-        print(heatmap[40])
+
 
     def add_heatmap(self,coord):
         """Ittorates the number of times that a person has been on that pixel on the screen"""
@@ -777,7 +798,6 @@ class RunningMain:
                 return False
         else:
             return False
-
 
     def get_map_data(self):
         return self.data
@@ -1014,3 +1034,9 @@ class RunningMain:
 
     def set_selected_button(self, value):
         self.selected_button = value
+
+    def get_temp_width(self):
+        return self.temp_width
+
+    def set_temp_width(self, value):
+        self.temp_width = value

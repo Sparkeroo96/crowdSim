@@ -12,7 +12,7 @@ from Algorithm import a_starv2
 import numpy
 import math
 
-
+numpy.set_printoptions(threshold=numpy.nan)
 # Seems to need these for allowing isinstance(example, Person), doesnt work with the above import
 from People.person import Person
 from Objects.wall import Wall
@@ -64,6 +64,7 @@ class map_data:
     def add_bar_to_map(self, coords, width, height):
         """Adds a bar to the map when it is called buy the builder"""
         newBar = bar.Bar(coords, "bar " + str(len(self.mapData)),width, height)
+        self.set_nodes_values(newBar)
         self.mapData.append(newBar)
 
     def add_wall_to_map(self, cords, width, height):
@@ -81,6 +82,7 @@ class map_data:
         """
 
         newToilet = toilet.Toilet(coords, "toilet " + str(len(self.mapData)), width, height)
+        self.set_nodes_values(newToilet)
         self.mapData.append(newToilet)
 
     def get_object_colour_code(self, objectType):

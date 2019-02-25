@@ -2,7 +2,6 @@ import numpy
 import math
 from heapq import *
 import numpy
-numpy.set_printoptions(threshold=numpy.nan)
 mapLocations = []
 test = (1, 1), (-1, -1), (1, -1), (-1, 1)
 graph = []
@@ -144,7 +143,7 @@ def return_waypoints(locations):
 """Returns the mapLocations required"""
 # def get_details():
 #     global mapLocations
-#     return mapLocations
+#     return mapLocations 
 
 """Needs start and destination coords"""
 def run_astar(start, dest):

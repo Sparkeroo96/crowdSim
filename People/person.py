@@ -53,9 +53,9 @@ class Person:
     headAngle = 0
 
     memory = {
-        "Bar" : [],
-        "DanceFloor" : [],
-        "Toilet" : []
+        "Bar": [],
+        "DanceFloor": [],
+        "Toilet": []
     }
 
     orderedDrink = 0
@@ -955,6 +955,7 @@ class Person:
         """
 
         if self.rememberedObj.get_person_using_toilet() == self:
+            self.brain[0] += 2000
             self.rememberedObj.person_stop_using_toilet(self)
             self.advance_state_machine()
 
@@ -1003,7 +1004,7 @@ class Person:
     def set_cords_from_algo(self):
         locations = None
         """If the current cords are not the nearest node"""
-        if self.find_nearest_waypoint() !=  self.coordinates:
+        if self.find_nearest_waypoint() != self.coordinates:
             print("NOT EQUAL TO THE NEAREST NODE")
             startingLoc = self.find_nearest_waypoint()
             print(startingLoc)
@@ -1086,7 +1087,7 @@ class Person:
     """This will be in an idle state when a person has no desire of drinking, dancing or wanting the toilet"""
     def relax(self):
         dec_thirst = randint(0, 2)
-        dec_toilet = randint(100, 200)
+        dec_toilet = randint(0, 10)
         dec_dance = randint(0, 2)
         print(self.brain[0][0][1])
         self.brain[0][1] -= dec_toilet

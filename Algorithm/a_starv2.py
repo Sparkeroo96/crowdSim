@@ -87,8 +87,10 @@ def store_all_nodes(g):
 
 def get_all_nodes():
     global graph
-    print("get_all_nodes " + str(graph))
-    if graph.any():
+    # print("get_all_nodes " + str(graph))
+    # Sam - Changed from graph.any to len() to try to avoid recursion error
+    # if graph.any():
+    if len(graph) > 0:
         return graph
     else:
         return False

@@ -513,6 +513,8 @@ class map_data:
         search_array = running_string.split("######")
         for save in search_array:
             save_array = save.split("\n")
+            if len(save_array) == 1:
+                continue
             if str(save_array[1]) == save_name.lower():
                 return False
         file.close()
@@ -539,7 +541,11 @@ class map_data:
         for save in save_array:
             single_save_array =[x.strip() for x in save.split("\n")]
             new_save_array.append(single_save_array)
+        print("new save array " + str(new_save_array))
         for save in new_save_array:
+            print("here1 " + str(len(save)))
+            if len(save) == 1:
+                continue
             if save[1] == save_name:
                 found_load = save
 
@@ -687,7 +693,7 @@ class map_data:
                 continue
 
             object_size = [obj.get_width(), obj.get_height()]
-            rectangleProperties = self.get_coordinates_range(coordinates, object_size)
+            rectangleProperties = self.get_coordinates_range(obj.get_coordinates(), object_size)
             if self.check_circle_overlap_rectangle(edgeCoordinates, rectangleProperties):
                 objArray.append(obj)
 

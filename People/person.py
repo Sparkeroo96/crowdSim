@@ -10,6 +10,7 @@ from Objects.toilet import Toilet
 from Objects.danceFloor import DanceFloor
 from Algorithm import a_starv2
 import math
+import traceback
 
 
 class Person:
@@ -84,7 +85,7 @@ class Person:
         self.actionCount = None
         self.currentActionCount = None
         # Current coordinates
-        self.coordinates = [0, 1]
+        # self.coordinates = [0, 1]
         # Last Coordinates, used for flocking
         self.lastCoordinates = []
 
@@ -188,7 +189,7 @@ class Person:
             return self.flock_away_from_objects(objectsWithinRejection)
 
         """PICK UP FROM HERE FOR NEXT SESSION"""
-        print(self.name + " Attempting to navigate to remembered")
+        print(self.name + " Attempting to navigate to remembered " + str(self.rememberedObj))
         x = self.coordinates[0]
         y = self.coordinates[1]
         nextMove = [x, y]
@@ -199,9 +200,14 @@ class Person:
             self.placeholder += 1
 
         if self.astarCoords:
-            targetCoordinates = [self.astarCoords[0][0], self.astarCoords[0][1]]
-            # First move
-            while targetCoordinates != nextMove:
+            self.navigate_via_astar(nextMove)
+        else:
+            targetCoordinates = self.work_out_objects_closest_point(self.rememberedObj)
+            if targetCoordinates != nextMove:
+                # while targetCoordinates != nextMove:
+                x = self.coordinates[0]
+                y = self.coordinates[1]
+
                 if targetCoordinates[0] > x:
                     if targetCoordinates[0] > x + 1:
                         x += 2
@@ -227,13 +233,53 @@ class Person:
 
                 nextMove = [x, y]
                 moveReturn = self.move(nextMove)
-                if moveReturn != True:
+                if moveReturn is not True:
                     newCoords = self.get_coordinates_for_move_avoiding_collision_object(targetCoordinates, moveReturn, nextMove)
-                    print("NEW CORDS ARE NOW +++ " + str(newCoords))
-                    return self.move(nextMove)
-                # return self.move(nextMove)
-            self.astarCoords.pop(0)
 
+    def navigate_via_astar(self, nextMove):
+        """
+        Moving based on phils A star
+        :return: True on success
+        """
+        targetCoordinates = [self.astarCoords[0][0], self.astarCoords[0][1]]
+        # First move
+        # Sam - Think this being in while was partially responsible for the big jumps changed to if
+        if targetCoordinates != nextMove:
+            # while targetCoordinates != nextMove:
+            x = self.coordinates[0]
+            y = self.coordinates[1]
+
+            if targetCoordinates[0] > x:
+                if targetCoordinates[0] > x + 1:
+                    x += 2
+                else:
+                    x += 1
+
+            elif targetCoordinates[0] < x:
+                if targetCoordinates[0] < x - 1:
+                    x -= 2
+                else:
+                    x -= 1
+
+            if targetCoordinates[1] > y:
+                if targetCoordinates[1] > y + 1:
+                    y += 2
+                else:
+                    y += 1
+            elif targetCoordinates[1] < y:
+                if targetCoordinates[1] < y - 1:
+                    y -= 2
+                else:
+                    y -= 1
+
+            nextMove = [x, y]
+            moveReturn = self.move(nextMove)
+            if moveReturn is not True and moveReturn != self.rememberedObj:
+                newCoords = self.get_coordinates_for_move_avoiding_collision_object(targetCoordinates, moveReturn, nextMove)
+                # return self.move(nextMove)
+
+        if self.coordinates == self.astarCoords[0]:
+            self.astarCoords.pop(0)
 
     def get_coordinates_for_move_avoiding_collision_object(self, targetCoordinates,  collisionObject, attemptedMove):
         """
@@ -269,11 +315,18 @@ class Person:
 
     def move(self, coordinates):
         """
-        Moves to a given set of coordinates
+        Moves to a given set of coordinates, also makes sure the move isnt too far
         :param coordinates:
         :return: True on successful move, returns the collision object on false
         """
         collisionObject = self.map.check_coordinates_for_person(coordinates, self.width / 2, self.name, self.get_edge_coordinates_array(coordinates, round(self.width / 2) ))
+
+        # if abs(self.coordinates[0] - coordinates[0]) > self.maxSpeed or abs(self.coordinates[1] - coordinates[1]) > self.maxSpeed:
+        if abs(self.coordinates[0] - coordinates[0]) > 2 or abs(self.coordinates[1] - coordinates[1]) > 2:
+            print("MOVE TOO FAR current coords " + str(self.coordinates) + " new coords " + str(coordinates))
+            print(coordinates[5])
+            quit()
+            return False
 
         # if self.map.check_coordinates_for_person(coordinates, self.width, self.name, self.get_edge_coordinates_array()):
         if collisionObject is True:
@@ -406,13 +459,8 @@ class Person:
 
         # print("random move current coords " + str(self.coordinates) + " new coords " + str(newCoordinates))
 
-        #CHANGE TO WORK
-
-        self.coordinates = (newCoordinates[0], newCoordinates[1])
-
-        #END OF CHANGE
-
         self.move(newCoordinates)
+
 
     def store_coordinates(self, coordinates):
         """Storing a set of coordinates"""
@@ -998,15 +1046,22 @@ class Person:
     def set_cords_from_algo(self):
         locations = None
         """If the current cords are the nearest node"""
+        startingLoc = self.coordinates
         if self.find_nearest_waypoint() != self.coordinates:
             print("NOT EQUAL TO THE NEAREST NODE")
             startingLoc = self.find_nearest_waypoint()
-            print(startingLoc)
-            self.move(startingLoc)
+            # print(startingLoc)
+            # Sam - Its just jumping there, can make huge jumps, dont want it doing this
+            # self.move(startingLoc)
+
         """NEED TO ADD THE DESTINATION OF REQUIRED OBJECT"""
-        print("LOCATION BEFORE a*" + str(self.coordinates))
-        locations = a_starv2.run_astar(self.coordinates, self.destination())
+        print("LOCATION BEFORE a*" + str(startingLoc))
+        # Sam - Trying to change it to use startingLoc as its making a huge jump as it goes to the node
+        locations = a_starv2.run_astar(startingLoc, self.rememberedObj.get_coordinates())
+        # locations = a_starv2.run_astar(self.coordinates, self.destination())
         print("LOACTIONS FROM A* ARE: " + str(locations))
+        quit()
+
         if not locations:
             print("""NO PATH FOUND IN SET CORDS """)
             # self.action()
@@ -1020,11 +1075,10 @@ class Person:
                 # coords.append((location[0] * 50, locations[1] * 50))
             # return self.astarCoords
 
-    """Stores the waypoints in cords var"""
-
     def store_waypoints(self, cord):
-        print("CORDS FOR A*" + str(cord))
-        self.astarCoords.append((cord[0], cord[1]))
+        """Stores the waypoints in cords var"""
+        # print("CORDS FOR A*" + str(cord))
+        self.astarCoords.append([cord[0], cord[1]])
 
     """Returns the destination the person wants to achieve"""
     """Current Placeholder"""
@@ -1136,8 +1190,8 @@ class Person:
 
         priorityCoordiantes = self.priority_avoid_coordinates(objects, coordsToAvoid)
 
-        print("PriorityCoords " + str(priorityCoordiantes))
-
+        print("PriorityCoords " + str(priorityCoordiantes) + " my current Coords " + str(self.coordinates))
+        # coordsToAvoid[100]
         nextMove = []
         nextMove.append(self.coordinates[0])
         nextMove.append(self.coordinates[1])
@@ -1190,7 +1244,7 @@ class Person:
         priorityDiff = 0
         rejectionScore = 0
         print("coordinates " + str(coordinates))
-        print("objects " + str(object))
+        print("objects " + str(objects))
 
         x = 0
         # for key, obj in enumerate(objects):
@@ -1337,20 +1391,32 @@ class Person:
         if self.find_nearest_waypoint() != self.coordinates:
             startingLoc = self.find_nearest_waypoint()
             print(startingLoc)
-            self.move(startingLoc)
+            # self.move(startingLoc)
         """NEED TO ADD THE DESTINATION OF REQUIRED OBJECT"""
-        locations = a_starv2.run_astar(self.coordinates, self.destination())
-        if not locations:
-            self.action()
-            # print("me" + str(locations))
+        locations = 0
+        # Getting recursion depth error here
+        if self.rememberedObj != "":
+            locations = a_starv2.run_astar(self.coordinates, self.rememberedObj.get_coordinates())
         else:
-            print()
+            locations = a_starv2.run_astar(self.coordinates, self.exploreNode.get_actual_coords())
+        # locations = a_starv2.run_astar(self.coordinates, self.destination())
+
+        # Sam - Action is not to be called by the object itself, chance to create infinte loop
+        if locations:
             for location in locations:
                 self.store_waypoints(location)
-                # locations.pop(0)
-                # self.astarCoords.append((location[0], location[1]))
-                # coords.append((location[0] * 50, locations[1] * 50))
-            # return self.astarCoords
+
+        # if not locations:
+        #     self.action()
+        #     # print("me" + str(locations))
+        # else:
+        #     print()
+        #     for location in locations:
+        #         self.store_waypoints(location)
+        #         # locations.pop(0)
+        #         # self.astarCoords.append((location[0], location[1]))
+        #         # coords.append((location[0] * 50, locations[1] * 50))
+        #     # return self.astarCoords
 
     """Stores the waypoints in cords var"""
 

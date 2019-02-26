@@ -18,6 +18,8 @@ class BaseObject:
 
     colour = ()
 
+    rejectionStrength = 1
+
     coordinates = []
     envObjectName = ""
     id = ""
@@ -110,3 +112,8 @@ class BaseObject:
 
     def get_shape(self):
         return self.shape
+
+    def get_rejection_strength(self):
+        """Reutrns the rejectionStrength"""
+        return self.rejectionStrength
+

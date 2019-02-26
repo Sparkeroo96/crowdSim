@@ -1,7 +1,7 @@
 import numpy
 import math
+from random import randint
 from heapq import *
-import numpy
 mapLocations = []
 test = (1, 1), (-1, -1), (1, -1), (-1, 1)
 graph = []
@@ -11,10 +11,8 @@ heatmap_store = {}
 
 #  The binary heap keeps the open list in order
 def astar(array, start, dest):
-    """NEED TO FIX, CHECK IF NUMBERS OUT OF BOUNDS"""
-    print(array)
-    print("THIS IS IN ASTAR AND THE ABOVE ARRAY IS")
-    print(start)
+    """THE DESTINATION WILL BE DEEMED AS A 1"""
+    print("array in astar" + str(array))
     array[(dest[0], dest[1])] = 0
     print(len(array[0]))
 
@@ -91,8 +89,10 @@ def store_all_nodes(g):
 
 def get_all_nodes():
     global graph
-    print(graph)
-    if graph.any():
+    # print("get_all_nodes " + str(graph))
+    # Sam - Changed from graph.any to len() to try to avoid recursion error
+    # if graph.any():
+    if len(graph) > 0:
         return graph
     else:
         return False
@@ -135,6 +135,7 @@ def return_waypoints(locations):
     else:
         """Add the destination to the final waypoint"""
         waypoints.append(locations[-1])
+    print("WAYPOINTS ARE: " + str(waypoints))
     global mapLocations
     mapLocations = waypoints
     return waypoints
@@ -143,19 +144,21 @@ def return_waypoints(locations):
 """Returns the mapLocations required"""
 # def get_details():
 #     global mapLocations
-#     return mapLocations 
+#     return mapLocations
 
 """Needs start and destination coords"""
 def run_astar(start, dest):
     a = convert_to_simple(start)
     b = convert_to_simple(dest)
-    print(a, b)
     """Convert coords to the node boys"""
-    result = astar(get_all_nodes(), a, b)
-    if result == None:
+    allNodes = get_all_nodes()
+    result = None
+    if allNodes is not False:
+        result = astar(allNodes, a, b)
+
+    if result is None:
         return print("none")
     else:
-        print("MY A* CORDS WERE GOING TO BE " + str(result))
         waypoint = return_waypoints(store_node_details(result))
         # return store_node_details(result)
         return locations(waypoint)
@@ -193,18 +196,15 @@ def get_open_nodes():
     global n
     return n
 
-"""Everytime a successful a* path is found, the heat increases by 1"""
-def increase_heat(node_locations):
-    global heatmap_store
-    for item in node_locations:
-        if item in heatmap_store:
-            heatmap_store[item] += 1
-        else:
-            heatmap_store[item] = 1
+def get_random_waypoint():
+    """
+    Gets a random waypoint
+    :return: A random node
+    """
 
-def get_heat():
-    global heatmap_store
-    return heatmap_store
+    global n
+    nodeCount = len(n)
+    print("nodeCount " + str(nodeCount))
+    randNodeKey = randint(0, nodeCount - 1)
 
-
-
+    return n[randNodeKey]

@@ -10,7 +10,6 @@ from Objects import *
 from Nodes import node
 from Algorithm import a_starv2
 import numpy
-import math
 
 numpy.set_printoptions(threshold=numpy.nan)
 # Seems to need these for allowing isinstance(example, Person), doesnt work with the above import
@@ -41,12 +40,10 @@ class map_data:
 
     def map_default(self):
         """Getting default map data"""
-        self.add_people_to_map(2)
+        self.add_people_to_map(15)
         self.add_bar_to_map(1)
         self.add_toilet_to_map(1)
-        self.add_wall_to_map()
-        # self.add_dancefloor_to_map(1)
-        # self.add_fireEscape_to_map()
+        # self.add_wall_to_map()
         global constant
         if constant == 0:
             self.generate_nodes()
@@ -55,8 +52,7 @@ class map_data:
 
     def add_people_to_map(self, coords, size, angle):
         """Adding people to map"""
-        """MODDED THE SIZE"""
-        newPerson = person.Person("person " + str(len(self.mapData)), coords, 10, angle, self.tick_rate)
+        newPerson = person.Person("person " + str(len(self.mapData)), coords, size, angle, self.tick_rate)
         newPerson.add_map(self, coords)
         self.mapData.append(newPerson)
 
@@ -187,7 +183,6 @@ class map_data:
             horizontal = horizontal * -1
         return [veritcal, horizontal]
 
-
     def check_space_unoccupied(self, coordinates, object_size, object_name, object_shape):
         """Checks to see if a set of coordinates is occupied by an obj or person
         :param coordinates is the set its checking to see if anything occupies it
@@ -211,6 +206,9 @@ class map_data:
         :param radius the persons width
         :param name the persons id, so it doesnt do check against itself
         """
+
+        if self.check_coordinates_in_bounds(check_coords, radius) is False:
+            return False
 
         for obj in self.mapData:
             # Checking to see how close each object is
@@ -251,6 +249,28 @@ class map_data:
 
         return True
 
+    def check_coordinates_in_bounds(self, coordinates, radius):
+        """
+        Checks to see is a set of coordinates is out of the map bounds for the person
+        :param coordinates: the coordinates to move too
+        :param radius: the persons radius
+        :return: True if coordinates are fine
+        """
+        if coordinates[0] <= 0 or coordinates[1] <= 0:
+            return False
+
+        lowX = coordinates[0] - radius
+        lowY = coordinates[1] - radius
+        highX = coordinates[0] + radius
+        highY = coordinates[1] + radius
+
+        if lowX < 0 or lowY < 0:
+            return False
+
+        if highX > self.gui.get_screen_width() or highY > self.gui.get_screen_height():
+            return False
+
+        return True
 
     def check_circle_touch(self, person1, person2):
         """Checks to see if two circles have either coordinates overlap
@@ -417,26 +437,6 @@ class map_data:
 
 
 
-
-
-    def person_eyes(self, cords, angle, radias):
-        angle_left = angle - 25
-        if angle_left <= 0:
-            angle_left = angle_left + 360
-
-        angle_right = angle + 25
-
-        if angle_right > 360:
-            angle_right = angle_right - 360
-
-        # THis is the maths for the eyes
-        left_eye = self.angleMath(angle_left,cords[0],cords[1],radias-3)
-        right_eye = self.angleMath(angle_right,cords[0],cords[1],radias-3)
-        left_eye = [cords[0] + left_eye[0], cords[1] + left_eye[1]]
-        right_eye = [cords[0] + right_eye[0], cords[1] + right_eye[1]]
-
-        return [left_eye,right_eye]
-
     def export(self,file_name,save_name):
         """
         Exports the current map data into a format that can be recreated by the import onto the maps_saves.txt
@@ -503,13 +503,15 @@ class map_data:
         search_array = running_string.split("######")
         for save in search_array:
             save_array = save.split("\n")
+            if len(save_array) == 1:
+                continue
             if str(save_array[1]) == save_name.lower():
                 return False
         file.close()
         return True
 
 
-    def import_from_file(self,file,save_name):
+    def import_from_file(self, file, save_name):
         """
         This takes the maps_saves.txt and a name of a map and imports it into the system
         :param file: maps_saves.txt
@@ -517,8 +519,6 @@ class map_data:
         :return: True if loaded succesfully, False if not
         """
         file = open(file,'r')
-        # print(file.read())
-        # print(save_name)
         x = 1
         running_string = ""
         found_load = []
@@ -531,7 +531,11 @@ class map_data:
         for save in save_array:
             single_save_array =[x.strip() for x in save.split("\n")]
             new_save_array.append(single_save_array)
+        print("new save array " + str(new_save_array))
         for save in new_save_array:
+            print("here1 " + str(len(save)))
+            if len(save) == 1:
+                continue
             if save[1] == save_name:
                 found_load = save
 
@@ -549,24 +553,29 @@ class map_data:
                     coordY = coordY.translate({ord("]"): None})
                     coords = [int(float(coordX)), int(float(coordY))]
                     if result[0] == 'person':
-                        newPerson = person.Person("person " + str(len(self.mapData)), coords, int(result[2]), int(result[3]),self.tick_rate)
-                        self.mapData.append(newPerson)
+                        self.add_people_to_map(coords, int(result[2]), int(result[3]))
+                        # newPerson = person.Person("person " + str(len(self.mapData)), coords, int(result[2]), int(result[3]),self.tick_rate)
+                        # self.mapData.append(newPerson)
                     elif result[0] == 'wall':
-                        newWall = Wall(coords, int(result[2]), int(result[3]))
-                        self.mapData.append(newWall)
+                        self.add_wall_to_map(coords, int(result[2]), int(result[3]))
+                        # newWall = Wall(coords,int(result[2]),int(result[3]))
+                        # self.mapData.append(newWall)
                     elif result[0] == "toilet":
-                        new_toilet = Toilet(coords,"toilet" + str(len(self.mapData)),int(result[2]),int(result[3]))
-                        self.mapData.append(new_toilet)
+                        self.add_toilet_to_map(coords, int(result[2]), int(result[3]))
+                        # new_toilet = Toilet(coords,"toilet" + str(len(self.mapData)),int(result[2]),int(result[3]))
+                        # self.mapData.append(new_toilet)
                     elif result[0] == "bar":
-                        newBar = bar.Bar(coords,str(len(self.get_map())),int(result[2]),int(result[3]))
-                        self.mapData.append(newBar)
+                        self.add_bar_to_map(coords, int(result[2]), int(result[3]))
+                        # newBar = bar.Bar(coords,str(len(self.get_map())),int(result[2]),int(result[3]))
+                        # self.mapData.append(newBar)
+            self.generate_nodes()
             return True
         else:
             print("ERROR FILE NOT FOUND")
         file.close()
         return False
 
-    def add_to_map(self, object_type, x_cord, y_cord, width, height):
+    def add_to_map(self,object_type,x_cord,y_cord,width,height):
         """
         Takes the name of the object then creates the apropriate object to the array only works for cubes/ rectangles
         :param object_type:
@@ -616,12 +625,14 @@ class map_data:
 
 
     def get_map(self):
+        """Gets the map of objects"""
         return self.mapData
 
     def clear_map(self):
+        """Clears the map of objects"""
         self.mapData = []
 
-    def get_people_within_range(self, coordinates, diameter):
+    def get_people_within_range(self, coordinates, diameter, ignorePerson):
         """
         Gets an array of people within a distance of coordiantes
         :param coordinates: Coordinates to search around
@@ -638,7 +649,7 @@ class map_data:
         }
 
         for obj in self.mapData:
-            if isinstance(obj, Person) is False:
+            if isinstance(obj, Person) is False or obj == ignorePerson:
                 continue
 
             objCoordinates = obj.get_coordinates()
@@ -674,11 +685,6 @@ class map_data:
             newFireEscape = fireExit.FireExit(coords, "fireEscape " + str(self.mapData), 20, 30)
             self.mapData.append(newFireEscape)
             x += 1
-
-    """Check the areas which contain the most traffic"""
-    def check_traffic(self):
-        heat_dict = a_starv2.get_heat()
-        print(heat_dict)
 
     def calculate_starting_nodes(self):
         screen_width = 800
@@ -725,6 +731,9 @@ class map_data:
             if v[0] > yBoundaries and v[1] > xBoundaries:
                 self.values_to_append.remove(v)
         print("APPENDED VALUES ARE: " + str(self.values_to_append))
+
+    """Generate the node objects that appear on the map"""
+
 
     def generate_nodes(self):
         """
@@ -773,7 +782,6 @@ class map_data:
         print(graph)
         """Stores all free nodes in a_star class"""
         a_starv2.set_open_nodes(openNodes)
-        """ALL NODES THAT ARE OPEN AND RELEVANTS NEED TO BE STORED SOMEWHERE."""
         """Store all the nodes in the a_star class"""
         a_starv2.store_all_nodes(graph)
 

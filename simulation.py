@@ -19,7 +19,6 @@ class Simulation:
         print("Simulation init")
 
     def test(self):
-        print('Moo:3')
         gui = test()
         gui.test()
     #"""START OF OLD SAM STUFF"""

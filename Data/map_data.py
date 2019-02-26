@@ -605,7 +605,7 @@ class map_data:
         map_data = self.get_map()
         x_coord = coords[0]
         y_coord = coords[1]
-        index = 0;
+        index = 0
         for obj in map_data:
             if obj.get_shape != "circle":
                 cords = obj.get_coordinates()
@@ -666,6 +666,29 @@ class map_data:
             return False
 
         return returnArray
+
+    def get_objects_within_range(self, coordinates, radius, edgeCoordinates, ignorePerson):
+        """
+        Returns an array of all objects within a range
+        :param coordinates: The target coordinates
+        :param radius: The area to search
+        :return: Array of objectss
+        """
+
+        objArray = self.get_people_within_range(coordinates, radius * 2, ignorePerson)
+        if objArray is False:
+            objArray = []
+
+        for obj in self.mapData:
+            if isinstance(obj, Person):
+                continue
+
+            object_size = [obj.get_width(), obj.get_height()]
+            rectangleProperties = self.get_coordinates_range(obj.get_coordinates(), object_size)
+            if self.check_circle_overlap_rectangle(edgeCoordinates, rectangleProperties):
+                objArray.append(obj)
+
+        return objArray
 
 
     def add_dancefloor_to_map(self, dancefloorCount):
@@ -798,5 +821,4 @@ class map_data:
                 personName.append(p.get_name())
                 personState.append(p.get_state_action())
                 personNeeds.append(p.get_person_needs())
-        print("Map info is" + str(personNeeds))
 

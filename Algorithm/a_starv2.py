@@ -14,7 +14,6 @@ def astar(array, start, dest):
     """THE DESTINATION WILL BE DEEMED AS A 1"""
     print("array in astar" + str(array))
     array[(dest[0], dest[1])] = 0
-    print(len(array[0]))
 
     neighbours = [(0, 1), (0, -1), (1, 0), (-1, 0), (1, 1), (-1, -1), (1, -1), (-1, 1)]
 
@@ -40,6 +39,7 @@ def astar(array, start, dest):
             global mapLocations
             mapLocations = data
             mapLocations.reverse()
+            array[(dest[0], dest[1])] = 1
             return data  # Return the list
 
         close_set.add(current)  # Add the current parent to the closed set.
@@ -89,9 +89,6 @@ def store_all_nodes(g):
 
 def get_all_nodes():
     global graph
-    # print("get_all_nodes " + str(graph))
-    # Sam - Changed from graph.any to len() to try to avoid recursion error
-    # if graph.any():
     if len(graph) > 0:
         return graph
     else:
@@ -184,7 +181,6 @@ def locations(path):
         return
     for p in path:
         finalLocations.append((p[0] * 20, p[1] * 20))
-    increase_heat(finalLocations)
     return finalLocations
 
 def set_open_nodes(nodes):

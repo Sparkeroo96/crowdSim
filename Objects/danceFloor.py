@@ -8,3 +8,4 @@ class DanceFloor(BaseObject):
     colour = (0, 0, 0)
     shape = "dancefloor"
     name = "dancefloor"
+

@@ -605,7 +605,8 @@ class RunningMain:
             return self.blue
         if object == "toilet":
             return self.orange
-        # if object == "d floor":
+        if object == "d floor":
+            return self.red
 
     def create_heatmap(self):
         heatmap = self.get_heatmap()

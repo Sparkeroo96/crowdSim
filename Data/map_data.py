@@ -737,22 +737,61 @@ class map_data:
         cordY = (int(wall.get_coordinates()[1] / node_distance))
         width = (math.ceil(wall.get_width() / node_distance))
         height = (math.ceil(wall.get_height() / node_distance))
-        print(cordX, cordY)
-        print("SETTING WALLS " + str(width) + " AND " + str(height))
-        print(range(width))
-        for x in range(width):
-            self.values_to_append.append([cordX + x, cordY])  # The top line in a rect
-            self.values_to_append.append([cordX + x, cordY + height])  # Bottom line in a rect
-        for y in range(height):
-            self.values_to_append.append([cordX, cordY + y])  # Left like in a rect
-            self.values_to_append.append([cordX + width, cordY + y])  # Right line in a rect
-            # self.values_to_append.append([cordX + width + 1, cordY + y])
-        self.values_to_append.append([cordX + width, cordY + height])  # Append the bottom corner value
+        x2 = cordX + width
+        y2 = cordY + height
+        print(int(width))
+        print(int(height))
+        # If the coord starts from bottom right
+        if int(width) < 0 and int(height) < 0:
+            width2 = int(abs(width))
+            height2 = int(abs(height))
+            for x in range(width2):
+                self.values_to_append.append([cordX - x, cordY])
+                self.values_to_append.append([cordX - x, y2])
+            for y in range(height2):
+                self.values_to_append.append([cordX, cordY - y])
+                self.values_to_append.append([x2, cordY - y])
+        # If the coord starts from top Left
+        if int(width) > 0 and int(height) > 0:
+            # self.values_to_append.append([cordX + width + 1, cordY + height + 1])
+            # self.values_to_append.append([cordX - 1, cordY + height + 1])
+            # self.values_to_append.append([cordX + width + 1, cordY - 1])
+            # self.values_to_append.append([cordX - 1, cordY - 1])
+            for x in range(width):
+                self.values_to_append.append([cordX + x, cordY])  # The top line in a rect
+                self.values_to_append.append([cordX + x, y2])  # Bottom line in a rect
+            for y in range(height):
+                self.values_to_append.append([cordX, cordY + y])  # Left like in a rect
+                self.values_to_append.append([x2, cordY + y])  # Right line in a rect
+                # self.values_to_append.append([cordX + width + 1, cordY + y])
+        # If the coord starts from Bottom Left
+        if int(width) > 0 and int(height) < 0:
+            height3 = int(abs(height))
+            for x in range(width):
+                self.values_to_append.append([cordX + x, cordY])  # The top line in a rect
+                self.values_to_append.append([cordX + x, y2])
+            for y in range(height3):
+                self.values_to_append.append([cordX, cordY - y])
+                self.values_to_append.append([x2, cordY - y])
+        # If the coord starts from Top Right
+        if int(width) < 0 and int(height) > 0:
+            width3 = int(abs(width))
+            for x in range(width3):
+                self.values_to_append.append([cordX - x, cordY])
+                self.values_to_append.append([cordX - x, y2])
+            for y in range(height):
+                self.values_to_append.append([cordX, cordY + y])  # Left like in a rect
+                self.values_to_append.append([x2, cordY + y])
+
+
+
+        self.values_to_append.append([cordX + width , cordY + height]) # Append the corner opposite
+
+
         """Check values are in the grid"""
         # for v in self.values_to_append:
         #     if v[0] > yBoundaries and v[1] > xBoundaries:
         #         self.values_to_append.remove(v)
-        print("APPENDED VALUES ARE: " + str(self.values_to_append))
 
     """Generate the node objects that appear on the map"""
 
@@ -786,9 +825,6 @@ class map_data:
         """Obtaining last coord in the simple grid to create the range of maze"""
         """Create the empty node graph, adding 0's"""
         graph = numpy.zeros((maxX, maxY), int)
-        test_graph = numpy.zeros((6, 80), int)
-        print(test_graph)
-        print(maxX, maxY)
         """For the values in append, apply the value of 1 to the node object"""
         """1 Represents a wall"""
         for v in self.values_to_append:

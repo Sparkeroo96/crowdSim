@@ -163,14 +163,16 @@ class Person:
             # print(self.name + " waiting")
             nothing = None
 
-        # elif stateAction == "explore":
-        #     # Person will pick a random node and navigate to it
-        #     print(" Explore")
-        #     if self.rememberedObjType != "" and self.exploreNode == []:
-        #         self.exploreNode = a_starv2.get_random_waypoint()
-        #         self.astarCoords = a_starv2.run_astar(self.find_nearest_waypoint(), self.exploreNode)
-        #
-        #     self.navigate_to_remembered_object()
+        elif stateAction == "explore":
+            # Person will pick a random node and navigate to it
+            print("Explore")
+            if self.rememberedObjType != "" and self.exploreNode == []:
+                self.exploreNode = a_starv2.get_random_waypoint()
+                self.astarCoords = a_starv2.run_astar(self.find_nearest_waypoint(), self.exploreNode)
+
+            print("exploreNode " + str(self.exploreNode) + " mycoords " + str(self.coordinates))
+
+            self.navigate_to_remembered_object()
 
         else:
             # self.random_move()
@@ -194,15 +196,20 @@ class Person:
         y = self.coordinates[1]
         nextMove = [x, y]
         """SET CORDS from a*"""
-        if self.placeholder == 0:
-            """"""
+        if self.astarCoords == []:
             self.set_cords_from_algo()
-            self.placeholder += 1
+            # self.placeholder += 1
 
         if self.astarCoords:
             self.navigate_via_astar(nextMove)
+            print("coordinates " + str(self.coordinates) + " navigating via a star " + str(self.astarCoords))
         else:
-            targetCoordinates = self.work_out_objects_closest_point(self.rememberedObj)
+            print(" near target")
+            if self.rememberedObj:
+                targetCoordinates = self.work_out_objects_closest_point(self.rememberedObj)
+            else:
+                targetCoordinates = self.exploreNode
+
             if targetCoordinates != nextMove:
                 # while targetCoordinates != nextMove:
                 x = self.coordinates[0]
@@ -244,7 +251,9 @@ class Person:
         targetCoordinates = [self.astarCoords[0][0], self.astarCoords[0][1]]
         # First move
         # Sam - Think this being in while was partially responsible for the big jumps changed to if
-        if targetCoordinates != nextMove:
+        print("targetCoordiatnes " + str(targetCoordinates) + " / nextMove " + str(nextMove))
+        # if targetCoordinates != nextMove:
+        if True:
             # while targetCoordinates != nextMove:
             x = self.coordinates[0]
             y = self.coordinates[1]
@@ -278,8 +287,11 @@ class Person:
                 newCoords = self.get_coordinates_for_move_avoiding_collision_object(targetCoordinates, moveReturn, nextMove)
                 # return self.move(nextMove)
 
-        if self.coordinates == self.astarCoords[0]:
+        if self.coordinates == list(self.astarCoords[0]):
             self.astarCoords.pop(0)
+            print("popping coords")
+        else:
+            print("not popping coords " + str(self.astarCoords[0]))
 
     def get_coordinates_for_move_avoiding_collision_object(self, targetCoordinates,  collisionObject, attemptedMove):
         """
@@ -325,7 +337,6 @@ class Person:
         if abs(self.coordinates[0] - coordinates[0]) > 2 or abs(self.coordinates[1] - coordinates[1]) > 2:
             print("MOVE TOO FAR current coords " + str(self.coordinates) + " new coords " + str(coordinates))
             print(coordinates[5])
-            quit()
             return False
 
         # if self.map.check_coordinates_for_person(coordinates, self.width, self.name, self.get_edge_coordinates_array()):
@@ -1398,7 +1409,7 @@ class Person:
         if self.rememberedObj != "":
             locations = a_starv2.run_astar(self.coordinates, self.rememberedObj.get_coordinates())
         else:
-            locations = a_starv2.run_astar(self.coordinates, self.exploreNode.get_actual_coords())
+            locations = a_starv2.run_astar(self.coordinates, self.exploreNode)
         # locations = a_starv2.run_astar(self.coordinates, self.destination())
 
         # Sam - Action is not to be called by the object itself, chance to create infinte loop

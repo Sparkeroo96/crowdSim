@@ -741,18 +741,17 @@ class map_data:
         print("SETTING WALLS " + str(width) + " AND " + str(height))
         print(range(width))
         for x in range(width):
-            print(x)
-            self.values_to_append.append([cordX + x, cordY])
-            # self.values_to_append.append([cordX + x, cordY + height])
-            # self.values_to_append.append([cordX + x, cordY + height - 1])
+            self.values_to_append.append([cordX + x, cordY])  # The top line in a rect
+            self.values_to_append.append([cordX + x, cordY + height])  # Bottom line in a rect
         for y in range(height):
-            self.values_to_append.append([cordX, cordY + y])
-            self.values_to_append.append([cordX + width, cordY + y])
+            self.values_to_append.append([cordX, cordY + y])  # Left like in a rect
+            self.values_to_append.append([cordX + width, cordY + y])  # Right line in a rect
             # self.values_to_append.append([cordX + width + 1, cordY + y])
-        """Check that coords are within the 10x10 grid"""
-        for v in self.values_to_append:
-            if v[0] > yBoundaries and v[1] > xBoundaries:
-                self.values_to_append.remove(v)
+        self.values_to_append.append([cordX + width, cordY + height])  # Append the bottom corner value
+        """Check values are in the grid"""
+        # for v in self.values_to_append:
+        #     if v[0] > yBoundaries and v[1] > xBoundaries:
+        #         self.values_to_append.remove(v)
         print("APPENDED VALUES ARE: " + str(self.values_to_append))
 
     """Generate the node objects that appear on the map"""
@@ -777,16 +776,17 @@ class map_data:
         simpleCords = []
         for number in range(0, total_nodes):
             listofID.append(number)
-        """Create cords for the 10x10 grid"""
-        for x in range(total_nodes):
-            simpleCords.append([math.floor(x / maxX), (x % maxY)])
+        """Create cords for the grid"""
+        for x in range(maxX):
+            for y in range(maxY):
+                simpleCords.append([x, y])
         """Create 100 nodes, apply the coords"""
         for n in range(total_nodes):
             self.nodeList.append(node.Node(simpleCords[n], 0))
         """Obtaining last coord in the simple grid to create the range of maze"""
         """Create the empty node graph, adding 0's"""
-        graph = numpy.zeros((maxY, maxX), int)
-        test_graph = numpy.zeros((60, 80), int)
+        graph = numpy.zeros((maxX, maxY), int)
+        test_graph = numpy.zeros((6, 80), int)
         print(test_graph)
         print(maxX, maxY)
         """For the values in append, apply the value of 1 to the node object"""
@@ -794,6 +794,7 @@ class map_data:
         for v in self.values_to_append:
             for n in self.nodeList:
                 if v == n.get_idCoords():
+                    print("CORDS TO BE PRINTED" + str(n.get_idCoords()))
                     n.set_value(1)
         openNodes = []
         for cords in self.nodeList:

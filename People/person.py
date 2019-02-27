@@ -60,6 +60,7 @@ class Person:
         "wantSearch": [[], ["search"]],
         "search": [[], ["greatestNeed"]],
 
+
         "wantDrink": [["isGreatestNeed"], ["findBar", "orderDrink"]],
         "findBar": [["notAtBar"], ["moveToBar"]],
         "moveToBar": [["found", "notFound"], ["orderDrink", "moveToBar"]],
@@ -165,13 +166,6 @@ class Person:
         # self.random_move()
         if stateAction == "navigateToRememberedObj":
             self.navigate_to_remembered_object()
-            # random = randint(0, 100)
-            # if self.astarCoords:
-            #     self.navigate_to_remembered_object()
-            # elif random >= 99:
-            #     self.navigate_to_remembered_object()
-            # else:
-            #     self.random_move()
 
         elif stateAction == "rotate":
              self.person_rotate()
@@ -211,7 +205,9 @@ class Person:
         y = self.coordinates[1]
         nextMove = [x, y]
         """SET CORDS from a*"""
-        self.set_cords_from_algo()
+
+        if not self.astarCoords:
+            self.set_cords_from_algo()
 
         if self.astarCoords:
             print("ASTAR Coords activated")
@@ -293,7 +289,7 @@ class Person:
                 # return self.move(nextMove)
 
         if self.coordinates == self.astarCoords[0]:
-            print("ASTAR STUFF IS " + str(self.astarCoords[0]))
+            print("ASTAR STUFF IS " + str(self.astarCoords))
             self.astarCoords.pop(0)
 
     def get_coordinates_for_move_avoiding_collision_object(self, targetCoordinates,  collisionObject, attemptedMove):
@@ -1019,6 +1015,7 @@ class Person:
         """
 
         if self.rememberedObj.get_person_using_toilet() == self:
+            print("Using Toilet")
             self.brain[0][1] += 200000
             self.get_person_needs()
 
@@ -1090,8 +1087,7 @@ class Person:
         """Stores the waypoints in cords var"""
         self.astarCoords.append([cord[0], cord[1]])
 
-    """Returns the destination the person wants to achieve"""
-    """Current Placeholder"""
+
 
     def find_nearest_waypoint(self):
         cords = []

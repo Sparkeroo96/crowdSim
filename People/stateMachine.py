@@ -22,7 +22,6 @@ class StateMachine:
 
         self.states[stateName]["requirement"] = requirement
 
-
     def create_new_state(self, stateName):
         """Function creates a brand new state, stops overwriting old data"""
         self.states[stateName] = {}
@@ -71,7 +70,7 @@ class StateMachine:
         @:param nextState the state you wish to be in
         @:return Returns true if fine, false if not
         """
-        nextStates =  self.states[self.currentState][nextState]
+        nextStates = self.states[self.currentState][nextState]
 
         for x in nextStates:
             if x == nextState:
@@ -79,6 +78,21 @@ class StateMachine:
                 return True
 
         return False
+
+    def get_need_state(self, need):
+        """
+        This need state is used in the idle (greatest_need) state.
+
+        Once there is a need within the idle state, we need to pass
+        the next state to start the right SM transitions.
+
+        :param n = need of person
+        """
+        nextStates = self.get_state_next_states(self.currentState)
+        for state in nextStates:
+            if str(need) in state:
+                self.set_current_state(state)
+                return state
 
     def get_next_state(self):
         """Function gets next state and moves into it"""
@@ -90,9 +104,12 @@ class StateMachine:
             selectedNextState = nextStates[0]
 
         else:
+            """Need to remove the random off the next state"""
             selectedNextState = self.__get_random_next_state(nextStates, statesCount)
 
-        # selectedNextState = "wantDrink"
+        # selectedNextState =  "wantDrink"
+        """THIS IS WHERE THE STATE CHANGES"""
+        # selectedNextState =  "wantToilet"
 
         self.set_current_state(selectedNextState)
 
@@ -119,3 +136,16 @@ class StateMachine:
                 return nextState
 
         return False
+
+    def set_current_needs(self, needs):
+        self.overall_needs = needs
+
+    def get_current_needs(self):
+        return self.overall_needs
+
+    def get_all_states(self):
+        all_states = []
+        for key in self.states:
+            all_states.append(key)
+        return all_states
+

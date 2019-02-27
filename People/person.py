@@ -88,6 +88,7 @@ class Person:
         # self.coordinates = [0, 1]
         # Last Coordinates, used for flocking
         self.lastCoordinates = []
+        self.coordinatesFailed = 0
 
         # A flocking parameter, dont want to be within 10 pixels of a nearby object, will attempt to move out of them
         self.rejectionArea = 10
@@ -103,6 +104,9 @@ class Person:
         self.rememberedColour = ""
         self.rememberedCoords = []
         self.exploreNode = []
+
+        #To stop something moving more than 4 a go
+        self.usedSpeed = 0
 
         self.astarCoords = []
 
@@ -138,6 +142,7 @@ class Person:
     def action(self):
         """What the person is going to do"""
         self.currentState = self.stateMachine.get_current_state()
+        self.usedSpeed = 0
 
         if self.wait_on_action_count():
             return "Waiting"
@@ -165,10 +170,19 @@ class Person:
 
         elif stateAction == "explore":
             # Person will pick a random node and navigate to it
-            print("Explore")
-            if self.rememberedObjType != "" and self.exploreNode == []:
+            print("Explore " + str(self.exploreNode))
+
+            # Failed to explore a certain way a number of times moving back
+            if self.coordinatesFailed == 5:
+                # Could have gone off the map or something is going wrong, try to go somewhere else instead
+                self.coordinatesFailed = 0
+                self.clear_explore_node()
+
+            if self.rememberedObjType != "" and not self.exploreNode:
+                # if self.rememberedObjType != "" and self.exploreNode == []:
                 self.exploreNode = a_starv2.get_random_waypoint()
                 self.astarCoords = a_starv2.run_astar(self.find_nearest_waypoint(), self.exploreNode)
+                print("setting explore node")
 
             print("exploreNode " + str(self.exploreNode) + " mycoords " + str(self.coordinates))
 
@@ -188,7 +202,9 @@ class Person:
         objectsWithinRejection = self.map.get_objects_within_range(self.coordinates, self.get_rejection_area(), self.get_edge_coordinates_array(self.coordinates, self.get_rejection_area()), self)
 
         if objectsWithinRejection and self.rememberedObj not in objectsWithinRejection:
-            return self.flock_away_from_objects(objectsWithinRejection)
+            # Sam - Keeping the flocking in but not allowing it to move two blocks to its destination
+            self.flock_away_from_objects(objectsWithinRejection)
+            # return self.flock_away_from_objects(objectsWithinRejection)
 
         """PICK UP FROM HERE FOR NEXT SESSION"""
         print(self.name + " Attempting to navigate to remembered " + str(self.rememberedObj))
@@ -204,36 +220,36 @@ class Person:
             self.navigate_via_astar(nextMove)
             print("coordinates " + str(self.coordinates) + " navigating via a star " + str(self.astarCoords))
         else:
-            print(" near target")
             if self.rememberedObj:
                 targetCoordinates = self.work_out_objects_closest_point(self.rememberedObj)
             else:
                 targetCoordinates = self.exploreNode
-
+                print("exploreNode " + str(self.exploreNode) + " current coords " + str(self.coordinates))
+            print(" near target " + " target Coords " + str(targetCoordinates))
             if targetCoordinates != nextMove:
                 # while targetCoordinates != nextMove:
                 x = self.coordinates[0]
                 y = self.coordinates[1]
 
                 if targetCoordinates[0] > x:
-                    if targetCoordinates[0] > x + 1:
+                    if targetCoordinates[0] > x + 1 and self.usedSpeed == 0:
                         x += 2
                     else:
                         x += 1
 
                 elif targetCoordinates[0] < x:
-                    if targetCoordinates[0] < x - 1:
+                    if targetCoordinates[0] < x - 1 and self.usedSpeed == 0:
                         x -= 2
                     else:
                         x -= 1
 
                 if targetCoordinates[1] > y:
-                    if targetCoordinates[1] > y + 1:
+                    if targetCoordinates[1] > y + 1 and self.usedSpeed == 0:
                         y += 2
                     else:
                         y += 1
                 elif targetCoordinates[1] < y:
-                    if targetCoordinates[1] < y - 1:
+                    if targetCoordinates[1] < y - 1 and self.usedSpeed == 0:
                         y -= 2
                     else:
                         y -= 1
@@ -259,39 +275,38 @@ class Person:
             y = self.coordinates[1]
 
             if targetCoordinates[0] > x:
-                if targetCoordinates[0] > x + 1:
+                if targetCoordinates[0] > x + 1 and self.usedSpeed == 0:
                     x += 2
                 else:
                     x += 1
 
             elif targetCoordinates[0] < x:
-                if targetCoordinates[0] < x - 1:
+                if targetCoordinates[0] < x - 1 and self.usedSpeed == 0:
                     x -= 2
                 else:
                     x -= 1
 
             if targetCoordinates[1] > y:
-                if targetCoordinates[1] > y + 1:
+                if targetCoordinates[1] > y + 1 and self.usedSpeed == 0:
                     y += 2
                 else:
                     y += 1
             elif targetCoordinates[1] < y:
-                if targetCoordinates[1] < y - 1:
+                if targetCoordinates[1] < y - 1 and self.usedSpeed == 0:
                     y -= 2
                 else:
                     y -= 1
 
             nextMove = [x, y]
             moveReturn = self.move(nextMove)
-            if moveReturn is not True and moveReturn != self.rememberedObj:
+            if moveReturn is not True and moveReturn != self.rememberedObj and moveReturn != False:
                 newCoords = self.get_coordinates_for_move_avoiding_collision_object(targetCoordinates, moveReturn, nextMove)
                 # return self.move(nextMove)
 
         if self.coordinates == list(self.astarCoords[0]):
             self.astarCoords.pop(0)
-            print("popping coords")
-        else:
-            print("not popping coords " + str(self.astarCoords[0]))
+            if len(self.astarCoords) == 0:
+                self.clear_explore_node()
 
     def get_coordinates_for_move_avoiding_collision_object(self, targetCoordinates,  collisionObject, attemptedMove):
         """
@@ -337,6 +352,7 @@ class Person:
         if abs(self.coordinates[0] - coordinates[0]) > 2 or abs(self.coordinates[1] - coordinates[1]) > 2:
             print("MOVE TOO FAR current coords " + str(self.coordinates) + " new coords " + str(coordinates))
             print(coordinates[5])
+            self.coordinatesFailed += 1
             return False
 
         # if self.map.check_coordinates_for_person(coordinates, self.width, self.name, self.get_edge_coordinates_array()):
@@ -345,8 +361,10 @@ class Person:
             self.lastCoordinates = self.coordinates
             self.coordinates = coordinates
             print("moving")
+            self.coordinatesFailed = 0
             return True
 
+        self.coordinatesFailed += 1
         return collisionObject
 
     def set_explore_node(self):
@@ -605,6 +623,9 @@ class Person:
             action = "navigateToRememberedObj"
             self.rotate = 0
             self.advance_state_machine()
+
+            if self.astarCoords or self.exploreNode:
+                self.clear_explore_node()
         else:
             # Cant find object do a circle to see it
             if self.rotate < 12:
@@ -1242,7 +1263,10 @@ class Person:
         elif moveY < 0:
             nextMove[1] -= 1
 
-        self.move(nextMove)
+        if self.move(nextMove) is True:
+            # So that it can navigate away from objects that come to close but still attempt to move to its destination
+            self.usedSpeed += 1
+            return True
 
     def priority_avoid_coordinates(self, objects, coordinates):
         """
@@ -1470,3 +1494,12 @@ class Person:
         cords.append(currentY)
         return cords
         # print(current)
+
+    def clear_explore_node(self):
+        """
+        Functions clears explore node, just so we have a clear view of where it happens
+        :return:
+        """
+
+        self.exploreNode = []
+        self.astarCoords = []

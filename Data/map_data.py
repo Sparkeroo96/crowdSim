@@ -794,7 +794,6 @@ class map_data:
         for v in self.values_to_append:
             for n in self.nodeList:
                 if v == n.get_idCoords():
-                    print("CORDS TO BE PRINTED" + str(n.get_idCoords()))
                     n.set_value(1)
         openNodes = []
         for cords in self.nodeList:

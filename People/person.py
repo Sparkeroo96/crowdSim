@@ -172,10 +172,11 @@ class Person:
             print("Explore " + str(self.exploreNode))
 
             # Failed to explore a certain way a number of times moving back
-            if self.coordinatesFailed == 5:
+            if self.coordinatesFailed == 5 or self.objectFailedCount == 5:
                 # Could have gone off the map or something is going wrong, try to go somewhere else instead
                 self.coordinatesFailed = 0
-
+                self.objectFailed = 0
+                self.objectFailedCount = 0
                 self.clear_explore_node()
 
             if self.rememberedObjType != "" and not self.exploreNode:
@@ -256,8 +257,8 @@ class Person:
 
                 nextMove = [x, y]
                 moveReturn = self.move(nextMove)
-                if moveReturn is not True:
-                    newCoords = self.get_coordinates_for_move_avoiding_collision_object(targetCoordinates, moveReturn, nextMove)
+                # if moveReturn is not True:
+                #     newCoords = self.get_coordinates_for_move_avoiding_collision_object(targetCoordinates, moveReturn, nextMove)
 
     def navigate_via_astar(self, nextMove):
         """
@@ -365,7 +366,11 @@ class Person:
             return True
 
         self.coordinatesFailed += 1
-        self.objectFailed = collisionObject
+        if self.objectFailed == collisionObject:
+            self.objectFailedCount += 1
+        else:
+            self.objectFailed = collisionObject
+            self.objectFailedCount = 1
 
         return collisionObject
 

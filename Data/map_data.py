@@ -530,9 +530,7 @@ class map_data:
         for save in save_array:
             single_save_array =[x.strip() for x in save.split("\n")]
             new_save_array.append(single_save_array)
-        print("new save array " + str(new_save_array))
         for save in new_save_array:
-            print("here1 " + str(len(save)))
             if len(save) == 1:
                 continue
             if save[1] == save_name:
@@ -567,7 +565,7 @@ class map_data:
                         self.add_bar_to_map(coords, int(result[2]), int(result[3]))
                         # newBar = bar.Bar(coords,str(len(self.get_map())),int(result[2]),int(result[3]))
                         # self.mapData.append(newBar)
-            self.generate_nodes()
+            # self.generate_nodes()
             return True
         else:
             print("ERROR FILE NOT FOUND")
@@ -770,7 +768,6 @@ class map_data:
         maxY = int(screen_height/node_distance)
 
         listofID = []  # IDs for the nodes
-        print(self.calculate_starting_nodes())
         """Basic 10x10 grid"""
         simpleCords = []
         for number in range(0, total_nodes):
@@ -786,8 +783,6 @@ class map_data:
         """Create the empty node graph, adding 0's"""
         graph = numpy.zeros((maxX, maxY), int)
         test_graph = numpy.zeros((6, 80), int)
-        print(test_graph)
-        print(maxX, maxY)
         """For the values in append, apply the value of 1 to the node object"""
         """1 Represents a wall"""
         for v in self.values_to_append:

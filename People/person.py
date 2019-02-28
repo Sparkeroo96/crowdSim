@@ -67,6 +67,8 @@ class Person:
 
     def __init__(self, name, coords, width, angle, tick_rate):
         # random.seed()
+        self.test_values = [['thirst', 70], ['toilet', 20], ['dance', 95]]
+
         self.name = name
 
         if coords:
@@ -224,9 +226,7 @@ class Person:
                 targetCoordinates = self.work_out_objects_closest_point(self.rememberedObj)
             else:
                 targetCoordinates = self.exploreNode
-                # print("exploreNode " + str(self.exploreNode) + " current coords " + str(self.coordinates))
 
-            # print(" near target " + " target Coords " + str(targetCoordinates))
             if targetCoordinates != nextMove:
                 # while targetCoordinates != nextMove:
                 x = self.coordinates[0]
@@ -350,8 +350,6 @@ class Person:
 
         # if abs(self.coordinates[0] - coordinates[0]) > self.maxSpeed or abs(self.coordinates[1] - coordinates[1]) > self.maxSpeed:
         if abs(self.coordinates[0] - coordinates[0]) > 2 or abs(self.coordinates[1] - coordinates[1]) > 2:
-            # print("MOVE TOO FAR current coords " + str(self.coordinates) + " new coords " + str(coordinates))
-            # print(coordinates[5])
             self.coordinatesFailed += 1
             return False
 
@@ -443,9 +441,8 @@ class Person:
             radians = math.atan2(yDiff, xDiff)
             degrees = math.degrees(radians)
 
-            # degrees += self.de
             degrees += 180
-            # print("degrees + 90 = " + str(degrees))
+
             if degrees < 0:
                 degrees += 360
 
@@ -456,22 +453,17 @@ class Person:
         else:
             if xDiff != 0:
                 if newCoords[0] > oldCoords[0]:
-                    # degrees = 270
                     degrees = 180
 
                 else:
-                    # degrees = 90
                     degrees = 0
 
             else:
                 if newCoords[1] > oldCoords[1]:
-                    # degrees = 180
                     degrees = 90
 
                 else:
-                    # degrees = 0
                     degrees = 270
-        # degrees = 270
         return degrees
 
 
@@ -493,7 +485,6 @@ class Person:
         elif randomNumber <= 8:  # Person move left
             newCoordinates = [self.coordinates[0] - 1, self.coordinates[1]]
 
-        # print("random move current coords " + str(self.coordinates) + " new coords " + str(newCoordinates))
 
         self.move(newCoordinates)
 
@@ -582,10 +573,15 @@ class Person:
         elif "move" in str(self.currentState):
             # Person moving to object
             action = "navigateToRememberedObj"
+            rememberedObjectCoords = 0
 
-            #If the person is next to the thing they are supposed to be on like a bar, advance the state again
+            if self.object_in_vision(self.rememberedObj):
+                rememberedObjectCoords = self.work_out_objects_closest_point(self.rememberedObj)
+            else:
+                #If the person is next to the thing they are supposed to be on like a bar, advance the state again
+                rememberedObjectCoords = self.rememberedObj.get_coordinates()
+
             objectSize = [self.rememberedObj.get_width(), self.rememberedObj.get_height()]
-            rememberedObjectCoords = self.rememberedObj.get_coordinates()
             rectangleCoordRanges = self.map.get_coordinates_range(rememberedObjectCoords, objectSize)
             selfEdge = self.get_edge_coordinates_array(self.coordinates, round(self.width / 2))
 
@@ -644,15 +640,7 @@ class Person:
 
             else:
                 action = "explore"
-                #if at target dont do the rest
 
-                # Done a circle move or rotate, dont want it to
-                # random = randint(0, 1000)
-                # if random == 1:
-                #     action = "rotate"
-                #     self.rotate = 0
-                # else:
-                #     action = "moveRandom"
         return action
 
 
@@ -740,8 +728,6 @@ class Person:
     def add_states_to_machine(self):
         """This is where the object will add states to its statemachine"""
         for key, value in self.states.items():
-            # #print("\ncurrentState " + key)
-            # #print("currentValue " + str(value))
             self.stateMachine.add_state(key, value[1], value[0])
 
     def advance_state_machine(self):
@@ -796,19 +782,35 @@ class Person:
         """This method wipes the vison"""
         self.vision = []
 
-    def add_to_vision(self,id):
+    def add_to_vision(self, obj):
         """Adds to the vision array if it isn't aready in there"""
         # vision = self.vision
         #variable to see if the id is already in the vision
         already_there = False
-        for people in self.vision:
-            #Cheacks to see if the person is already in the vision
-            if id == people:
-                already_there = True
-        # if it isnt then it adds it to the array
-        if already_there == False:
-            self.vision.append(id)
 
+        if self.object_in_vision(obj) is False:
+            self.vision.append(obj)
+
+        # for people in self.vision:
+        #     #Cheacks to see if the person is already in the vision
+        #     if obj == people:
+        #         already_there = True
+        # # if it isnt then it adds it to the array
+        # if already_there == False:
+        #     self.vision.append(obj)
+
+    def object_in_vision(self, searchObj):
+        """
+        Checks to see if an object can be seen by the person
+        :param obj: The obj in question
+        :return: True if it exists
+        """
+
+        for obj in self.vision:
+            if searchObj == obj:
+                return True
+
+        return False
 
     def add_to_memory(self, obj):
         """Adds an object to the persons memory so they can find it again easier
@@ -895,7 +897,7 @@ class Person:
         # Number the vision starts from, this stops the person from seeing themselves
         x = 12
         # This is the amount of rays that they produce
-        rays = 10
+        rays = 9
         # The itorating number of rays
         i = 0
         angle = angle - 25
@@ -906,6 +908,8 @@ class Person:
         # results array for all the newCoordinates
         resultArray = []
         while i <= rays:
+            tempArray = []
+
             # increases the angles by 5 each intoration
             angle = originalAngle + (i * 5)
             # this is an if statement that stops the number being more than 360 and less than 0
@@ -914,11 +918,14 @@ class Person:
             # this then produces the cordiantes for each line and adds them to the array
             while vision >= x:
                 value = self.angleMath(angle,x1,y1,x)
-                value = [x1 + value[0],y1 + value[1]]
-                resultArray.append(value)
+                value = [x1 + value[0], y1 + value[1]]
+                # resultArray.append(value)
+                tempArray.append(value)
                 x = x + 1
-            i = i + 1
+            i = i + 3
             x = 12
+            resultArray.append(tempArray)
+
         return resultArray
 
     def angleMath(self, angle, xcord, ycord,vision):
@@ -1038,7 +1045,6 @@ class Person:
         """
 
         if self.rememberedObj.get_person_using_toilet() == self:
-            print("Using Toilet")
             self.brain[0][1] += 200000
             self.get_person_needs()
 
@@ -1144,7 +1150,6 @@ class Person:
         objectsWithinRejection = self.map.get_objects_within_range(self.coordinates, self.get_rejection_area(), self.get_edge_coordinates_array(self.coordinates, self.get_rejection_area()), self)
 
         if objectsWithinRejection:
-            # print("objectsWithinRejection" + str(objectsWithinRejection))
             return self.flock_away_from_objects(objectsWithinRejection)
 
 
@@ -1166,7 +1171,6 @@ class Person:
 
         for person in nearbyPeople:
             if person == self:
-                print("Person is self")
                 # This is a reference to itself
                 continue
 
@@ -1201,7 +1205,7 @@ class Person:
 
         priorityCoordiantes = self.priority_avoid_coordinates(objects, coordsToAvoid)
 
-        # print("PriorityCoords " + str(priorityCoordiantes) + " my current Coords " + str(self.coordinates))
+        print("PriorityCoords " + str(priorityCoordiantes) + " my current Coords " + str(self.coordinates))
         # coordsToAvoid[100]
         nextMove = []
         nextMove.append(self.coordinates[0])
@@ -1257,8 +1261,8 @@ class Person:
         closest = []
         priorityDiff = 0
         rejectionScore = 0
-        print("coordinates " + str(coordinates))
-        print("objects " + str(objects))
+        # print("coordinates " + str(coordinates))
+        # print("objects " + str(objects))
 
         x = 0
         # for key, obj in enumerate(objects):
@@ -1471,3 +1475,10 @@ class Person:
         self.exploreNode = []
         self.astarCoords = []
 
+
+    def get_test_values(self):
+        return self.test_values
+
+    def set_test_values(self, index,value):
+        array = self.test_values
+        array[index][1] = value

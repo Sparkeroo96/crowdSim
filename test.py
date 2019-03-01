@@ -84,6 +84,10 @@ class RunningMain:
     selected_button = None
     temp_width = None
 
+    menu_bar_info = None
+    menu_bar_clicked = None
+    pause_toggle = False
+
     def __init__(self):
         self.set_offset(self.centre([0, 0, self.get_screen_width(), self.get_screen_height()],[self.get_sim_screen_width(), self.get_sim_screen_height()]))
         """This is the constructor that starts the main loop of the simulation"""
@@ -103,6 +107,7 @@ class RunningMain:
 
         # Main loop for the applicaion
         while not self.get_exit():
+
             # print(self.get_map_data().get_map())
             self.get_display().fill(self.white)
             # This gets all the key presses and mouse movements and passes them as events
@@ -142,7 +147,11 @@ class RunningMain:
                         self.set_dragging_bar()
 
                 if event.type == pygame.MOUSEBUTTONUP and self.get_dragging_bar() and self.get_selected_person() is not None:
-                    new_value = self.get_startAmount_of_need() - (self.get_x1_first_click() - pygame.mouse.get_pos()[0])
+                    info = self.get_size_info_pannel()
+                    starting_value = self.get_startAmount_of_need() / (info[2]/100)
+                    new_value = pygame.mouse.get_pos()[0] / (info[2]/100)
+                    new_value = starting_value + (new_value - starting_value)
+                    new_value = round(new_value)
                     if new_value < 0:
                         new_value = 0
                     if new_value > 100:
@@ -155,8 +164,7 @@ class RunningMain:
                 # Pause function
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_F10:
-                        self.pause = not self.pause
-
+                        self.set_pause()
                     #Saves the current map
                     if event.key == pygame.K_F1 and self.get_build_active():
                         self.set_save_active(True)
@@ -190,7 +198,7 @@ class RunningMain:
                     self.set_drag(False)
 
                 # Adds a person to the map if clicked
-                if self.get_add_person_on_click() and event.type == pygame.MOUSEBUTTONUP and not self.get_build_active():
+                if self.get_add_person_on_click() and event.type == pygame.MOUSEBUTTONUP and not self.get_build_active() and self.in_area(pygame.mouse.get_pos(),[self.get_offset()[0],self.get_offset()[1],self.get_sim_screen_width(),self.get_sim_screen_height()]):
                     self.get_map_data().add_people_to_map(self.gui_to_map_data_coords_offset(pygame.mouse.get_pos()),20,0)
 
                 #The remove object function
@@ -217,6 +225,22 @@ class RunningMain:
                             running = self.get_user_input_result()
                             new_running = running + event.unicode
                             self.set_user_input_result(new_running)
+
+                if event.type == pygame.MOUSEBUTTONDOWN and not self.menu_bar_info == None and self.in_area(pygame.mouse.get_pos(), self.menu_bar_info):
+                    x, y = pygame.mouse.get_pos()
+                    menu_size = self.menu_bar_info
+                    button_size = menu_size[2] / menu_size[4]
+                    current_x = 0
+                    first_x = menu_size[0]
+
+                    while current_x < menu_size[4]:
+                        if x > (first_x + (button_size * current_x)) and x < first_x + button_size + (button_size * current_x):
+                            self.menu_bar_clicked = current_x
+
+
+                        current_x = current_x + 1
+
+
 
             # this tracks the mouse movement when holding down the left button and puts a rectangle there each time
             if self.get_drag() and self.get_current_tool() != "Remove":
@@ -303,6 +327,7 @@ class RunningMain:
             # Prints an error that no selection was found with that name
             else:
                 self.error_page("Menu Option has failed")
+
             if self.get_dragging_bar():
                 info_size = self.get_size_info_pannel()
 
@@ -326,6 +351,34 @@ class RunningMain:
                 pygame.draw.rect(self.get_display(),self.green,info)
             pygame.display.update()
             clock.tick(self.tick_rate)
+
+            while self.get_pause():
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        pygame.quit()
+                        quit()
+
+                    if event.type == pygame.KEYDOWN:
+                        if event.key == pygame.K_F10:
+                            self.set_pause()
+
+                    if event.type == pygame.MOUSEBUTTONDOWN and not self.menu_bar_info == None and self.in_area(pygame.mouse.get_pos(), self.menu_bar_info):
+                        x, y = pygame.mouse.get_pos()
+                        menu_size = self.menu_bar_info
+                        button_size = menu_size[2] / menu_size[4]
+                        current_x = 0
+                        first_x = menu_size[0]
+
+                        while current_x < menu_size[4]:
+                            if x > (first_x + (button_size * current_x)) and x < first_x + button_size + (
+                                    button_size * current_x):
+                                if x == 1:
+                                    self.pause_toggle = not self.pause_toggle
+                                self.menu_bar_clicked = current_x
+
+                            current_x = current_x + 1
+                            self.menu_bar()
+                            self.menu_option(self.menu_bar_clicked)
 
         pygame.quit()
         quit()
@@ -403,6 +456,11 @@ class RunningMain:
         """
         Draws the display for the actul simulation by going though the map array and drawing the shape that is required in the correct loactions
         """
+        if not self.builder_active:
+            self.menu_bar()
+            self.menu_option(self.menu_bar_clicked)
+        # self.node_icon((100,100))
+        # self.draw_path([(120,210),(200,200),(300,300),(800,1022)])
         x, y = self.get_offset()
         pygame.draw.rect(self.get_display(),self.black,[x,y,self.get_sim_screen_width(), self.get_sim_screen_height()],2)
         # Goes though the map array obj
@@ -799,6 +857,64 @@ class RunningMain:
         else:
             return False
 
+    def menu_bar(self):
+        button_names = ["Home", "Pause", "Add Person", "Show Nodes", "Add Nodes","Heat Map"]
+        height_of_button = self.get_screen_height() / 10
+        width_of_button = self.get_screen_width() / 8
+        start_coords = [1,self.get_screen_height() - height_of_button - 1]
+        x = 0
+        colour = self.black
+        self.menu_bar_info = [start_coords[0],start_coords[1], len(button_names) * width_of_button, height_of_button, len(button_names)]
+        for button in button_names:
+            if self.pause_toggle == True and x == 1:
+                colour == self.green
+            info = [start_coords[0] + (x * width_of_button), start_coords[1], width_of_button, height_of_button]
+            self.add_button(info, button, colour, 30)
+            x = x + 1
+
+    def menu_option(self, option):
+        if option == 0:
+            self.set_home_menu()
+            self.menu_bar_clicked = None
+        elif option == 1:
+            self.set_pause()
+            self.menu_bar_clicked = None
+        elif option == 2:
+            self.set_add_person_on_click()
+            self.menu_bar_clicked = None
+        elif option == 3:
+            self.menu_bar_clicked = None
+        elif option == 4:
+            self.menu_bar_clicked = None
+        elif option == 5:
+            self.set_show_heatmap_toggle()
+            self.menu_bar_clicked = None
+
+    def node_icon(self, coord):
+        x, y = coord
+        top_coord = (x , y - 5)
+        bottom_coord = (x, y + 5)
+        left_coord = (x - 5, y)
+        right_coord = (x + 5, y)
+        pygame.draw.line(self.get_display(),self.black,top_coord,left_coord)
+        pygame.draw.line(self.get_display(),self.black,left_coord,bottom_coord)
+        pygame.draw.line(self.get_display(),self.black,bottom_coord,right_coord)
+        pygame.draw.line(self.get_display(),self.black,right_coord,top_coord)
+        pygame.draw.line(self.get_display(),self.black,top_coord,bottom_coord)
+        pygame.draw.line(self.get_display(),self.black,left_coord,right_coord)
+
+    def draw_path(self, coords):
+        end_of_line = len(coords)
+        index = 0
+        while index < end_of_line:
+            start_line = coords[index]
+            if not index + 1 == end_of_line:
+                finish_line = coords[index + 1]
+                pygame.draw.line(self.get_display(), self.black, start_line, finish_line,2)
+            index = index + 1
+
+
+
     def get_map_data(self):
         return self.data
 
@@ -810,6 +926,9 @@ class RunningMain:
 
     def get_pause(self):
         return self.pause
+
+    def set_pause(self):
+        self.pause = not self.pause
 
     def get_screen_width(self):
         return self.screen_width

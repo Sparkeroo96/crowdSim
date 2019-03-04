@@ -52,10 +52,7 @@ class Person:
     stateMachine = ""
 
     states = {
-        # "greatestNeed": [["usedToilet", "drinkDrink", "danced"], ["wantDrink", "wantToilet", "wantDance"]],
-        "greatestNeed": [["usedToilet", "drinkDrink", "danced"], ["wantDrink", "wantToilet"]],
-        #This is the starting state. It will decrease the needs.
-        # "idleState": [[]],
+        "greatestNeed": [["usedToilet", "drinkDrink", "danced"], ["wantDrink", "wantToilet", "wantDance"]],
 
         "wantSearch": [[], ["search"]],
         "search": [[], ["greatestNeed"]],
@@ -144,7 +141,7 @@ class Person:
         # Persons "needs" first value is importance second is how much they want to do it
         self.brain = [["Toilet", 100],
                  ["Drink", 100],
-                 ["Dance", 200]]
+                 ["Dance", 100]]
 
         self.random_node = None
 
@@ -185,6 +182,10 @@ class Person:
         #         self.astarCoords = a_starv2.run_astar(self.find_nearest_waypoint(), self.exploreNode)
         #
         #     self.navigate_to_remembered_object()
+
+        elif stateAction == "dance":
+            self.dance()
+            # self.advance_state_machine()
 
         else:
             # self.random_move()
@@ -346,6 +347,9 @@ class Person:
         if abs(self.coordinates[0] - coordinates[0]) > 2 or abs(self.coordinates[1] - coordinates[1]) > 2:
             print("MOVE TOO FAR current coords " + str(self.coordinates) + " new coords " + str(coordinates))
             return False
+
+        print("IN MOVE")
+        print(collisionObject)
 
         # if self.map.check_coordinates_for_person(coordinates, self.width, self.name, self.get_edge_coordinates_array()):
         if collisionObject is True:
@@ -622,7 +626,8 @@ class Person:
             # Person will dance
             #print(self.name + " is dancing")
             # self.stateMachine.get_next_state()
-            self.advance_state_machine()
+
+            action = "dance"
 
         elif self.currentState == "useToilet":
 
@@ -1423,7 +1428,7 @@ class Person:
         print("In relax")
         dec_thirst = randint(0, 1)
         dec_toilet = randint(0, 2)
-        dec_dance = randint(0, 1)
+        dec_dance = randint(2, 5)
         self.brain[0][1] -= dec_toilet
         self.brain[1][1] -= dec_thirst
         self.brain[2][1] -= dec_dance
@@ -1437,24 +1442,48 @@ class Person:
     def dance(self):
         """Person moving randomly around the map"""
         randomNumber = randint(0, 8)
-        # #print(self.name + " should move " + str(randomNumber))
-        newCoordinates = []
-        # #print(self.name + " random number " + str(randomNumber) + " -- initial coords " + str(self.coordinates))
-        if randomNumber <= 2:  # person move up
-            newCoordinates = [self.coordinates[0], self.coordinates[1] + 1]
+        nextMove = self.coordinates
+        print("IN DANCE")
+        random_space = self.rememberedObj.get_random_dance_area()
+        print(random_space)
+        print(self.coordinates)
+        if random_space != nextMove:
+            # while targetCoordinates != nextMove:
+            x = self.coordinates[0]
+            y = self.coordinates[1]
 
-        elif randomNumber <= 4:  # Person move down
-            newCoordinates = [self.coordinates[0], self.coordinates[1] - 1]
+            if random_space[0] > x:
+                if random_space[0] > x + 1:
+                    x += 2
+                else:
+                    x += 1
 
-        elif randomNumber <= 6:  # person move right
-            newCoordinates = [self.coordinates[0] + 1, self.coordinates[1]]
+            elif random_space[0] < x:
+                if random_space[0] < x - 1:
+                    x -= 2
+                else:
+                    x -= 1
 
-        elif randomNumber <= 8:  # Person move left
-            newCoordinates = [self.coordinates[0] - 1, self.coordinates[1]]
+            if random_space[1] > y:
+                if random_space[1] > y + 1:
+                    y += 2
+                else:
+                    y += 1
+            elif random_space[1] < y:
+                if random_space[1] < y - 1:
+                    y -= 2
+                else:
+                    y -= 1
+
+            nextMove = [x, y]
+            print("MY NEXT MOVE IS" + str(nextMove))
+            moveReturn = self.move(nextMove)
+            print("Result of MoveReturn")
+            print(moveReturn)
+        if random_space == nextMove:
+            print("GOT TO HERE")
 
         # print("random move current coords " + str(self.coordinates) + " new coords " + str(newCoordinates))
-
-        self.move(newCoordinates)
 
     def check_needs(self):
         for b in self.brain:

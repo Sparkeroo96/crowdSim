@@ -68,6 +68,10 @@ class map_data:
         self.set_nodes_values(newWall)
         self.get_map().append(newWall)
 
+    def add_dancefloor_to_map(self, coords, width, height):
+        newDancefloor = danceFloor.DanceFloor(coords, "dancefloor " + str(len(self.mapData)), width, height)
+        self.mapData.append(newDancefloor)
+
     def add_toilet_to_map(self, coords, width, height):
         """
         This function adds a toliet to the data structure based off the map builder imput
@@ -240,7 +244,7 @@ class map_data:
                 objSize = [obj.get_width(), obj.get_height()]
                 objCoords = obj.get_coordinates()
                 rectangleCoordRanges = self.get_coordinates_range(objCoords, objSize)
-                if obj.get_shape() == "dancefloor":
+                if obj.get_clip_through():  # Dancefloor is not a collision, and can proceed.
                     return True
                 elif self.check_circle_overlap_rectangle(edgeCoordinates, rectangleCoordRanges):
                     return obj
@@ -568,6 +572,9 @@ class map_data:
                         self.add_bar_to_map(coords, int(result[2]), int(result[3]))
                         # newBar = bar.Bar(coords,str(len(self.get_map())),int(result[2]),int(result[3]))
                         # self.mapData.append(newBar)
+                    elif result[0] == "dancefloor":
+                        self.add_dancefloor_to_map(coords, int(result[2]), int(result[3]))
+                        print("Dancefloor")
             self.generate_nodes()
             return True
         else:
@@ -593,6 +600,9 @@ class map_data:
             self.add_bar_to_map(cords, width, height)
         if objectType == "toilet":
             self.add_toilet_to_map(cords, width, height)
+        if objectType == "d floor":
+            print("Dancefloor")
+            self.add_dancefloor_to_map(cords, width, height)
         """Used to create the nodes"""
         self.generate_nodes()
 
@@ -689,16 +699,6 @@ class map_data:
                 objArray.append(obj)
 
         return objArray
-
-
-    def add_dancefloor_to_map(self, dancefloorCount):
-        x = 0
-        dancefloors = []
-        while x < dancefloorCount:
-            coords = [350, 100]
-            newDancefloor = danceFloor.DanceFloor(coords, "dancefloor " + str(self.mapData), 200, 300)
-            self.mapData.append(newDancefloor)
-            x += 1
 
     def add_fireEscape_to_map(self):
         x = 0
@@ -840,7 +840,7 @@ class map_data:
         maxY = int(screen_height/node_distance)
 
         listofID = []  # IDs for the nodes
-        print(self.calculate_starting_nodes())
+        # print(self.calculate_starting_nodes())
         """Basic 10x10 grid"""
         simpleCords = []
         for number in range(0, total_nodes):
@@ -868,7 +868,7 @@ class map_data:
                 graph[cords.get_idCoords()[0]][cords.get_idCoords()[1]] = cords.get_value()
             elif cords.get_value() == 0:  # Cord should be added to list of open nodes
                 openNodes.append(cords.get_idCoords())
-        print(graph)
+        # print(graph)
         """Stores all free nodes in a_star class"""
         a_starv2.set_open_nodes(openNodes)
         """Store all the nodes in the a_star class"""

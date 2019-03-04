@@ -85,7 +85,7 @@ def heuristic(a, b):
 def store_all_nodes(g):
     global graph
     graph = g.copy()
-    print("stored" + str(g))
+    # print("stored" + str(g))
 
 def get_all_nodes():
     global graph

@@ -565,7 +565,6 @@ class RunningMain:
                     sleep(0.1)
                     self.set_current_tool(objectName)
                     self.set_new_tool()
-
                 if self.get_current_tool() == objectName:
                     colour = self.green
                 self.add_button(info,objectName,colour)

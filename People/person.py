@@ -124,8 +124,6 @@ class Person:
         self.rememberedCoords = []
         self.exploreNode = []
 
-        self.astarCoords = []
-
         self.rotate = 0
 
         self.headAngle = 0
@@ -184,8 +182,11 @@ class Person:
         #     self.navigate_to_remembered_object()
 
         elif stateAction == "dance":
-            self.dance()
-            # self.advance_state_machine()
+            print("HOW MANY TIMES?")
+            self.move_inside_dance_floor()
+            self.wait_on_action_count()
+            self.astarCoords.clear()
+            self.advance_state_machine()
 
         else:
             # self.random_move()
@@ -213,7 +214,7 @@ class Person:
         """SET CORDS from a*"""
 
         if not self.astarCoords:
-            print("ASTAR IS EMPTY, SETTING CORDS TO GET TO THE TOILET")
+            print("ASTAR IS EMPTY, SETTING CORDS TO GET TO THE OBJECT")
             self.set_cords_from_algo("known_location")
         if self.astarCoords:
             print(str(self.astarCoords))
@@ -298,9 +299,6 @@ class Person:
                 # return self.move(nextMove)
 
         if self.coordinates == self.astarCoords[0]:
-            print("pop" + str(self.astarCoords[0]))
-            print("ASTAR STUFF IS " + str(self.astarCoords))
-            print("LENGTH OF ASTAR ARRAY IS " + str(len(self.astarCoords)))
             self.astarCoords.pop(0)
 
     def get_coordinates_for_move_avoiding_collision_object(self, targetCoordinates,  collisionObject, attemptedMove):
@@ -348,9 +346,6 @@ class Person:
             print("MOVE TOO FAR current coords " + str(self.coordinates) + " new coords " + str(coordinates))
             return False
 
-        print("IN MOVE")
-        print(collisionObject)
-
         # if self.map.check_coordinates_for_person(coordinates, self.width, self.name, self.get_edge_coordinates_array()):
         if collisionObject is True:
             self.change_angle_to_move_direction(self.coordinates, coordinates)
@@ -367,21 +362,18 @@ class Person:
         Node cant be too close to them, or its pointless exploring
         :return:
         """
-        print("set_explore_nodes activated")
         x = self.coordinates[0]
         y = self.coordinates[1]
         nextMove = [x, y]
         nodes = a_starv2.get_open_nodes()
         nodes_length = len(a_starv2.get_open_nodes())
         self.random_node = nodes[randint(0, nodes_length - 1)]
-        print("random node is set to " + str(self.random_node))
-        print(self.astarCoords)
         if self.astarCoords:
             self.navigate_via_astar(nextMove)
-        else:
+        else: # No Astar cords found. This is due to the location not being available to travel, or first time initiating exploring.
             print("no astar cords found")
             self.set_cords_from_algo("random_node")
-            self.find_action()
+            self.find_action() # Keep going back to find to see if object has been found.
 
 
 
@@ -1114,7 +1106,6 @@ class Person:
         if self.rememberedObj and came_from is "known_location":
             print("THERE IS A REMEMBERED OBJECT AND THAT IS" + str(self.rememberedObj))
             locations = a_starv2.run_astar(startingLoc, self.rememberedObj.get_coordinates())
-            print("This is done")
         else:
             locations = a_starv2.run_astar(startingLoc, self.random_node)
 
@@ -1439,8 +1430,10 @@ class Person:
     If the value goes below the limit, it'll return that need, otherwise False
     """
 
-    def dance(self):
-        """Person moving randomly around the map"""
+    def move_inside_dance_floor(self):
+        """Person moves to a random location on the dancefloor
+        Currently broken as it only moves one cord, not the full destination.
+        """
         randomNumber = randint(0, 8)
         nextMove = self.coordinates
         print("IN DANCE")
@@ -1478,11 +1471,7 @@ class Person:
             nextMove = [x, y]
             print("MY NEXT MOVE IS" + str(nextMove))
             moveReturn = self.move(nextMove)
-            print("Result of MoveReturn")
-            print(moveReturn)
-        if random_space == nextMove:
-            print("GOT TO HERE")
-
+        self.brain[2][1] = 1000
         # print("random move current coords " + str(self.coordinates) + " new coords " + str(newCoordinates))
 
     def check_needs(self):

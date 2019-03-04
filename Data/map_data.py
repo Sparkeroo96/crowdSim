@@ -696,7 +696,8 @@ class map_data:
             object_size = [obj.get_width(), obj.get_height()]
             rectangleProperties = self.get_coordinates_range(obj.get_coordinates(), object_size)
             if self.check_circle_overlap_rectangle(edgeCoordinates, rectangleProperties):
-                objArray.append(obj)
+                if not obj.get_clip_through():
+                    objArray.append(obj)
 
         return objArray
 
@@ -868,7 +869,7 @@ class map_data:
                 graph[cords.get_idCoords()[0]][cords.get_idCoords()[1]] = cords.get_value()
             elif cords.get_value() == 0:  # Cord should be added to list of open nodes
                 openNodes.append(cords.get_idCoords())
-        # print(graph)
+        print(graph)
         """Stores all free nodes in a_star class"""
         a_starv2.set_open_nodes(openNodes)
         """Store all the nodes in the a_star class"""

@@ -142,9 +142,9 @@ class Person:
         self.orderedDrink = 0
         self.hasDrink = 0
         # Persons "needs" first value is importance second is how much they want to do it
-        self.brain = [["Toilet", 1000],
-                 ["Drink", 1000],
-                 ["Dance", 2000]]
+        self.brain = [["Toilet", 100],
+                 ["Drink", 100],
+                 ["Dance", 200]]
 
         self.random_node = None
 
@@ -562,7 +562,7 @@ class Person:
             """relax will reduce the needs of the person"""
             if self.check_needs() == False:
                 self.relax()
-                self.get_person_needs()
+                print(str(self.get_person_needs()))
                 """RETURN THE ACTION OF DOING NOTHING, THERE IS NO NEED"""
                 return action
             """Setting the current state to the persons needs."""
@@ -1021,7 +1021,7 @@ class Person:
         :return:
         """
         if self.hasDrink:
-            self.brain[1][1] += 10000
+            self.brain[1][1] += 100  # Increase the drink level
             return True
 
         return False
@@ -1047,7 +1047,7 @@ class Person:
 
         if self.rememberedObj.get_person_using_toilet() == self:
             print("Using Toilet")
-            self.brain[0][1] += 200000
+            self.brain[0][1] += 100 # Set toilet back up to default
             self.get_person_needs()
 
             self.rememberedObj.person_stop_using_toilet(self)
@@ -1416,13 +1416,14 @@ class Person:
 
     """Returns array of persons current needs, alone with value"""
     def get_person_needs(self):
-        print(str(self.brain))
+        return self.brain
 
     """This will be in an idle state when a person has no desire of drinking, dancing or wanting the toilet"""
     def relax(self):
-        dec_thirst = randint(0, 5)
-        dec_toilet = randint(20, 50)
-        dec_dance = randint(0, 2)
+        print("In relax")
+        dec_thirst = randint(0, 1)
+        dec_toilet = randint(0, 2)
+        dec_dance = randint(0, 1)
         self.brain[0][1] -= dec_toilet
         self.brain[1][1] -= dec_thirst
         self.brain[2][1] -= dec_dance
@@ -1457,6 +1458,6 @@ class Person:
 
     def check_needs(self):
         for b in self.brain:
-            if b[1] <= 100:
+            if b[1] <= 1:
                 return b[0]
         return False

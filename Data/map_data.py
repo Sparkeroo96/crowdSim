@@ -739,20 +739,36 @@ class map_data:
         height = (math.ceil(wall.get_height() / node_distance))
         x2 = cordX + width
         y2 = cordY + height
+
+        print("widths")
+        print((wall.get_width() / node_distance))
         print(int(width))
+        print("heights")
+        print((wall.get_height() / node_distance))
         print(int(height))
+
         # If the coord starts from bottom right
         if int(width) < 0 and int(height) < 0:
-            width2 = int(abs(width))
-            height2 = int(abs(height))
+            print("in bottom right")
+            width2 = int(abs(width)) + 1 # Rounding up on a negative number will drop by one
+            height2 = int(abs(height)) + 1
+            if width2 < height2:
+                width2 += 1
+            else:
+                height2 += 1
+            print(width2, height2)
             for x in range(width2):
-                self.values_to_append.append([cordX - x, cordY])
-                self.values_to_append.append([cordX - x, y2])
-            for y in range(height2):
-                self.values_to_append.append([cordX, cordY - y])
-                self.values_to_append.append([x2, cordY - y])
+                # self.values_to_append.append([cordX - x, cordY])
+                # self.values_to_append.append([cordX - x, y2])
+                for y in range(height2):
+                    self.values_to_append.append([cordX - x, cordY - y])
+            # for y in range(height2):
+            #     self.values_to_append.append([cordX, cordY - y])
+            #     self.values_to_append.append([x2, cordY - y])
         # If the coord starts from top Left
         if int(width) > 0 and int(height) > 0:
+            print("in top left")
+            print(width, height)
             # self.values_to_append.append([cordX + width + 1, cordY + height + 1])
             # self.values_to_append.append([cordX - 1, cordY + height + 1])
             # self.values_to_append.append([cordX + width + 1, cordY - 1])
@@ -760,32 +776,46 @@ class map_data:
             for x in range(width):
                 self.values_to_append.append([cordX + x, cordY])  # The top line in a rect
                 self.values_to_append.append([cordX + x, y2])  # Bottom line in a rect
+                for y in range(height):
+                    self.values_to_append.append([cordX + x, cordY + y])
             for y in range(height):
                 self.values_to_append.append([cordX, cordY + y])  # Left like in a rect
                 self.values_to_append.append([x2, cordY + y])  # Right line in a rect
-                # self.values_to_append.append([cordX + width + 1, cordY + y])
+                # self.values_to_append.append([cordX + width, cordY + y])
         # If the coord starts from Bottom Left
         if int(width) > 0 and int(height) < 0:
-            height3 = int(abs(height))
+            print("in bottom left")
+            height3 = int(abs(height)) + 1
+            if height3 < width:
+                height3 += 1
             for x in range(width):
                 self.values_to_append.append([cordX + x, cordY])  # The top line in a rect
                 self.values_to_append.append([cordX + x, y2])
+                for y in range(height3):
+                    self.values_to_append.append([cordX + x, cordY - y])
             for y in range(height3):
                 self.values_to_append.append([cordX, cordY - y])
                 self.values_to_append.append([x2, cordY - y])
         # If the coord starts from Top Right
         if int(width) < 0 and int(height) > 0:
-            width3 = int(abs(width))
+            print("in top right")
+            width3 = int(abs(width)) + 1
+            print(width3)
+            print(height)
+            if height > width3:
+                width3 += 1
             for x in range(width3):
                 self.values_to_append.append([cordX - x, cordY])
                 self.values_to_append.append([cordX - x, y2])
+                for y in range(height):
+                    self.values_to_append.append([cordX - x, cordY + y])
             for y in range(height):
                 self.values_to_append.append([cordX, cordY + y])  # Left like in a rect
                 self.values_to_append.append([x2, cordY + y])
 
-
-
-        self.values_to_append.append([cordX + width , cordY + height]) # Append the corner opposite
+        # self.values_to_append.append([cordX + width + 1, cordY + height])
+        self.values_to_append.append([x2, y2])  # Append the corner opposite
+        # self.values_to_append.append([x2 + 1, y2])
 
 
         """Check values are in the grid"""

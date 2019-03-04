@@ -146,6 +146,8 @@ class Person:
                  ["Drink", 1000],
                  ["Dance", 2000]]
 
+        self.random_node = None
+
     def add_map(self, newMap, newCoordinates):
         """Storing the generated map"""
         self.map = newMap
@@ -194,10 +196,13 @@ class Person:
         Starts to move to the remembered Object
         :return: True on success
         """
+        print("I AM NAVIGATING TO REMEMBERED OBJECT" + str(self.rememberedObj))
         # Hopefully this will allow someone to flock around objects in front of them, whilst navigiating to the remembered object
         objectsWithinRejection = self.map.get_objects_within_range(self.coordinates, self.get_rejection_area(), self.get_edge_coordinates_array(self.coordinates, self.get_rejection_area()), self)
 
         if objectsWithinRejection and self.rememberedObj not in objectsWithinRejection:
+            print("objects within rejection")
+            print(objectsWithinRejection)
             return self.flock_away_from_objects(objectsWithinRejection)
 
         print(self.name + " Attempting to navigate to remembered " + str(self.rememberedObj))
@@ -207,10 +212,12 @@ class Person:
         """SET CORDS from a*"""
 
         if not self.astarCoords:
-            self.set_cords_from_algo()
-
+            print("ASTAR IS EMPTY, SETTING CORDS TO GET TO THE TOILET")
+            self.set_cords_from_algo("known_location")
         if self.astarCoords:
+            print(str(self.astarCoords))
             print("ASTAR Coords activated")
+            print("My next move is" + str(nextMove))
             self.navigate_via_astar(nextMove)
         else:
             targetCoordinates = self.work_out_objects_closest_point(self.rememberedObj)
@@ -286,10 +293,13 @@ class Person:
             moveReturn = self.move(nextMove)
             if moveReturn is not True and moveReturn != self.rememberedObj:
                 newCoords = self.get_coordinates_for_move_avoiding_collision_object(targetCoordinates, moveReturn, nextMove)
+                self.move(newCoords)
                 # return self.move(nextMove)
 
         if self.coordinates == self.astarCoords[0]:
+            print("pop" + str(self.astarCoords[0]))
             print("ASTAR STUFF IS " + str(self.astarCoords))
+            print("LENGTH OF ASTAR ARRAY IS " + str(len(self.astarCoords)))
             self.astarCoords.pop(0)
 
     def get_coordinates_for_move_avoiding_collision_object(self, targetCoordinates,  collisionObject, attemptedMove):
@@ -353,6 +363,26 @@ class Person:
         Node cant be too close to them, or its pointless exploring
         :return:
         """
+        print("set_explore_nodes activated")
+        x = self.coordinates[0]
+        y = self.coordinates[1]
+        nextMove = [x, y]
+        nodes = a_starv2.get_open_nodes()
+        nodes_length = len(a_starv2.get_open_nodes())
+        self.random_node = nodes[randint(0, nodes_length - 1)]
+        print("random node is set to " + str(self.random_node))
+        print(self.astarCoords)
+        if self.astarCoords:
+            self.navigate_via_astar(nextMove)
+        else:
+            print("no astar cords found")
+            self.set_cords_from_algo("random_node")
+            self.find_action()
+
+
+
+
+
 
 
     def person_rotate(self, clockwise = True):
@@ -610,6 +640,7 @@ class Person:
         """
         action = "moveRandom"
 
+        print("found object: " + str(self.find_object(self.rememberedObjType)))
         if self.find_object(self.rememberedObjType):
             action = "navigateToRememberedObj"
             self.rotate = 0
@@ -618,9 +649,9 @@ class Person:
             # Cant find object do a circle to see it
             if self.rotate < 12:
                 action = "rotate"
-
             else:
                 action = "explore"
+                self.set_explore_node()
                 #if at target dont do the rest
 
                 # Done a circle move or rotate, dont want it to
@@ -1066,7 +1097,7 @@ class Person:
         return False
 
     """gets the cord from the a* and returns the cords needed"""
-    def set_cords_from_algo(self):
+    def set_cords_from_algo(self, came_from):
 
         """If the current cords are the nearest node"""
         startingLoc = self.coordinates
@@ -1075,10 +1106,17 @@ class Person:
         """NEED TO ADD THE DESTINATION OF REQUIRED OBJECT"""
         print("LOCATION BEFORE a*" + str(startingLoc))
         # Sam - Trying to change it to use startingLoc as its making a huge jump as it goes to the node
-        locations = a_starv2.run_astar(startingLoc, self.rememberedObj.get_coordinates())
+        if self.rememberedObj and came_from is "known_location":
+            print("THERE IS A REMEMBERED OBJECT AND THAT IS" + str(self.rememberedObj))
+            locations = a_starv2.run_astar(startingLoc, self.rememberedObj.get_coordinates())
+            print("This is done")
+        else:
+            locations = a_starv2.run_astar(startingLoc, self.random_node)
+
         print("LOCATIONS ARE " + str(locations))
         if not locations:
             print("NO PATH FOUND IN SET CORDS")
+            return False
         else:
             for location in locations:
                 self.store_waypoints(location)
@@ -1233,7 +1271,7 @@ class Person:
         closest = []
         priorityDiff = 0
         rejectionScore = 0
-        print("coordinates " + str(coordinates))
+        print("current coordinates " + str(coordinates))
         print("objects " + str(objects))
 
         x = 0
@@ -1388,6 +1426,7 @@ class Person:
         self.brain[0][1] -= dec_toilet
         self.brain[1][1] -= dec_thirst
         self.brain[2][1] -= dec_dance
+        print("CURRENT ASTAR CORDS ARE " + str(self.astarCoords) )
 
     """
     This function checks the needs of the person.

@@ -63,7 +63,7 @@ class RunningMain:
     save_active = None
     save_name = False
 
-    tick_rate = 30
+    tick_rate = 10
 
     heat_map = []
 

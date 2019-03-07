@@ -52,7 +52,8 @@ class map_data:
 
     def add_people_to_map(self, coords, size, angle):
         """Adding people to map"""
-        newPerson = person.Person("person " + str(len(self.mapData)), coords, size, angle, self.tick_rate)
+        """CHANGED THE SIZE TO 10"""
+        newPerson = person.Person("person " + str(len(self.mapData)), coords, 10, angle, self.tick_rate)
         newPerson.add_map(self, coords)
         self.mapData.append(newPerson)
 

@@ -27,6 +27,7 @@ class DanceFloor(BaseObject):
         :return: 
         """
         cords = []
+        print("")
 
         x1 = self.coordinates[0]
         y1 = self.coordinates[1]

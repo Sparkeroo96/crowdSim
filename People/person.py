@@ -15,7 +15,15 @@ import math
 class Person:
     """Placeholder testing"""
     placeholder = 0
+
     tick_rate = 0
+    actionCount = None
+    currentActionCount = None
+
+    #Current coordinates
+    coordinates = [0,1]
+    #Last Coordinates, used for flocking
+    lastCoordinates = []
 
     flockingDistance = 40
 
@@ -500,7 +508,6 @@ class Person:
 
         self.move(newCoordinates)
 
-
     def store_coordinates(self, coordinates):
         """Storing a set of coordinates"""
         self.coordinates = coordinates
@@ -907,7 +914,7 @@ class Person:
         # Number the vision starts from, this stops the person from seeing themselves
         x = 12
         # This is the amount of rays that they produce
-        rays = 10
+        rays = 9
         # The itorating number of rays
         i = 0
         angle = angle - 25
@@ -929,7 +936,7 @@ class Person:
                 value = [x1 + value[0],y1 + value[1]]
                 resultArray.append(value)
                 x = x + 1
-            i = i + 1
+            i = i + 3
             x = 12
         return resultArray
 
@@ -1520,3 +1527,10 @@ class Person:
             return True
         else:
             return False
+
+    def get_test_values(self):
+        return self.test_values
+
+    def set_test_values(self, index,value):
+        array = self.test_values
+        array[index][1] = value

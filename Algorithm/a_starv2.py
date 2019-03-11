@@ -12,8 +12,7 @@ heatmap_store = {}
 #  The binary heap keeps the open list in order
 def astar(array, start, dest):
     """THE DESTINATION WILL BE DEEMED AS A 1"""
-    # print("array in astar" + str(array))
-    array[(dest[0], dest[1])] = 0
+    print("array in astar" + str(array))
 
     neighbours = [(0, 1), (0, -1), (1, 0), (-1, 0), (1, 1), (-1, -1), (1, -1), (-1, 1)]
 
@@ -144,14 +143,20 @@ def return_waypoints(locations):
 #     return mapLocations
 
 """Needs start and destination coords"""
-def run_astar(start, dest):
+def run_astar(start, dest, came_from):
     a = convert_to_simple(start)
     b = convert_to_simple(dest)
     """Convert coords to the node boys"""
     allNodes = get_all_nodes()
     result = None
-    if allNodes is not False:
+    if allNodes is not False and came_from is not "known_location":
+        print("random location")
         result = astar(allNodes, a, b)
+    elif allNodes is not False and came_from is "known_location":
+        print("known location")
+        allNodes[(b[0], b[1])] = 0
+        result = astar(allNodes, a, b)
+
 
     if result is None:
         return print("none")

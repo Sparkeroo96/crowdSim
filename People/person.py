@@ -835,7 +835,6 @@ class Person:
         """
         key = ""
         if isinstance(obj, Bar):
-            print("BAR INSTANCE")
             key = "Bar"
 
         elif isinstance(obj, DanceFloor):
@@ -1136,9 +1135,9 @@ class Person:
             print("THERE IS A REMEMBERED OBJECT AND THAT IS" + str(self.rememberedObj))
             targetCoordinates = self.work_out_objects_closest_point(self.rememberedObj)
             print("TARGET COORDS ARE" + str(targetCoordinates))
-            locations = a_starv2.run_astar(startingLoc, targetCoordinates)
+            locations = a_starv2.run_astar(startingLoc, targetCoordinates, came_from)
         else:
-            locations = a_starv2.run_astar(startingLoc, self.random_node)
+            locations = a_starv2.run_astar(startingLoc, self.random_node, came_from)
 
         print("LOCATIONS ARE " + str(locations))
         if not locations:

@@ -53,7 +53,7 @@ class map_data:
     def add_people_to_map(self, coords, size, angle):
         """Adding people to map"""
         """CHANGED THE SIZE TO 10"""
-        newPerson = person.Person("person " + str(len(self.mapData)), coords, 10, angle, self.tick_rate)
+        newPerson = person.Person("person " + str(len(self.mapData)), coords, 15, angle, self.tick_rate)
         newPerson.add_map(self, coords)
         self.mapData.append(newPerson)
 
@@ -344,7 +344,7 @@ class map_data:
             return True
 
         for edge in circleEdge:
-            if (edge[0] == rectangle["X"][0] or edge[0] == (rectangle["X"][0] - 1) or edge[0] == rectangle["X"][1] or edge[0] == (rectangle["X"][1] + 1)) and (edge[1] == rectangle["Y"][0] or edge[1] == (rectangle["Y"][0] - 1) or edge[1] == rectangle["Y"][1] or edge[1] == (rectangle["Y"][0] + 1)):
+            if (edge[0] == rectangle["X"][0] or edge[0] == (rectangle["X"][0] - 1) or edge[0] == rectangle["X"][1] or edge[0] == (rectangle["X"][1] + 1)) or (edge[1] == rectangle["Y"][0] or edge[1] == (rectangle["Y"][0] - 1) or edge[1] == rectangle["Y"][1] or edge[1] == (rectangle["Y"][0] + 1)):
                 return True
 
         return False
@@ -733,8 +733,6 @@ class map_data:
         screen_width = 800
         screen_height = 600
         node_distance = 20 # Spacing between each node.
-        xBoundaries = int(screen_width/node_distance)
-        yBoundaries = int(screen_height/node_distance)
         cordX = (int(wall.get_coordinates()[0] / node_distance))
         cordY = (int(wall.get_coordinates()[1] / node_distance))
         width = (math.ceil(wall.get_width() / node_distance))
@@ -825,9 +823,28 @@ class map_data:
         #     if v[0] > yBoundaries and v[1] > xBoundaries:
         #         self.values_to_append.remove(v)
 
+
+    def set_grid_area(self):
+        """
+        Set the area around the grid so out of bounds does not occur.
+        :return:
+        """
+        screen_width = 800
+        screen_height = 600
+        node_distance = 20
+        total_width = int(screen_width/node_distance)
+        total_height = int(screen_height/node_distance)
+        for x in range(total_width):
+            for y in range(total_height):
+                self.values_to_append.append([x, 0])
+                self.values_to_append.append([0, y])
+                self.values_to_append.append([x, total_height - 1])
+                self.values_to_append.append([total_width - 1, y])
+
+
+
+
     """Generate the node objects that appear on the map"""
-
-
     def generate_nodes(self):
         """
         Generate all nodes, adding values to each node and applying this to a*
@@ -843,6 +860,7 @@ class map_data:
 
         listofID = []  # IDs for the nodes
         # print(self.calculate_starting_nodes())
+        self.set_grid_area()
         """Basic 10x10 grid"""
         simpleCords = []
         for number in range(0, total_nodes):

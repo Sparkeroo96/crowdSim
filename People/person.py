@@ -38,10 +38,7 @@ class Person:
     # the first array is the properties from the previous state that they have to be in, not currently used
     # THe second array is the next states, must match another state or its going to break
     states = {
-        # "greatestNeed": [["usedToilet", "drinkDrink", "danced"], ["wantDrink", "wantToilet", "wantDance"]],
-        "greatestNeed": [["usedToilet", "drinkDrink", "danced"], ["wantDrink", "wantToilet"]],
-        #This is the starting state. It will decrease the needs.
-        # "idleState": [[]],
+        "greatestNeed": [["usedToilet", "drinkDrink", "danced"], ["wantDrink", "wantToilet", "wantDance"]],
 
         # "wantSearch": [[], ["search"]],
         # "search": [[], ["greatestNeed"]],
@@ -67,8 +64,6 @@ class Person:
 
     def __init__(self, name, coords, width, angle, tick_rate):
         # random.seed()
-        self.test_values = [['thirst', 70], ['toilet', 20], ['dance', 95]]
-
         self.name = name
 
         if coords:
@@ -135,9 +130,14 @@ class Person:
         self.orderedDrink = 0
         self.hasDrink = 0
         # Persons "needs" first value is importance second is how much they want to do it
-        self.brain = [["Toilet", 1000],
-                 ["Drink", 1000],
-                 ["Dance", 2000]]
+        self.brain = [["Toilet", 100],
+                 ["Drink", 100],
+                 ["Dance", 100]]
+
+        self.random_node = None
+
+        self.inside_dance_floor = False
+        self.random_dance_area = None
 
     def add_map(self, newMap, newCoordinates):
         """Storing the generated map"""
@@ -191,6 +191,11 @@ class Person:
 
             self.navigate_to_remembered_object()
 
+        elif stateAction == "dance":
+            if self.inside_dance_floor:
+                self.advance_state_machine()
+            self.astarCoords.clear()
+
         else:
             # self.random_move()
             self.flock()
@@ -205,18 +210,23 @@ class Person:
         objectsWithinRejection = self.map.get_objects_within_range(self.coordinates, self.get_rejection_area(), self.get_edge_coordinates_array(self.coordinates, self.get_rejection_area()), self)
 
         if objectsWithinRejection and self.rememberedObj not in objectsWithinRejection:
+            # print("objects within rejection")
+            # print(objectsWithinRejection)
+            # return self.flock_away_from_objects(objectsWithinRejection)
             # Sam - Keeping the flocking in but not allowing it to move two blocks to its destination
             self.flock_away_from_objects(objectsWithinRejection)
             # return self.flock_away_from_objects(objectsWithinRejection)
 
-        print(self.name + " Attempting to navigate to remembered " + str(self.rememberedObj))
+        # print(self.name + " Attempting to navigate to remembered " + str(self.rememberedObj))
         x = self.coordinates[0]
         y = self.coordinates[1]
         nextMove = [x, y]
 
         # if not self.astarCoords:
-        if self.astarCoords == []:
+        if self.astarCoords == [] or not self.astarCoords:
+            print("ASTAR IS EMPTY, SETTING CORDS TO GET TO THE OBJECT")
             self.set_cords_from_algo()
+            #self.set_cords_from_algo("known_location")
             # self.placeholder += 1
 
         if self.astarCoords:
@@ -301,6 +311,7 @@ class Person:
             moveReturn = self.move(nextMove)
             if moveReturn is not True and moveReturn != self.rememberedObj and moveReturn != False:
                 newCoords = self.get_coordinates_for_move_avoiding_collision_object(targetCoordinates, moveReturn, nextMove)
+                self.move(newCoords)
                 # return self.move(nextMove)
 
         if self.coordinates == list(self.astarCoords[0]):
@@ -378,6 +389,18 @@ class Person:
         Node cant be too close to them, or its pointless exploring
         :return:
         """
+        x = self.coordinates[0]
+        y = self.coordinates[1]
+        nextMove = [x, y]
+        nodes = a_starv2.get_open_nodes()
+        nodes_length = len(a_starv2.get_open_nodes())
+        self.random_node = nodes[randint(0, nodes_length - 1)]
+        if self.astarCoords:
+            self.navigate_via_astar(nextMove)
+        else: # No Astar cords found. This is due to the location not being available to travel, or first time initiating exploring.
+            print("no astar cords found")
+            self.set_cords_from_algo("random_node")
+            self.find_action() # Keep going back to find to see if object has been found.
 
 
     def person_rotate(self, clockwise = True):
@@ -488,7 +511,6 @@ class Person:
 
         self.move(newCoordinates)
 
-
     def store_coordinates(self, coordinates):
         """Storing a set of coordinates"""
         self.coordinates = coordinates
@@ -550,7 +572,7 @@ class Person:
             """relax will reduce the needs of the person"""
             if self.check_needs() == False:
                 self.relax()
-                self.get_person_needs()
+                print(str(self.get_person_needs()))
                 """RETURN THE ACTION OF DOING NOTHING, THERE IS NO NEED"""
                 return action
             """Setting the current state to the persons needs."""
@@ -608,7 +630,15 @@ class Person:
 
         elif self.currentState == "dance":
             # Person will dance
-            self.advance_state_machine()
+            #print(self.name + " is dancing")
+            # self.stateMachine.get_next_state()
+
+            action = "dance"
+            self.move_inside_dance_floor()
+            if self.inside_dance_floor:
+                print("DANCEFLOOR IS NOW TRUE")
+                self.dance()
+                self.advance_state_machine()
 
         elif self.currentState == "useToilet":
 
@@ -625,7 +655,6 @@ class Person:
         :return: String of action
         """
         action = "moveRandom"
-
         if self.find_object(self.rememberedObjType):
             action = "navigateToRememberedObj"
             self.rotate = 0
@@ -640,6 +669,8 @@ class Person:
 
             else:
                 action = "explore"
+                self.set_explore_node()
+                #if at target dont do the rest
 
         return action
 
@@ -705,7 +736,7 @@ class Person:
                 returnedObject = obj
 
         return returnedObject
-        self.rememberedCoords = newCoords
+
 
     def get_edge_coordinates_array(self, coordinates, width):
         """Gets the edge coordinates of the circle"""
@@ -1020,7 +1051,7 @@ class Person:
         :return:
         """
         if self.hasDrink:
-            self.brain[1][1] += 10000
+            self.brain[1][1] += 100  # Increase the drink level
             return True
 
         return False
@@ -1037,6 +1068,14 @@ class Person:
 
         return False
 
+    def dance(self):
+        """
+        Agent has reached an area on the dancefloor and is now dancing.
+        :return:
+        """
+        self.random_move()
+        self.set_action_count(5, 10)
+
     def use_toilet(self):
         """
         Uses the toilet, maybe adjust the persons needs,
@@ -1045,7 +1084,7 @@ class Person:
         """
 
         if self.rememberedObj.get_person_using_toilet() == self:
-            self.brain[0][1] += 200000
+            self.brain[0][1] += 100 # Set toilet back up to default
             self.get_person_needs()
 
             self.rememberedObj.person_stop_using_toilet(self)
@@ -1095,7 +1134,7 @@ class Person:
         return False
 
     """gets the cord from the a* and returns the cords needed"""
-    def set_cords_from_algo(self):
+    def set_cords_from_algo(self, came_from):
 
         """If the current cords are the nearest node"""
         startingLoc = self.coordinates
@@ -1106,8 +1145,17 @@ class Person:
         # Sam - Trying to change it to use startingLoc as its making a huge jump as it goes to the node
         locations = a_starv2.run_astar(startingLoc, self.rememberedObj.get_coordinates())
 
+        if self.rememberedObj and came_from is "known_location":
+            print("THERE IS A REMEMBERED OBJECT AND THAT IS" + str(self.rememberedObj))
+            targetCoordinates = self.work_out_objects_closest_point(self.rememberedObj)
+            locations = a_starv2.run_astar(startingLoc, targetCoordinates)
+        else:
+            locations = a_starv2.run_astar(startingLoc, self.random_node)
+
+        print("LOCATIONS ARE " + str(locations))
         if not locations:
             print("NO PATH FOUND IN SET CORDS")
+            return False
         else:
             for location in locations:
                 self.store_waypoints(location)
@@ -1400,61 +1448,91 @@ class Person:
             return False
         return [xDiff, yDiff]
 
-    """gets the cord from the a* stuff and returns the cords needed"""
-    def set_cords_from_algo(self):
-        locations = None
-        """If the current cords are the nearest node"""
-        if self.find_nearest_waypoint() != self.coordinates:
-            startingLoc = self.find_nearest_waypoint()
-            print(startingLoc)
-            # self.move(startingLoc)
-        """NEED TO ADD THE DESTINATION OF REQUIRED OBJECT"""
-        locations = 0
-        # Getting recursion depth error here
-        if self.rememberedObj != "":
-            locations = a_starv2.run_astar(self.coordinates, self.rememberedObj.get_coordinates())
-        else:
-            locations = a_starv2.run_astar(self.coordinates, self.exploreNode)
-        # locations = a_starv2.run_astar(self.coordinates, self.destination())
-
     def get_memory(self):
         return self.brain
 
     """Returns array of persons current needs, alone with value"""
     def get_person_needs(self):
-        print(str(self.brain))
+        return self.brain
 
     """This will be in an idle state when a person has no desire of drinking, dancing or wanting the toilet"""
     def relax(self):
-        dec_thirst = randint(0, 5)
-        dec_toilet = randint(20, 50)
-        dec_dance = randint(0, 2)
+        print("In relax")
+        dec_thirst = randint(0, 1)
+        dec_toilet = randint(0, 2)
+        dec_dance = randint(2, 5)
         self.brain[0][1] -= dec_toilet
         self.brain[1][1] -= dec_thirst
         self.brain[2][1] -= dec_dance
+        print("CURRENT ASTAR CORDS ARE " + str(self.astarCoords))
 
-    def dance(self):
-        """Person moving randomly around the map"""
+    def set_random_dance_area(self):
+        if self.random_dance_area is None:
+            self.random_dance_area = self.rememberedObj.get_random_dance_area()
+        else:
+            return
+
+    def get_random_dance_area(self):
+        return self.random_dance_area
+    """
+    This function checks the needs of the person.
+    If the value goes below the limit, it'll return that need, otherwise False
+    """
+
+    def move_inside_dance_floor(self):
+        """Person moves to a random location on the dancefloor
+        Currently broken as it only moves one cord, not the full destination.
+        """
         randomNumber = randint(0, 8)
-        # #print(self.name + " should move " + str(randomNumber))
-        newCoordinates = []
-        # #print(self.name + " random number " + str(randomNumber) + " -- initial coords " + str(self.coordinates))
-        if randomNumber <= 2:  # person move up
-            newCoordinates = [self.coordinates[0], self.coordinates[1] + 1]
+        nextMove = self.coordinates
+        print("IN DANCE")
+        self.set_random_dance_area()
+        print(self.coordinates)
+        print("random dance area")
+        print(self.random_dance_area)
+        if self.random_dance_area != self.coordinates:
+            print("MOVE INSIDE DANCE FLOOR")
+            # while targetCoordinates != nextMove:
+            x = self.coordinates[0]
+            y = self.coordinates[1]
 
-        elif randomNumber <= 4:  # Person move down
-            newCoordinates = [self.coordinates[0], self.coordinates[1] - 1]
+            if self.random_dance_area[0] > x:
+                if self.random_dance_area[0] > x + 1:
+                    x += 2
+                else:
+                    x += 1
 
-        elif randomNumber <= 6:  # person move right
-            newCoordinates = [self.coordinates[0] + 1, self.coordinates[1]]
+            elif self.random_dance_area[0] < x:
+                if self.random_dance_area[0] < x - 1:
+                    x -= 2
+                else:
+                    x -= 1
 
-        elif randomNumber <= 8:  # Person move left
-            newCoordinates = [self.coordinates[0] - 1, self.coordinates[1]]
+            if self.random_dance_area[1] > y:
+                if self.random_dance_area[1] > y + 1:
+                    y += 2
+                else:
+                    y += 1
+            elif self.random_dance_area[1] < y:
+                if self.random_dance_area[1] < y - 1:
+                    y -= 2
+                else:
+                    y -= 1
 
+            nextMove = [x, y]
+            moveReturn = self.move(nextMove)
+            if moveReturn is not True:
+                newCoords = self.get_coordinates_for_move_avoiding_collision_object(targetCoordinates, moveReturn, nextMove)
+                self.move(newCoords)
+                # return self.move(nextMove)
+
+        if self.coordinates == self.random_dance_area:
+            print("REACHED TARGET WOOO")
+            self.brain[2][1] = 1000
+            """DELAY here?"""
+            self.random_dance_area = None
+            self.inside_dance_floor = True
         # print("random move current coords " + str(self.coordinates) + " new coords " + str(newCoordinates))
-
-        self.move(newCoordinates)
-
 
     def check_needs(self):
         """
@@ -1462,7 +1540,7 @@ class Person:
         If the value goes below the limit, it'll return that need, otherwise False
         """
         for b in self.brain:
-            if b[1] <= 100:
+            if b[1] <= 1:
                 return b[0]
         return False
 
@@ -1475,6 +1553,12 @@ class Person:
         self.exploreNode = []
         self.astarCoords = []
 
+
+    def check_astar_cords_is_empty(self):
+        if self.astarCoords is None:
+            return True
+        else:
+            return False
 
     def get_test_values(self):
         return self.test_values

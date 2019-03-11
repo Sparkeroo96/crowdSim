@@ -12,7 +12,7 @@ heatmap_store = {}
 #  The binary heap keeps the open list in order
 def astar(array, start, dest):
     """THE DESTINATION WILL BE DEEMED AS A 1"""
-    print("array in astar" + str(array))
+    # print("array in astar" + str(array))
     array[(dest[0], dest[1])] = 0
 
     neighbours = [(0, 1), (0, -1), (1, 0), (-1, 0), (1, 1), (-1, -1), (1, -1), (-1, 1)]
@@ -39,7 +39,7 @@ def astar(array, start, dest):
             global mapLocations
             mapLocations = data
             mapLocations.reverse()
-            array[(dest[0], dest[1])] = 1
+            # array[(dest[0], dest[1])] = 1
             return data  # Return the list
 
         close_set.add(current)  # Add the current parent to the closed set.
@@ -85,7 +85,7 @@ def heuristic(a, b):
 def store_all_nodes(g):
     global graph
     graph = g.copy()
-    print("stored" + str(g))
+    # print("stored" + str(g))
 
 def get_all_nodes():
     global graph

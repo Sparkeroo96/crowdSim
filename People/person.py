@@ -151,7 +151,7 @@ class Person:
         """What the person is going to do"""
         self.currentState = self.stateMachine.get_current_state()
         self.usedSpeed = 0
-
+        print(" My current state " + self.currentState)
         if self.wait_on_action_count():
             return "Waiting"
 
@@ -385,6 +385,7 @@ class Person:
 
     def set_explore_node(self):
         """
+
         Gets a node to navigate to in order to explore the environment they are in
         Node cant be too close to them, or its pointless exploring
         :return:
@@ -669,7 +670,7 @@ class Person:
 
             else:
                 action = "explore"
-                self.set_explore_node()
+                # self.set_explore_node()
                 #if at target dont do the rest
 
         return action

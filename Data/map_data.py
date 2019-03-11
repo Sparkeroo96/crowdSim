@@ -11,7 +11,6 @@ from Nodes import node
 from Algorithm import a_starv2
 import numpy
 
-numpy.set_printoptions(threshold=numpy.nan)
 # Seems to need these for allowing isinstance(example, Person), doesnt work with the above import
 from People.person import Person
 from Objects.wall import Wall
@@ -53,7 +52,8 @@ class map_data:
     def add_people_to_map(self, coords, size, angle):
         """Adding people to map"""
         """CHANGED THE SIZE TO 10"""
-        newPerson = person.Person("person " + str(len(self.mapData)), coords, 10, angle, self.tick_rate)
+        # newPerson = person.Person("person " + str(len(self.mapData)), coords, 10, angle, self.tick_rate)
+        newPerson = person.Person("person " + str(len(self.mapData)), coords, 20, angle, self.tick_rate)
         newPerson.add_map(self, coords)
         self.mapData.append(newPerson)
 

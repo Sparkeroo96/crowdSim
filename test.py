@@ -42,7 +42,8 @@ class RunningMain:
 
     # Size of the screen
     screen_width = 1000
-    screen_height = 800
+    # screen_height = 800
+    screen_height = 700
 
     sim_screen_width = screen_width - (screen_width / 3)
     sim_screen_height = screen_height - (screen_height/ 4)

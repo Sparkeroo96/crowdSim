@@ -45,7 +45,7 @@ class map_data:
         # self.add_wall_to_map()
         global constant
         if constant == 0:
-            self.generate_nodes()
+            # self.generate_nodes()
             constant += 1
         return self.mapData
 
@@ -591,7 +591,7 @@ class map_data:
         if objectType == "toilet":
             self.add_toilet_to_map(cords, width, height)
         """Used to create the nodes"""
-        self.generate_nodes()
+        # self.generate_nodes()
 
     def delete_object(self,coords):
         """

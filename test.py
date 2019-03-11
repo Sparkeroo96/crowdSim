@@ -84,6 +84,7 @@ class RunningMain:
     dragging_bar = False
     selected_button = None
     temp_width = None
+    nodes_generated = 0
 
     def __init__(self):
         self.set_offset(self.centre([0, 0, self.get_screen_width(), self.get_screen_height()],[self.get_sim_screen_width(), self.get_sim_screen_height()]))
@@ -247,7 +248,10 @@ class RunningMain:
                     success = self.load_map('maps_saves', search)
                     self.set_text_done(False)
                 # Allowing nodes to be created outside of the map
-                self.data.generate_nodes()
+
+                if self.nodes_generated == 0:
+                    self.nodes_generated = 1
+                    self.data.generate_nodes()
 
             # This checks to see if it is on the simulation menu options
             elif menu[0] == "Run Simulation":

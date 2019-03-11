@@ -44,10 +44,6 @@ class Person:
     colour = [255, 0, 0]
     shape = "circle"
 
-    rememberedObj = ""
-    rememberedObjType = ""
-    rememberedColour = ""
-    rememberedCoords = []
 
     rotate = 0
 
@@ -222,7 +218,7 @@ class Person:
         """SET CORDS from a*"""
 
         if not self.astarCoords:
-            print("ASTAR IS EMPTY, SETTING CORDS TO GET TO THE OBJECT")
+            print("ASTAR IS EMPTY, SETTING CORDS TO GET TO:" + str(self.rememberedObj))
             self.set_cords_from_algo("known_location")
         if self.astarCoords:
             print("Length of ASTAR cords")
@@ -309,7 +305,6 @@ class Person:
                 # return self.move(nextMove)
 
         if self.coordinates == self.astarCoords[0]:
-            print("POP IT")
             print("Length of astar is" + str(len(self.astarCoords)))
             self.astarCoords.pop(0)
 
@@ -592,6 +587,7 @@ class Person:
         elif "move" in str(self.currentState):
             # Person moving to object
             action = "navigateToRememberedObj"
+            print("IN MOVE GET STATE ACTION")
 
             #If the person is next to the thing they are supposed to be on like a bar, advance the state again
             objectSize = [self.rememberedObj.get_width(), self.rememberedObj.get_height()]
@@ -603,6 +599,8 @@ class Person:
 
             # if self.map.check_circle_overlap_rectangle(selfEdge, rectangleCoordRanges):
             if self.map.check_person_touching_object(selfEdge, rectangleCoordRanges):
+                print("TOUCHING OBJECT ")
+                self.astarCoords.clear()
                 self.advance_state_machine()
                 self.change_angle_to_move_direction(self.coordinates, self.rememberedObj.get_coordinates())
 
@@ -612,6 +610,7 @@ class Person:
             action = "wait"
             # self.clear_remembered_object()
             if self.has_ordered_drink() == 0 and self.has_drink() is False:
+                print("Has not ordered of has drink")
                 self.order_drink()
                 self.clear_remembered_object()
 
@@ -653,6 +652,7 @@ class Person:
         """
         action = "moveRandom"
         if self.find_object(self.rememberedObjType):
+            print("remebered obj is" + str(self.rememberedObj))
             action = "navigateToRememberedObj"
             self.rotate = 0
             self.advance_state_machine()
@@ -835,6 +835,7 @@ class Person:
         """
         key = ""
         if isinstance(obj, Bar):
+            print("BAR INSTANCE")
             key = "Bar"
 
         elif isinstance(obj, DanceFloor):
@@ -1021,6 +1022,10 @@ class Person:
         """
         self.hasDrink = 1
         self.orderedDrink = 0
+        #Update drink meter
+        print("IN served Drink")
+        self.brain[1][1] = 99
+        self.astarCoords.clear()
 
         self.advance_state_machine()
 
@@ -1060,13 +1065,15 @@ class Person:
     def use_toilet(self):
         """
         Uses the toilet, maybe adjust the persons needs,
-        tells the toilet it is in use
+        tells the toilet it is in useß
         :return: the action count of how long they are going to be waiting for
         """
 
         if self.rememberedObj.get_person_using_toilet() == self:
             print("Using Toilet")
             self.brain[0][1] += 100 # Set toilet back up to default
+            """Empty ASTAR as we achieved destination"""
+            self.astarCoords.clear()
             self.get_person_needs()
 
             self.rememberedObj.person_stop_using_toilet(self)
@@ -1128,6 +1135,7 @@ class Person:
         if self.rememberedObj and came_from is "known_location":
             print("THERE IS A REMEMBERED OBJECT AND THAT IS" + str(self.rememberedObj))
             targetCoordinates = self.work_out_objects_closest_point(self.rememberedObj)
+            print("TARGET COORDS ARE" + str(targetCoordinates))
             locations = a_starv2.run_astar(startingLoc, targetCoordinates)
         else:
             locations = a_starv2.run_astar(startingLoc, self.random_node)
@@ -1247,15 +1255,15 @@ class Person:
 
 
         for coord in priorityCoordiantes:
-            if coord[0] > self.coordinates[0]:
-                moveX -= 1
+            if coord[0] >= self.coordinates[0]:
+                moveX -= 10
             elif coord[0] < self.coordinates[0]:
-                moveX += 1
+                moveX += 10
 
             if coord[1] > self.coordinates[1]:
-                moveY -= 1
-            elif coord[1] < self.coordinates[1]:
-                moveY += 1
+                moveY -= 10
+            elif coord[1] <= self.coordinates[1]:
+                moveY += 10
 
         randInc = randint(0, 8)
         if randInc == 0:
@@ -1290,8 +1298,6 @@ class Person:
         closest = []
         priorityDiff = 0
         rejectionScore = 0
-        print("current coordinates " + str(coordinates))
-        print("objects " + str(objects))
 
         x = 0
         # for key, obj in enumerate(objects):
@@ -1303,8 +1309,10 @@ class Person:
             coords = coordinates[x]
             coordsDiff = (abs(coords[0] - self.coordinates[0]) + abs(coords[1] - self.coordinates[1]))
             if obj.get_rejection_strength() > rejectionScore:
+                print("REJECTION STRENGTH HELLA HIGH")
                 rejectionScore = obj.get_rejection_strength()
                 closest = []
+                print(coordinates[x])
                 closest.append(coordinates[x])
                 priorityDiff = coordsDiff
 
@@ -1439,10 +1447,9 @@ class Person:
 
     """This will be in an idle state when a person has no desire of drinking, dancing or wanting the toilet"""
     def relax(self):
-        print("In relax")
-        dec_thirst = randint(0, 1)
-        dec_toilet = randint(0, 2)
-        dec_dance = randint(2, 5)
+        dec_thirst = randint(2, 3)
+        dec_toilet = randint(0, 1)
+        dec_dance = randint(0, 1)
         self.brain[0][1] -= dec_toilet
         self.brain[1][1] -= dec_thirst
         self.brain[2][1] -= dec_dance
@@ -1504,13 +1511,13 @@ class Person:
             nextMove = [x, y]
             moveReturn = self.move(nextMove)
             if moveReturn is not True:
-                newCoords = self.get_coordinates_for_move_avoiding_collision_object(targetCoordinates, moveReturn, nextMove)
+                newCoords = self.get_coordinates_for_move_avoiding_collision_object(self.targetCoordinates, moveReturn, nextMove)
                 self.move(newCoords)
                 # return self.move(nextMove)
 
         if self.coordinates == self.random_dance_area:
             print("REACHED TARGET WOOO")
-            self.brain[2][1] = 1000
+            self.brain[2][1] = 99
             """DELAY here?"""
             self.random_dance_area = None
             self.inside_dance_floor = True
@@ -1528,9 +1535,6 @@ class Person:
         else:
             return False
 
-    def get_test_values(self):
-        return self.test_values
+    def get_memory_stuff(self):
+        return self.memory
 
-    def set_test_values(self, index,value):
-        array = self.test_values
-        array[index][1] = value

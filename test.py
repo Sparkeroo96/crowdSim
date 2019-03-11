@@ -40,7 +40,7 @@ class RunningMain:
     show_heatmap_toggle = False
 
     # Size of the screen
-    screen_width = 1000
+    screen_width = 1200
     screen_height = 800
 
     sim_screen_width = screen_width - (screen_width / 3)
@@ -142,7 +142,7 @@ class RunningMain:
                 if self.get_selected_button() is not None and self.in_area(pygame.mouse.get_pos(),self.get_size_info_pannel()):
                     if event.type == pygame.MOUSEBUTTONDOWN:
                         self.set_x1_first_click(pygame.mouse.get_pos()[0])
-                        array = self.get_selected_person().get_test_values()
+                        array = self.get_selected_person().get_person_needs()
                         self.set_startAmount_of_need(array[self.get_selected_button()][1])
                         self.set_dragging_bar()
 
@@ -479,7 +479,7 @@ class RunningMain:
                 self.add_heatmap(coordinates)
                 # Creating the cicle with the variables provided
                 if(obj == self.get_selected_person()):
-                    text_info = self.get_selected_person().get_test_values()
+                    text_info = self.get_selected_person().get_person_needs()
                     size_info = [0,0,150,50]
                     saved_size_info = size_info
                     obj_colour = self.green
@@ -507,6 +507,7 @@ class RunningMain:
                 pygame.draw.rect(self.display, obj_colour, [coordinates[0], coordinates[1], width, height])
 
             elif self.get_show_heatmap_toggle():
+                print("Show heatmap")
                 self.show_heatmap()
 
         for obj in objectArray:
@@ -531,8 +532,8 @@ class RunningMain:
                         if colour != (255, 255, 255, 255):
                             # Its an object of some kind
                             seenObj = self.data.what_object(self.gui_to_map_data_coords_offset(cord))
-
                             obj.add_to_vision(seenObj)
+                            # print(seenObj)
                             obj.add_to_memory(seenObj)
 
 

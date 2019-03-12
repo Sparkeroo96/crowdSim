@@ -358,7 +358,6 @@ class Person:
         :return: True on successful move, returns the collision object on false
         """
         collisionObject = self.map.check_coordinates_for_person(coordinates, self.width / 2, self.name, self.get_edge_coordinates_array(coordinates, round(self.width / 2) ))
-
         # if abs(self.coordinates[0] - coordinates[0]) > self.maxSpeed or abs(self.coordinates[1] - coordinates[1]) > self.maxSpeed:
         if abs(self.coordinates[0] - coordinates[0]) > 2 or abs(self.coordinates[1] - coordinates[1]) > 2:
             self.coordinatesFailed += 1
@@ -1147,15 +1146,12 @@ class Person:
         locations = a_starv2.run_astar(startingLoc, self.rememberedObj.get_coordinates())
 
         if self.rememberedObj and came_from is "known_location":
-            # print("THERE IS A REMEMBERED OBJECT AND THAT IS" + str(self.rememberedObj))
             targetCoordinates = self.work_out_objects_closest_point(self.rememberedObj)
             locations = a_starv2.run_astar(startingLoc, targetCoordinates)
         else:
             locations = a_starv2.run_astar(startingLoc, self.random_node)
 
-        # print("LOCATIONS ARE " + str(locations))
         if not locations:
-            # print("NO PATH FOUND IN SET CORDS")
             return False
         else:
             for location in locations:
@@ -1254,7 +1250,6 @@ class Person:
 
         priorityCoordiantes = self.priority_avoid_coordinates(objects, coordsToAvoid)
 
-        # print("PriorityCoords " + str(priorityCoordiantes) + " my current Coords " + str(self.coordinates))
         # coordsToAvoid[100]
         nextMove = []
         nextMove.append(self.coordinates[0])
@@ -1310,8 +1305,6 @@ class Person:
         closest = []
         priorityDiff = 0
         rejectionScore = 0
-        # print("coordinates " + str(coordinates))
-        # print("objects " + str(objects))
 
         x = 0
         # for key, obj in enumerate(objects):
@@ -1528,12 +1521,10 @@ class Person:
                 # return self.move(nextMove)
 
         if self.coordinates == self.random_dance_area:
-            # print("REACHED TARGET WOOO")
             self.brain[2][1] = 1000
             """DELAY here?"""
             self.random_dance_area = None
             self.inside_dance_floor = True
-        # print("random move current coords " + str(self.coordinates) + " new coords " + str(newCoordinates))
 
     def check_needs(self):
         """
@@ -1562,7 +1553,7 @@ class Person:
             return False
 
     def get_test_values(self):
-        return self.test_values
+        return self.brain
 
     def set_test_values(self, index,value):
         array = self.test_values

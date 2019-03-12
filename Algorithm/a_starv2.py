@@ -203,7 +203,7 @@ def get_random_waypoint():
     randNodeKey = randint(0, nodeCount - 1)
 
     nodes = get_open_nodes()
-    nodes_length = len(get_open_nodes())
+    nodes_length = len(nodes)
     return nodes[randint(0, nodes_length - 1)]
 
     # return n[randNodeKey]

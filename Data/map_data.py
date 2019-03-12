@@ -18,7 +18,7 @@ from Objects import fireExit
 from People.flockingPerson import FlockingPerson
 
 from Objects.bar import Bar
-
+from Objects.danceFloor import DanceFloor
 from Objects.toilet import Toilet
 
 constant = 0
@@ -56,7 +56,7 @@ class map_data:
         """Adding people to map"""
         """CHANGED THE SIZE TO 10"""
         # newPerson = person.Person("person " + str(len(self.mapData)), coords, 10, angle, self.tick_rate)
-        newPerson = person.Person("person " + str(len(self.mapData)), coords, 20, angle, self.tick_rate)
+        newPerson = person.Person("person " + str(len(self.mapData)), coords, 15, angle, self.tick_rate)
         newPerson.add_map(self, coords)
         self.mapData.append(newPerson)
 
@@ -243,18 +243,14 @@ class map_data:
 
             else:
                 # Object is instance of baseObject, i.e. Bar
-                # width = obj.get_width()
-                # height = obj.get_height()
                 objSize = [obj.get_width(), obj.get_height()]
                 objCoords = obj.get_coordinates()
                 rectangleCoordRanges = self.get_coordinates_range(objCoords, objSize)
-                if obj.get_clip_through():  # Dancefloor is not a collision, and can proceed.
-                    return True
-                elif self.check_circle_overlap_rectangle(edgeCoordinates, rectangleCoordRanges):
-                    return obj
+                if self.check_circle_overlap_rectangle(edgeCoordinates, rectangleCoordRanges):
+                    if obj.get_clip_through() == False: #
+                        return obj
 
         # Coordinates are fine to move to
-
         return True
 
     def check_coordinates_in_bounds(self, coordinates, radius):
@@ -478,6 +474,9 @@ class map_data:
                     obj_type = "Bar"
                 if isinstance(obj, Toilet):
                     obj_type = "Toilet"
+
+                if isinstance(obj, DanceFloor):
+                    obj_type = "DanceFloor"
 
                 data = [obj_type, coords, width, height]
                 # Different data needed to record person objects

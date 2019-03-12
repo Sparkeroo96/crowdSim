@@ -267,10 +267,13 @@ class map_data:
         highX = coordinates[0] + radius
         highY = coordinates[1] + radius
 
-        if lowX < 0 or lowY < 0:
+        simOffsets = self.gui.get_offset()
+
+        if lowX < simOffsets[0] or lowY < simOffsets[1]:
             return False
 
-        if highX > self.gui.get_screen_width() or highY > self.gui.get_screen_height():
+
+        if highX > simOffsets[0] + self.gui.get_sim_screen_width() or highY > simOffsets[1] + self.gui.get_sim_screen_height():
             return False
 
         return True
@@ -408,7 +411,7 @@ class map_data:
                 x1 = coords[0]
                 y1 = coords[1]
                 # This is pythagorous and works out if the point is within the circle
-                distance = math.pow(x1 - x,2) + math.pow(y1 - y,2)
+                distance = math.pow(x1 - x,2) + math.pow(y1 - y, 2)
                 distanceRoot = math.sqrt(distance)
                 if distanceRoot <= radias:
                     return obj
@@ -416,10 +419,11 @@ class map_data:
             else:
                 width = obj.get_width()
                 height = obj.get_height()
-                # coordsRange = self.get_coordinates_range(coords, [width, height])
                 coordsRange = self.get_coordinates_range(objCoords, [width, height])
-                if self.point_in_coordinates_range(coords, coordsRange):
+
+                if self.point_in_coordinates_range(coords, coordsRange) is True:
                     return obj
+        return False
 
 
     def point_in_coordinates_range(self, coordinates, range):
@@ -433,7 +437,8 @@ class map_data:
         x = coordinates[0]
         y = coordinates[1]
 
-        if x >= range["X"][0] and x <= range["X"][1] and y >= range["Y"][0] and y <= range["Y"][1]:
+        # if x >= range["X"][0] and x <= range["X"][1] and y >= range["Y"][0] and y <= range["Y"][1]:
+        if range["X"][0] <= x <= range["X"][1] and range["Y"][0] <= y <= range["Y"][1]:
             return True
 
         return False
@@ -729,6 +734,9 @@ class map_data:
         :param walls: the walls to set nodes to.
         :return:
         """
+        # This is to stop nodes being generate right next to an object
+        objBuffer = 5
+
         screen_width = 800
         screen_height = 600
         node_distance = 20 # Spacing between each node.
@@ -738,6 +746,8 @@ class map_data:
         cordY = (int(wall.get_coordinates()[1] / node_distance))
         width = (math.ceil(wall.get_width() / node_distance))
         height = (math.ceil(wall.get_height() / node_distance))
+
+
         x2 = cordX + width
         y2 = cordY + height
 
@@ -751,12 +761,12 @@ class map_data:
         # If the coord starts from bottom right
         if int(width) < 0 and int(height) < 0:
             # print("in bottom right")
-            width2 = int(abs(width)) + 1 # Rounding up on a negative number will drop by one
-            height2 = int(abs(height)) + 1
+            width2 = int(abs(width)) + objBuffer # Rounding up on a negative number will drop by one
+            height2 = int(abs(height)) + objBuffer
             if width2 < height2:
-                width2 += 1
+                width2 += objBuffer
             else:
-                height2 += 1
+                height2 += objBuffer
             # print(width2, height2)
             for x in range(width2):
                 # self.values_to_append.append([cordX - x, cordY])
@@ -786,9 +796,9 @@ class map_data:
         # If the coord starts from Bottom Left
         if int(width) > 0 and int(height) < 0:
             # print("in bottom left")
-            height3 = int(abs(height)) + 1
+            height3 = int(abs(height)) + objBuffer
             if height3 < width:
-                height3 += 1
+                height3 += objBuffer
             for x in range(width):
                 self.values_to_append.append([cordX + x, cordY])  # The top line in a rect
                 self.values_to_append.append([cordX + x, y2])

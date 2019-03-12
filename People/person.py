@@ -152,11 +152,14 @@ class Person:
         self.currentState = self.stateMachine.get_current_state()
         self.usedSpeed = 0
         # print(" My current state " + self.currentState)
+
         if self.wait_on_action_count():
             return "Waiting"
 
         stateAction = self.get_state_action()
         # print("currentState: " + self.currentState + " / stateAction " + stateAction)
+        # print(" my memory #FuckYouChris " + str(self.memory))
+        # print(" my vision #FuckYouChris2 " + str(self.vision))
         # self.random_move()
         if stateAction == "navigateToRememberedObj":
             self.navigate_to_remembered_object()
@@ -212,12 +215,10 @@ class Person:
         if objectsWithinRejection and self.rememberedObj not in objectsWithinRejection:
             # print("objects within rejection")
             # print(objectsWithinRejection)
-            # return self.flock_away_from_objects(objectsWithinRejection)
             # Sam - Keeping the flocking in but not allowing it to move two blocks to its destination
             self.flock_away_from_objects(objectsWithinRejection)
             # return self.flock_away_from_objects(objectsWithinRejection)
 
-        # print(self.name + " Attempting to navigate to remembered " + str(self.rememberedObj))
         x = self.coordinates[0]
         y = self.coordinates[1]
         nextMove = [x, y]
@@ -277,7 +278,7 @@ class Person:
         targetCoordinates = [self.astarCoords[0][0], self.astarCoords[0][1]]
         # First move
         # Sam - Think this being in while was partially responsible for the big jumps changed to if
-        # print("targetCoordiatnes " + str(targetCoordinates) + " / nextMove " + str(nextMove))
+        # print("my coordinates " + str(self.coordinates) + " targetCoordiatnes " + str(targetCoordinates) + " / nextMove " + str(nextMove))
         # if targetCoordinates != nextMove:
         if True:
             # while targetCoordinates != nextMove:
@@ -860,6 +861,7 @@ class Person:
         if key == "":
             return False
 
+
         if not self.memory[key]:
             self.memory[key].append(obj)
             return True
@@ -952,8 +954,8 @@ class Person:
                 value = [x1 + value[0], y1 + value[1]]
                 # resultArray.append(value)
                 tempArray.append(value)
-                x = x + 1
-            i = i + 3
+                x = x + 3
+            i = i + 1
             x = 12
             resultArray.append(tempArray)
 
@@ -1083,7 +1085,7 @@ class Person:
         :return: the action count of how long they are going to be waiting for
         """
 
-        if self.rememberedObj.get_person_using_toilet() == self:
+        if self.rememberedObj.check_person_using_toilet(self) is True:
             self.brain[0][1] += 100 # Set toilet back up to default
             self.get_person_needs()
 
@@ -1134,7 +1136,8 @@ class Person:
         return False
 
     """gets the cord from the a* and returns the cords needed"""
-    def set_cords_from_algo(self, came_from):
+    # def set_cords_from_algo(self, came_from):
+    def set_cords_from_algo(self):
 
         """If the current cords are the nearest node"""
         startingLoc = self.coordinates
@@ -1145,7 +1148,8 @@ class Person:
         # Sam - Trying to change it to use startingLoc as its making a huge jump as it goes to the node
         locations = a_starv2.run_astar(startingLoc, self.rememberedObj.get_coordinates())
 
-        if self.rememberedObj and came_from is "known_location":
+        # if self.rememberedObj and came_from is "known_location":
+        if self.rememberedObj:
             targetCoordinates = self.work_out_objects_closest_point(self.rememberedObj)
             locations = a_starv2.run_astar(startingLoc, targetCoordinates)
         else:
@@ -1251,6 +1255,7 @@ class Person:
         priorityCoordiantes = self.priority_avoid_coordinates(objects, coordsToAvoid)
 
         # coordsToAvoid[100]
+        print("priority coordinates " + str(priorityCoordiantes) + " my coordinates " + str(self.coordinates))
         nextMove = []
         nextMove.append(self.coordinates[0])
         nextMove.append(self.coordinates[1])
@@ -1290,7 +1295,9 @@ class Person:
         elif moveY < 0:
             nextMove[1] -= 1
 
+        print("flock away nextMOve " + str(nextMove) + " ")
         if self.move(nextMove) is True:
+            print("success away")
             # So that it can navigate away from objects that come to close but still attempt to move to its destination
             self.usedSpeed += 1
             return True
@@ -1443,7 +1450,7 @@ class Person:
         return [xDiff, yDiff]
 
     def get_memory(self):
-        return self.brain
+        return self.memory
 
     """Returns array of persons current needs, alone with value"""
     def get_person_needs(self):

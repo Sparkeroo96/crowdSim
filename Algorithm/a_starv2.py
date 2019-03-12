@@ -207,3 +207,12 @@ def get_random_waypoint():
     return nodes[randint(0, nodes_length - 1)]
 
     # return n[randNodeKey]
+
+def print_node_count():
+    """
+    test function to print all nodes
+    :return:
+    """
+    global n
+    print("total node count " + str(len(n)))
+    print("open node count " + str(len(get_open_nodes())))

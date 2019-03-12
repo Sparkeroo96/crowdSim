@@ -274,16 +274,23 @@ class RunningMain:
                     self.set_text_done(False)
                 # Allowing nodes to be created outside of the map
 
-                if self.nodes_generated == 0:
-                    self.nodes_generated = 1
-                    self.data.generate_nodes()
+                # if self.nodes_generated == 0:
+                #     self.nodes_generated = 1
+                #     self.data.generate_nodes()
 
             # This checks to see if it is on the simulation menu options
             elif menu[0] == "Run Simulation":
                 # Running the simulation that is chosen or the default one
                 if menu[1] == "Start":
                     # Gets the map from map data
+
+                    # if self.nodes_generated == 0:
+                    #     self.nodes_generated = 1
+                    #     self.data.generate_nodes()
+
                     objectArray = self.data.get_map()
+
+
                     # if it is empty then it loads the default
                     if objectArray == []:
                         self.data.export("maps_saves","default")
@@ -528,18 +535,20 @@ class RunningMain:
                 # clears the person vision from the previous ittoration
                 obj.clear_vision()
                 # goes though every coordinates and works out what colour is in that pixcel
-
                 for cordArray in vision:
-                    # display.set_at((cord[0],cord[1]), black)
                     # try and catch to prevent out of array exceptions
                     for cord in cordArray:
                         try:
                             seenObj = 0
-                            colour = self.display.get_at((cord[0], cord[1]))
-                            # if it is red then it must be a person
+                            newCoords = self.map_data_to_gui_coords_offset(cord)
+                            # self.display.set_at(newCoords, self.red)
+                            colour = self.display.get_at(newCoords)
+
+                            # if it is coloured then it must be an object
                             if colour != (255, 255, 255, 255):
                                 # Its an object of some kind
-                                seenObj = self.data.what_object(self.gui_to_map_data_coords_offset(cord))
+
+                                seenObj = self.data.what_object(cord)
 
                                 obj.add_to_vision(seenObj)
                                 obj.add_to_memory(seenObj)
@@ -677,6 +686,11 @@ class RunningMain:
         :return: True if the file is found, False if it isn't
         """
         map = self.get_map_data()
+
+        if self.nodes_generated == 0:
+            self.nodes_generated = 1
+            self.data.generate_nodes()
+
         result = map.import_from_file(file, search)
         if result:
             return True

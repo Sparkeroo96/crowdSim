@@ -181,6 +181,7 @@ class Person:
                 self.clear_explore_node()
 
             if self.rememberedObjType != "" and not self.exploreNode:
+                print("IM HERE NOW")
                 # if self.rememberedObjType != "" and self.exploreNode == []:
                 self.exploreNode = a_starv2.get_random_waypoint()
                 self.astarCoords = a_starv2.run_astar(self.find_nearest_waypoint(), self.exploreNode)
@@ -192,6 +193,8 @@ class Person:
 
         elif stateAction == "dance":
             if self.inside_dance_floor:
+
+                print("dance")
                 self.advance_state_machine()
             self.astarCoords.clear()
 
@@ -1075,7 +1078,8 @@ class Person:
         Agent has reached an area on the dancefloor and is now dancing.
         :return:
         """
-        self.random_move()
+        print("In dance function")
+        self.brain[2][1] += 200
         self.set_action_count(5, 10)
 
     def use_toilet(self):
@@ -1087,8 +1091,6 @@ class Person:
 
         if self.rememberedObj.get_person_using_toilet() == self:
             self.brain[0][1] += 100 # Set toilet back up to default
-            """Empty ASTAR as we achieved destination"""
-            self.astarCoords.clear()
             self.get_person_needs()
 
             self.rememberedObj.person_stop_using_toilet(self)
@@ -1146,7 +1148,8 @@ class Person:
             startingLoc = self.find_nearest_waypoint()
         """NEED TO ADD THE DESTINATION OF REQUIRED OBJECT"""
         # Sam - Trying to change it to use startingLoc as its making a huge jump as it goes to the node
-        locations = a_starv2.run_astar(startingLoc, self.rememberedObj.get_coordinates())
+        # locations = a_starv2.run_astar(startingLoc, self.rememberedObj.get_coordinates())
+        locations = None
 
         if self.rememberedObj:
             # print("THERE IS A REMEMBERED OBJECT AND THAT IS" + str(self.rememberedObj))
@@ -1459,7 +1462,7 @@ class Person:
     def relax(self):
         dec_thirst = randint(0, 1)
         dec_toilet = randint(0, 1)
-        dec_dance = randint(0, 4)
+        dec_dance = randint(0, 3)
         self.brain[0][1] -= dec_toilet
         self.brain[1][1] -= dec_thirst
         self.brain[2][1] -= dec_dance

@@ -34,9 +34,9 @@ class Person:
 
     defaultState = "greatestNeed"
     idleState = "greatestNeed"
-    currentState = "greatestNeed"
-    stateMachine = ""
-
+    # The initial key is the state
+    # the first array is the properties from the previous state that they have to be in, not currently used
+    # THe second array is the next states, must match another state or its going to break
     states = {
         "greatestNeed": [["usedToilet", "drinkDrink", "danced"], ["wantDrink", "wantToilet", "wantDance"]],
 
@@ -181,7 +181,6 @@ class Person:
                 self.clear_explore_node()
 
             if self.rememberedObjType != "" and not self.exploreNode:
-                print("IM HERE NOW")
                 # if self.rememberedObjType != "" and self.exploreNode == []:
                 self.exploreNode = a_starv2.get_random_waypoint()
                 self.astarCoords = a_starv2.run_astar(self.find_nearest_waypoint(), self.exploreNode)
@@ -226,7 +225,7 @@ class Person:
 
         # if not self.astarCoords:
         if self.astarCoords == [] or not self.astarCoords:
-            print("ASTAR IS EMPTY, SETTING CORDS TO GET TO THE OBJECT")
+            # print("ASTAR IS EMPTY, SETTING CORDS TO GET TO THE OBJECT")
             self.set_cords_from_algo()
             #self.set_cords_from_algo("known_location")
             # self.placeholder += 1
@@ -367,6 +366,7 @@ class Person:
 
         # if self.map.check_coordinates_for_person(coordinates, self.width, self.name, self.get_edge_coordinates_array()):
         if collisionObject is True:
+
             self.change_angle_to_move_direction(self.coordinates, coordinates)
             self.lastCoordinates = self.coordinates
             self.coordinates = coordinates
@@ -1417,6 +1417,7 @@ class Person:
             newCoordinates[1] -= 1
 
         moveReturn = self.move(newCoordinates)
+        # print("trying to flock too " + str(newCoordinates) + " avgAngle " + str(avgAngle) + " return " + str(moveReturn))
         if moveReturn is True:
             self.angle = avgAngle
         else:
@@ -1460,12 +1461,14 @@ class Person:
 
     """This will be in an idle state when a person has no desire of drinking, dancing or wanting the toilet"""
     def relax(self):
+        # print("In relax")
         dec_thirst = randint(0, 1)
         dec_toilet = randint(0, 1)
         dec_dance = randint(0, 3)
         self.brain[0][1] -= dec_toilet
         self.brain[1][1] -= dec_thirst
         self.brain[2][1] -= dec_dance
+        # print("CURRENT ASTAR CORDS ARE " + str(self.astarCoords))
 
     def set_random_dance_area(self):
         if self.random_dance_area is None:

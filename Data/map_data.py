@@ -53,7 +53,7 @@ class map_data:
     def add_people_to_map(self, coords, size, angle):
         """Adding people to map"""
         """CHANGED THE SIZE TO 10"""
-        newPerson = person.Person("person " + str(len(self.mapData)), coords, 15, angle, self.tick_rate)
+        newPerson = person.Person("person " + str(len(self.mapData)), coords, size, angle, self.tick_rate)
         newPerson.add_map(self, coords)
         self.mapData.append(newPerson)
 
@@ -342,9 +342,11 @@ class map_data:
 
         if self.check_circle_overlap_rectangle(circleEdge, rectangle) is True:
             return True
-
+        print(str(rectangle))
+        print("above is rectangle")
         for edge in circleEdge:
-            if (edge[0] == rectangle["X"][0] or edge[0] == (rectangle["X"][0] - 1) or edge[0] == rectangle["X"][1] or edge[0] == (rectangle["X"][1] + 1)) or (edge[1] == rectangle["Y"][0] or edge[1] == (rectangle["Y"][0] - 1) or edge[1] == rectangle["Y"][1] or edge[1] == (rectangle["Y"][0] + 1)):
+            print(edge)
+            if (edge[0] == rectangle["X"][0] or edge[0] == (rectangle["X"][0] - 1) or edge[0] == rectangle["X"][1] or edge[0] == (rectangle["X"][1] + 1)) and (edge[1] == rectangle["Y"][0] or edge[1] == (rectangle["Y"][0] - 1) or edge[1] == rectangle["Y"][1] or edge[1] == (rectangle["Y"][0] + 1)):
                 return True
 
         return False

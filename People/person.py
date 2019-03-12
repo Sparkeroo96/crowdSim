@@ -223,7 +223,7 @@ class Person:
 
         # if not self.astarCoords:
         if self.astarCoords == [] or not self.astarCoords:
-            # print("ASTAR IS EMPTY, SETTING CORDS TO GET TO THE OBJECT")
+            print("ASTAR IS EMPTY, SETTING CORDS TO GET TO THE OBJECT")
             self.set_cords_from_algo()
             #self.set_cords_from_algo("known_location")
             # self.placeholder += 1
@@ -357,7 +357,6 @@ class Person:
         :return: True on successful move, returns the collision object on false
         """
         collisionObject = self.map.check_coordinates_for_person(coordinates, self.width / 2, self.name, self.get_edge_coordinates_array(coordinates, round(self.width / 2) ))
-
         # if abs(self.coordinates[0] - coordinates[0]) > self.maxSpeed or abs(self.coordinates[1] - coordinates[1]) > self.maxSpeed:
         if abs(self.coordinates[0] - coordinates[0]) > 2 or abs(self.coordinates[1] - coordinates[1]) > 2:
             self.coordinatesFailed += 1
@@ -1143,8 +1142,6 @@ class Person:
 
         """If the current cords are the nearest node"""
         startingLoc = self.coordinates
-
-
         if self.find_nearest_waypoint() != self.coordinates:
             startingLoc = self.find_nearest_waypoint()
         """NEED TO ADD THE DESTINATION OF REQUIRED OBJECT"""
@@ -1162,7 +1159,6 @@ class Person:
 
         # print("LOCATIONS ARE " + str(locations))
         if not locations:
-            print("NO PATH FOUND IN SET CORDS")
             return False
         else:
             for location in locations:
@@ -1261,7 +1257,6 @@ class Person:
 
         priorityCoordiantes = self.priority_avoid_coordinates(objects, coordsToAvoid)
 
-        # print("PriorityCoords " + str(priorityCoordiantes) + " my current Coords " + str(self.coordinates))
         # coordsToAvoid[100]
         nextMove = []
         nextMove.append(self.coordinates[0])
@@ -1419,7 +1414,6 @@ class Person:
             newCoordinates[1] -= 1
 
         moveReturn = self.move(newCoordinates)
-        # print("trying to flock too " + str(newCoordinates) + " avgAngle " + str(avgAngle) + " return " + str(moveReturn))
         if moveReturn is True:
             self.angle = avgAngle
         else:
@@ -1469,7 +1463,6 @@ class Person:
         self.brain[0][1] -= dec_toilet
         self.brain[1][1] -= dec_thirst
         self.brain[2][1] -= dec_dance
-        # print("CURRENT ASTAR CORDS ARE " + str(self.astarCoords))
 
     def set_random_dance_area(self):
         if self.random_dance_area is None:
@@ -1494,6 +1487,8 @@ class Person:
         self.set_random_dance_area()
         # print(self.coordinates)
         # print("random dance area")
+        # print(self.random_dance_area)
+        # print(self.coordinates)
         # print(self.random_dance_area)
         if self.random_dance_area != self.coordinates:
             # print("MOVE INSIDE DANCE FLOOR")
@@ -1537,7 +1532,6 @@ class Person:
             """DELAY here?"""
             self.random_dance_area = None
             self.inside_dance_floor = True
-        # print("random move current coords " + str(self.coordinates) + " new coords " + str(newCoordinates))
 
     def check_needs(self):
         """
@@ -1565,8 +1559,8 @@ class Person:
         else:
             return False
 
-    def get_memory_stuff(self):
-        return self.memory
+    def get_test_values(self):
+        return self.brain
 
     def set_test_values(self, index,value):
         array = self.test_values

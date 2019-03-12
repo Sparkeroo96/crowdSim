@@ -26,7 +26,7 @@ class BaseObject:
     coordY = 0
     angle = 0
     width = 0
-    clipThrough = False
+
 
 
     def __init__(self, coordinates, name, width, height):
@@ -35,6 +35,7 @@ class BaseObject:
         self.width = width
         self.height = height
 
+        self.clipThrough = False
 
         print("creating object " + name)
 

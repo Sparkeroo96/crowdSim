@@ -803,41 +803,28 @@ class RunningMain:
         heatmap = self.get_heatmap()
         x_running, y_running = self.get_offset()
         y_running_save = y_running
-        num_x = self.get_sim_screen_width() + x_running
-        num_y = self.get_sim_screen_height() + y_running
-        while x_running <= num_x:
-            x_info = []
-            y_running = y_running_save
-            while y_running <= num_y:
-                info = [y_running,0]
-                x_info.append(info)
-                y_running = y_running + 1
-            heatmap.append([x_running,x_info])
-            x_running = x_running + 1
+        num_x = self.get_sim_screen_width()
+        num_y = self.get_sim_screen_height()
+        for x in range(num_x):
+            y = 0
+            y_list = []
+            for y in range(num_y):
+                y_list.append(0)
+            heatmap.append(y_list)
 
 
     def add_heatmap(self,coord):
         """Ittorates the number of times that a person has been on that pixel on the screen"""
-        x_coord = coord[0]
-        y_coord = coord[1]
-        # print(str(x_coord) + " " + str(y_coord))
-        # x_coord, y_coord = self.map_data_to_gui_coords_offset((x_coord,y_coord))
-        heatmap = self.get_heatmap()
-        for heatmap_coord in heatmap:
-            if heatmap_coord[0] == x_coord:
-                for heatmap_coord_y in heatmap_coord[1]:
-                    if heatmap_coord_y[0] == y_coord:
-                        heatmap_coord_y[1] = int(heatmap_coord_y[1]) + 1
-                        break
+        x_index, y_index = self.gui_to_map_data_coords_offset(coord)
+        heatmap = self.heat_map
+        heatmap[x_index][y_index] = heatmap[x_index][y_index] + 1
 
     def show_heatmap(self):
-        self.set_pause_must(False)
         max_heat_value = 0
         min_heat_value = 100000
         heat_map = self.get_heatmap()
+        # print(heat_map)
         average_heat = []
-        x_offset = heat_map[0][0]
-        y_offset = heat_map[0][1][0][0]
         size_of_square = 10
         current_x = 0
         current_y = 0
@@ -848,31 +835,36 @@ class RunningMain:
         screen_height = self.get_sim_screen_height()
         remainder_y = screen_height % screen_height
         screen_height = screen_height - remainder_y - size_of_square
-        while x_offset <= screen_width:
-            y_offset = heat_map[0][1][0][0]
+
+        for x in range(math.floor(len(heat_map)/size_of_square)):
             y_list = []
-            while y_offset <= screen_height:
-                for i in range(size_of_square):
-                    running_x = i + x_offset
-                    result_sum = 0
-                    for x in range(size_of_square):
-                        running_y = x + y_offset
-                        value = heat_map[running_x][1][running_y][1]
-                        value = value * 100
-                        result_sum = result_sum + value
-                average = math.floor(result_sum / (size_of_square * size_of_square))
-                y_list.append(average)
+            for y in range(math.floor(len(heat_map[x])/size_of_square)):
+                sum_total = 0
+                for x1 in range(size_of_square):
+                    y1 = 0
+                    current_x = (x * size_of_square) + x1
+                    for y1 in range(size_of_square):
+                        current_y = (y * size_of_square) + y1
+                        if not heat_map[current_x][current_y] == 0:
+                            sum_total = sum_total + heat_map[current_x][current_y]
+                average = sum_total / (size_of_square * size_of_square)
+                if average < min_heat_value:
+                    min_heat_value = average
                 if average > max_heat_value:
                     max_heat_value = average
-                if average < min_heat_value and not average == 0.0:
-                    min_heat_value = average
-                average_heat.append(y_list)
-                y_offset = y_offset + size_of_square
-            x_offset = x_offset + size_of_square
-        print(max_heat_value)
-        print(min_heat_value)
+                y_list.append(average)
+            average_heat.append(y_list)
 
-
+        x_offset, y_offset = self.get_offset()
+        for x_show in range(len(average_heat)):
+            for y_show in range(len(average_heat[x_show])):
+                value = average_heat[x_show][y_show]
+                if not value == 0.0:
+                    show_x_coord = x_offset + (x_show * size_of_square)
+                    show_y_coord = y_offset + (y_show * size_of_square)
+                    info = [show_x_coord, show_y_coord, size_of_square, size_of_square]
+                    colour = self.colour_picker(min_heat_value,max_heat_value,value)
+                    pygame.draw.rect(self.get_display(), colour, info)
 
 
     def colour_picker(self,min_value,max_value,value):

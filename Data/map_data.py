@@ -32,6 +32,8 @@ class map_data:
     mapData = []
     gui = None
     tick_rate = 0
+    sim_screen_width = None
+    sim_screen_height = None
 
     def __init__(self, gui, tick_rate):
         self.gui = gui
@@ -94,7 +96,7 @@ class map_data:
         """
 
         for obj in self.mapData:
-            print("objType: " + str(type(obj)))
+            # print("objType: " + str(type(obj)))
             # if type(obj) == objectType:
             searchString = "." + objectType + "'"
             if searchString in str(type(obj)):
@@ -739,23 +741,23 @@ class map_data:
         x2 = cordX + width
         y2 = cordY + height
 
-        print("widths")
-        print((wall.get_width() / node_distance))
-        print(int(width))
-        print("heights")
-        print((wall.get_height() / node_distance))
-        print(int(height))
+        # print("widths")
+        # print((wall.get_width() / node_distance))
+        # print(int(width))
+        # print("heights")
+        # print((wall.get_height() / node_distance))
+        # print(int(height))
 
         # If the coord starts from bottom right
         if int(width) < 0 and int(height) < 0:
-            print("in bottom right")
+            # print("in bottom right")
             width2 = int(abs(width)) + 1 # Rounding up on a negative number will drop by one
             height2 = int(abs(height)) + 1
             if width2 < height2:
                 width2 += 1
             else:
                 height2 += 1
-            print(width2, height2)
+            # print(width2, height2)
             for x in range(width2):
                 # self.values_to_append.append([cordX - x, cordY])
                 # self.values_to_append.append([cordX - x, y2])
@@ -766,8 +768,8 @@ class map_data:
             #     self.values_to_append.append([x2, cordY - y])
         # If the coord starts from top Left
         if int(width) > 0 and int(height) > 0:
-            print("in top left")
-            print(width, height)
+            # print("in top left")
+            # print(width, height)
             # self.values_to_append.append([cordX + width + 1, cordY + height + 1])
             # self.values_to_append.append([cordX - 1, cordY + height + 1])
             # self.values_to_append.append([cordX + width + 1, cordY - 1])
@@ -783,7 +785,7 @@ class map_data:
                 # self.values_to_append.append([cordX + width, cordY + y])
         # If the coord starts from Bottom Left
         if int(width) > 0 and int(height) < 0:
-            print("in bottom left")
+            # print("in bottom left")
             height3 = int(abs(height)) + 1
             if height3 < width:
                 height3 += 1
@@ -797,10 +799,10 @@ class map_data:
                 self.values_to_append.append([x2, cordY - y])
         # If the coord starts from Top Right
         if int(width) < 0 and int(height) > 0:
-            print("in top right")
+            # print("in top right")
             width3 = int(abs(width)) + 1
-            print(width3)
-            print(height)
+            # print(width3)
+            # print(height)
             if height > width3:
                 width3 += 1
             for x in range(width3):
@@ -867,7 +869,7 @@ class map_data:
                 graph[cords.get_idCoords()[0]][cords.get_idCoords()[1]] = cords.get_value()
             elif cords.get_value() == 0:  # Cord should be added to list of open nodes
                 openNodes.append(cords.get_idCoords())
-        print(graph)
+        # print(graph)
         """Stores all free nodes in a_star class"""
         a_starv2.set_open_nodes(openNodes)
         """Store all the nodes in the a_star class"""
@@ -881,9 +883,12 @@ class map_data:
         current_map = self.mapData
         for p in current_map:
             if "person" in p.get_name():
-                print(p.get_name())
+                # print(p.get_name())
                 personCoords.append(p.get_coordinates())
                 personName.append(p.get_name())
                 personState.append(p.get_state_action())
                 personNeeds.append(p.get_person_needs())
 
+    def set_size_screen(self, width, height):
+        self.sim_screen_width = width
+        self.sim_screen_height = height

@@ -151,7 +151,7 @@ class Person:
         """What the person is going to do"""
         self.currentState = self.stateMachine.get_current_state()
         self.usedSpeed = 0
-        print(" My current state " + self.currentState)
+        # print(" My current state " + self.currentState)
         if self.wait_on_action_count():
             return "Waiting"
 
@@ -171,7 +171,7 @@ class Person:
 
         elif stateAction == "explore":
             # Person will pick a random node and navigate to it
-            print("Explore " + str(self.exploreNode))
+            # print("Explore " + str(self.exploreNode))
 
             # Failed to explore a certain way a number of times moving back
             if self.coordinatesFailed == 5 or self.objectFailedCount == 5:
@@ -185,9 +185,9 @@ class Person:
                 # if self.rememberedObjType != "" and self.exploreNode == []:
                 self.exploreNode = a_starv2.get_random_waypoint()
                 self.astarCoords = a_starv2.run_astar(self.find_nearest_waypoint(), self.exploreNode)
-                print("setting explore node")
+                # print("setting explore node")
 
-            print("exploreNode " + str(self.exploreNode) + " mycoords " + str(self.coordinates))
+            # print("exploreNode " + str(self.exploreNode) + " mycoords " + str(self.coordinates))
 
             self.navigate_to_remembered_object()
 
@@ -224,7 +224,7 @@ class Person:
 
         # if not self.astarCoords:
         if self.astarCoords == [] or not self.astarCoords:
-            print("ASTAR IS EMPTY, SETTING CORDS TO GET TO THE OBJECT")
+            # print("ASTAR IS EMPTY, SETTING CORDS TO GET TO THE OBJECT")
             self.set_cords_from_algo()
             #self.set_cords_from_algo("known_location")
             # self.placeholder += 1
@@ -277,7 +277,7 @@ class Person:
         targetCoordinates = [self.astarCoords[0][0], self.astarCoords[0][1]]
         # First move
         # Sam - Think this being in while was partially responsible for the big jumps changed to if
-        print("targetCoordiatnes " + str(targetCoordinates) + " / nextMove " + str(nextMove))
+        # print("targetCoordiatnes " + str(targetCoordinates) + " / nextMove " + str(nextMove))
         # if targetCoordinates != nextMove:
         if True:
             # while targetCoordinates != nextMove:
@@ -398,7 +398,7 @@ class Person:
         if self.astarCoords:
             self.navigate_via_astar(nextMove)
         else: # No Astar cords found. This is due to the location not being available to travel, or first time initiating exploring.
-            print("no astar cords found")
+            # print("no astar cords found")
             self.set_cords_from_algo("random_node")
             self.find_action() # Keep going back to find to see if object has been found.
 
@@ -572,7 +572,7 @@ class Person:
             """relax will reduce the needs of the person"""
             if self.check_needs() == False:
                 self.relax()
-                print(str(self.get_person_needs()))
+                # print(str(self.get_person_needs()))
                 """RETURN THE ACTION OF DOING NOTHING, THERE IS NO NEED"""
                 return action
             """Setting the current state to the persons needs."""
@@ -636,6 +636,7 @@ class Person:
             action = "dance"
             self.move_inside_dance_floor()
             if self.inside_dance_floor:
+                # print("DANCEFLOOR IS NOW TRUE")
                 self.dance()
                 self.advance_state_machine()
 
@@ -1311,7 +1312,7 @@ class Person:
             if obj == self:
                 continue
             # Finding closest and moving away from that
-            print(x)
+            # print(x)
             coords = coordinates[x]
             coordsDiff = (abs(coords[0] - self.coordinates[0]) + abs(coords[1] - self.coordinates[1]))
             if obj.get_rejection_strength() > rejectionScore:
@@ -1343,6 +1344,7 @@ class Person:
                 continue
 
             if isinstance(obj, Person):
+                # print("move away from center")
                 coordsToAvoid.append(obj.get_coordinates())
 
             else:
@@ -1405,6 +1407,7 @@ class Person:
             newCoordinates[1] -= 1
 
         moveReturn = self.move(newCoordinates)
+        # print("trying to flock too " + str(newCoordinates) + " avgAngle " + str(avgAngle) + " return " + str(moveReturn))
         if moveReturn is True:
             self.angle = avgAngle
         else:
@@ -1448,12 +1451,14 @@ class Person:
 
     """This will be in an idle state when a person has no desire of drinking, dancing or wanting the toilet"""
     def relax(self):
+        # print("In relax")
         dec_thirst = randint(0, 1)
         dec_toilet = randint(0, 2)
         dec_dance = randint(2, 5)
         self.brain[0][1] -= dec_toilet
         self.brain[1][1] -= dec_thirst
         self.brain[2][1] -= dec_dance
+        # print("CURRENT ASTAR CORDS ARE " + str(self.astarCoords))
 
     def set_random_dance_area(self):
         if self.random_dance_area is None:
@@ -1474,10 +1479,13 @@ class Person:
         """
         randomNumber = randint(0, 8)
         nextMove = self.coordinates
+        # print("IN DANCE")
         self.set_random_dance_area()
-        print(self.coordinates)
-        print(self.random_dance_area)
+        # print(self.coordinates)
+        # print("random dance area")
+        # print(self.random_dance_area)
         if self.random_dance_area != self.coordinates:
+            # print("MOVE INSIDE DANCE FLOOR")
             # while targetCoordinates != nextMove:
             x = self.coordinates[0]
             y = self.coordinates[1]

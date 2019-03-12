@@ -71,7 +71,7 @@ class RunningMain:
     save_active = None
     save_name = False
 
-    tick_rate = 10
+    tick_rate = 30
 
     heat_map = []
 
@@ -107,7 +107,7 @@ class RunningMain:
         clock = pygame.time.Clock()
         # Flag for checking if the map loaded correclty
         success = False
-
+        self.get_map_data().set_size_screen(self.sim_screen_width, self.sim_screen_height)
         # Main loop for the applicaion
         while not self.get_exit():
 

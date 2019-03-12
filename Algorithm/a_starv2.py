@@ -132,7 +132,7 @@ def return_waypoints(locations):
     else:
         """Add the destination to the final waypoint"""
         waypoints.append(locations[-1])
-    print("WAYPOINTS ARE: " + str(waypoints))
+    # print("WAYPOINTS ARE: " + str(waypoints))
     global mapLocations
     mapLocations = waypoints
     return waypoints

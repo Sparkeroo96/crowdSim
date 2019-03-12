@@ -74,12 +74,12 @@ class StateMachine:
 
         for x in nextStates:
             if x == nextState:
-                print(nextState + " is a possible next state")
+                # print(nextState + " is a possible next state")
                 return True
 
         return False
 
-    def get_need_state(self, n):
+    def get_need_state(self, need):
         """
         This need state is used in the idle (greatest_need) state.
 
@@ -89,7 +89,6 @@ class StateMachine:
         :param n = need of person
         """
         nextStates = self.get_state_next_states(self.currentState)
-        need = n
         for state in nextStates:
             if str(need) in state:
                 self.set_current_state(state)
@@ -111,7 +110,6 @@ class StateMachine:
         # selectedNextState =  "wantDrink"
         """THIS IS WHERE THE STATE CHANGES"""
         # selectedNextState =  "wantToilet"
-
 
         self.set_current_state(selectedNextState)
 

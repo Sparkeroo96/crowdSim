@@ -131,7 +131,7 @@ def return_waypoints(locations):
     else:
         """Add the destination to the final waypoint"""
         waypoints.append(locations[-1])
-    print("WAYPOINTS ARE: " + str(waypoints))
+    # print("WAYPOINTS ARE: " + str(waypoints))
     global mapLocations
     mapLocations = waypoints
     return waypoints
@@ -205,7 +205,10 @@ def get_random_waypoint():
 
     global n
     nodeCount = len(n)
-    print("nodeCount " + str(nodeCount))
     randNodeKey = randint(0, nodeCount - 1)
 
-    return n[randNodeKey]
+    nodes = get_open_nodes()
+    nodes_length = len(get_open_nodes())
+    return nodes[randint(0, nodes_length - 1)]
+
+    # return n[randNodeKey]

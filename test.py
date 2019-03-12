@@ -274,9 +274,9 @@ class RunningMain:
                     self.set_text_done(False)
                 # Allowing nodes to be created outside of the map
 
-                if self.nodes_generated == 0:
-                    self.nodes_generated = 1
-                    self.data.generate_nodes()
+                # if self.nodes_generated == 0:
+                #     self.nodes_generated = 1
+                #     self.data.generate_nodes()
 
             # This checks to see if it is on the simulation menu options
             elif menu[0] == "Run Simulation":
@@ -677,6 +677,10 @@ class RunningMain:
         :return: True if the file is found, False if it isn't
         """
         map = self.get_map_data()
+
+        if self.nodes_generated == 0:
+            self.nodes_generated = 1
+            self.data.generate_nodes()
         result = map.import_from_file(file, search)
         if result:
             return True

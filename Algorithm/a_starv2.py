@@ -131,7 +131,7 @@ def return_waypoints(locations):
     else:
         """Add the destination to the final waypoint"""
         waypoints.append(locations[-1])
-    # print("WAYPOINTS ARE: " + str(waypoints))
+    print("WAYPOINTS ARE: " + str(waypoints))
     global mapLocations
     mapLocations = waypoints
     return waypoints
@@ -143,18 +143,13 @@ def return_waypoints(locations):
 #     return mapLocations
 
 """Needs start and destination coords"""
-def run_astar(start, dest, came_from):
+def run_astar(start, dest):
     a = convert_to_simple(start)
     b = convert_to_simple(dest)
     """Convert coords to the node boys"""
     allNodes = get_all_nodes()
     result = None
-    if allNodes is not False and came_from is not "known_location":
-        print("random location")
-        result = astar(allNodes, a, b)
-    elif allNodes is not False and came_from is "known_location":
-        print("known location")
-        allNodes[(b[0], b[1])] = 0
+    if allNodes is not False:
         result = astar(allNodes, a, b)
 
 

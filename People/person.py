@@ -397,7 +397,7 @@ class Person:
             self.navigate_via_astar(nextMove)
         else: # No Astar cords found. This is due to the location not being available to travel, or first time initiating exploring.
             # print("no astar cords found")
-            self.set_cords_from_algo("random_node")
+            self.set_cords_from_algo()
             self.find_action() # Keep going back to find to see if object has been found.
 
 
@@ -1139,27 +1139,30 @@ class Person:
         return False
 
     """gets the cord from the a* and returns the cords needed"""
-    def set_cords_from_algo(self, came_from):
+    def set_cords_from_algo(self):
 
         """If the current cords are the nearest node"""
         startingLoc = self.coordinates
+
+
         if self.find_nearest_waypoint() != self.coordinates:
             startingLoc = self.find_nearest_waypoint()
         """NEED TO ADD THE DESTINATION OF REQUIRED OBJECT"""
         # Sam - Trying to change it to use startingLoc as its making a huge jump as it goes to the node
         locations = a_starv2.run_astar(startingLoc, self.rememberedObj.get_coordinates())
 
-        if self.rememberedObj and came_from is "known_location":
+        if self.rememberedObj:
             # print("THERE IS A REMEMBERED OBJECT AND THAT IS" + str(self.rememberedObj))
             targetCoordinates = self.work_out_objects_closest_point(self.rememberedObj)
+            print(str(targetCoordinates) + "Target coords")
             print("TARGET COORDS ARE" + str(targetCoordinates))
-            locations = a_starv2.run_astar(startingLoc, targetCoordinates, came_from)
+            locations = a_starv2.run_astar(startingLoc, targetCoordinates)
         else:
-            locations = a_starv2.run_astar(startingLoc, self.random_node, came_from)
+            locations = a_starv2.run_astar(startingLoc, self.random_node)
 
         # print("LOCATIONS ARE " + str(locations))
         if not locations:
-            # print("NO PATH FOUND IN SET CORDS")
+            print("NO PATH FOUND IN SET CORDS")
             return False
         else:
             for location in locations:
@@ -1460,9 +1463,9 @@ class Person:
 
     """This will be in an idle state when a person has no desire of drinking, dancing or wanting the toilet"""
     def relax(self):
-        dec_thirst = randint(2, 3)
+        dec_thirst = randint(0, 1)
         dec_toilet = randint(0, 1)
-        dec_dance = randint(0, 1)
+        dec_dance = randint(0, 4)
         self.brain[0][1] -= dec_toilet
         self.brain[1][1] -= dec_thirst
         self.brain[2][1] -= dec_dance
@@ -1524,7 +1527,7 @@ class Person:
             nextMove = [x, y]
             moveReturn = self.move(nextMove)
             if moveReturn is not True:
-                newCoords = self.get_coordinates_for_move_avoiding_collision_object(self.targetCoordinates, moveReturn, nextMove)
+                newCoords = self.get_coordinates_for_move_avoiding_collision_object(self.random_dance_area, moveReturn, nextMove)
                 self.move(newCoords)
                 # return self.move(nextMove)
 

@@ -26,8 +26,6 @@ constant = 0
 class map_data:
     """TO DO"""
     path = []
-    """TO DO"""
-    nodeList = []
     """Wall values to iterate over"""
     values_to_append = []
     mapData = []
@@ -712,14 +710,13 @@ class map_data:
             x += 1
 
     def calculate_starting_nodes(self):
-        screen_width = 800
-        screen_height = 600
+
         node_distance = 20  # Pixel distance between each node. The higher the number, the greater granularity we get.
         """
         Calculates how many nodes will be generated on the starting init.
         :return: 
         """
-        total_pixels = (screen_height * screen_width)
+        total_pixels = (self.sim_screen_height * self.sim_screen_width)
         total_nodes = total_pixels / (node_distance * node_distance)
         return int(total_nodes)
 
@@ -730,8 +727,6 @@ class map_data:
         :param walls: the walls to set nodes to.
         :return:
         """
-        screen_width = 800
-        screen_height = 600
         node_distance = 20 # Spacing between each node.
         cordX = (int(wall.get_coordinates()[0] / node_distance))
         cordY = (int(wall.get_coordinates()[1] / node_distance))
@@ -829,11 +824,9 @@ class map_data:
         Set the area around the grid so out of bounds does not occur.
         :return:
         """
-        screen_width = 800
-        screen_height = 600
         node_distance = 20
-        total_width = int(screen_width/node_distance)
-        total_height = int(screen_height/node_distance)
+        total_width = int(self.sim_screen_width/node_distance)
+        total_height = int(self.sim_screen_height/node_distance)
         for x in range(total_width):
             for y in range(total_height):
                 self.values_to_append.append([x, 0])
@@ -850,14 +843,12 @@ class map_data:
         Generate all nodes, adding values to each node and applying this to a*
         :return:
         """
-        screen_width = 800
-        screen_height = 600
         node_distance = 20
         total_nodes = self.calculate_starting_nodes() # All nodes to being with.
-        square_root = int(math.sqrt(total_nodes)) # The total length of the node map.
-        maxX = int(screen_width/node_distance)
-        maxY = int(screen_height/node_distance)
-
+        print("total Nodes are" + str(total_nodes))
+        maxX = int(math.ceil(self.sim_screen_width/node_distance))
+        maxY = int(math.ceil(self.sim_screen_height/node_distance))
+        nodeList = []
         listofID = []  # IDs for the nodes
         # print(self.calculate_starting_nodes())
         self.set_grid_area()
@@ -866,29 +857,33 @@ class map_data:
         for number in range(0, total_nodes):
             listofID.append(number)
         """Create cords for the grid"""
+        print(maxX, maxY)
+
         for x in range(maxX):
             for y in range(maxY):
                 simpleCords.append([x, y])
-        """Create 100 nodes, apply the coords"""
+        """apply the coords to the nodes"""
+        print("Simple cords")
+        print(len(simpleCords))
         for n in range(total_nodes):
-            self.nodeList.append(node.Node(simpleCords[n], 0))
+            nodeList.append(node.Node(simpleCords[n], 0))
         """Obtaining last coord in the simple grid to create the range of maze"""
         """Create the empty node graph, adding 0's"""
         graph = numpy.zeros((maxX, maxY), int)
         """For the values in append, apply the value of 1 to the node object"""
         """1 Represents a wall"""
         for v in self.values_to_append:
-            for n in self.nodeList:
+            for n in nodeList:
                 if v == n.get_idCoords():
                     n.set_value(1)
         openNodes = []
-        for cords in self.nodeList:
+        for cords in nodeList:
             """if it is an environment object, show this in our graph"""
             if cords.get_value() == 1:
                 graph[cords.get_idCoords()[0]][cords.get_idCoords()[1]] = cords.get_value()
             elif cords.get_value() == 0:  # Cord should be added to list of open nodes
                 openNodes.append(cords.get_idCoords())
-        # print(graph)
+        print(graph)
         """Stores all free nodes in a_star class"""
         a_starv2.set_open_nodes(openNodes)
         """Store all the nodes in the a_star class"""

@@ -147,7 +147,7 @@ class RunningMain:
                 if self.get_selected_button() is not None and self.in_area(pygame.mouse.get_pos(),self.get_size_info_pannel()):
                     if event.type == pygame.MOUSEBUTTONDOWN:
                         self.set_x1_first_click(pygame.mouse.get_pos()[0])
-                        array = self.get_selected_person().get_test_values()
+                        array = self.get_selected_person().get_person_needs()
                         self.set_startAmount_of_need(array[self.get_selected_button()][1])
                         self.set_dragging_bar()
 
@@ -161,7 +161,7 @@ class RunningMain:
                         new_value = 0
                     if new_value > 100:
                         new_value = 100
-                    self.get_selected_person().set_test_values(self.get_selected_button(),new_value)
+                    self.get_selected_person().set_needs_values(self.get_selected_button(),new_value)
                     self.set_x1_first_click(None)
                     self.set_startAmount_of_need(None)
                     self.set_dragging_bar()

@@ -1552,9 +1552,7 @@ class Person:
         else:
             return False
 
-    def get_test_values(self):
-        return self.brain
 
-    def set_test_values(self, index,value):
-        array = self.test_values
+    def set_needs_values(self, index,value):
+        array = self.brain
         array[index][1] = value

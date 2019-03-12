@@ -1452,9 +1452,6 @@ class Person:
             return False
         return [xDiff, yDiff]
 
-    def get_memory(self):
-        return self.brain
-
     """Returns array of persons current needs, alone with value"""
     def get_person_needs(self):
         return self.brain
@@ -1564,10 +1561,3 @@ class Person:
             return True
         else:
             return False
-
-    def get_test_values(self):
-        return self.brain
-
-    def set_test_values(self, index,value):
-        array = self.test_values
-        array[index][1] = value

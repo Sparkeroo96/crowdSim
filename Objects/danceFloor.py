@@ -6,7 +6,8 @@ import random
 from Objects.baseObject import BaseObject
 
 class DanceFloor(BaseObject):
-    clipThrough = True
+
+
 
     def __init__(self, coordinates, name, width, height):
         self.coordinates = coordinates
@@ -19,7 +20,7 @@ class DanceFloor(BaseObject):
         self.name = name
         self.colour = (0, 255, 0)
         self.get_dancefloor_area()
-
+        self.clipThrough = True
 
     def get_dancefloor_area(self):
         """

@@ -358,7 +358,7 @@ class Person:
         :return: True on successful move, returns the collision object on false
         """
         collisionObject = self.map.check_coordinates_for_person(coordinates, self.width / 2, self.name, self.get_edge_coordinates_array(coordinates, round(self.width / 2) ))
-
+        print("COllision object " + str(collisionObject))
         # if abs(self.coordinates[0] - coordinates[0]) > self.maxSpeed or abs(self.coordinates[1] - coordinates[1]) > self.maxSpeed:
         if abs(self.coordinates[0] - coordinates[0]) > 2 or abs(self.coordinates[1] - coordinates[1]) > 2:
             self.coordinatesFailed += 1
@@ -1562,7 +1562,7 @@ class Person:
             return False
 
     def get_test_values(self):
-        return self.test_values
+        return self.brain
 
     def set_test_values(self, index,value):
         array = self.test_values

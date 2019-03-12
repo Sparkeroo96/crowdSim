@@ -6,7 +6,6 @@ Created by Sam Parker
 """
 class BaseObject:
 
-    clipThrough = False
 
     angle = 0
     width = 0
@@ -18,6 +17,8 @@ class BaseObject:
 
     colour = ()
 
+    rejectionStrength = 1
+
     coordinates = []
     envObjectName = ""
     id = ""
@@ -25,12 +26,15 @@ class BaseObject:
     coordY = 0
     angle = 0
     width = 0
+    clipThrough = False
+
 
     def __init__(self, coordinates, name, width, height):
         self.coordinates = coordinates
         self.name = name
         self.width = width
         self.height = height
+
 
         print("creating object " + name)
 
@@ -41,6 +45,9 @@ class BaseObject:
     def get_cords(self):
         cords = [self.coordX, self.coordY]
         return cords
+
+    def get_clip_through(self):
+        return self.clipThrough
 
     """Returns what object it is"""
     def get_env_object_name(self):
@@ -110,3 +117,8 @@ class BaseObject:
 
     def get_shape(self):
         return self.shape
+
+    def get_rejection_strength(self):
+        """Reutrns the rejectionStrength"""
+        return self.rejectionStrength
+

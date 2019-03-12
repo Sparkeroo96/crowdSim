@@ -10,6 +10,7 @@ import sys
 from Data import map_data
 from time import sleep
 from People.person import Person
+from Objects.wall import Wall
 
 
 class RunningMain:
@@ -41,7 +42,8 @@ class RunningMain:
 
     # Size of the screen
     screen_width = 1000
-    screen_height = 800
+    # screen_height = 800
+    screen_height = 700
 
     sim_screen_width = screen_width - (screen_width / 3)
     sim_screen_height = screen_height - (screen_height/ 4)
@@ -69,7 +71,7 @@ class RunningMain:
     save_active = None
     save_name = False
 
-    tick_rate = 30
+    tick_rate = 10
 
     heat_map = []
 
@@ -83,6 +85,7 @@ class RunningMain:
     dragging_bar = False
     selected_button = None
     temp_width = None
+    nodes_generated = 0
 
     menu_bar_info = None
     menu_bar_clicked = None
@@ -269,6 +272,11 @@ class RunningMain:
                     search = self.get_user_input_result()
                     success = self.load_map('maps_saves', search)
                     self.set_text_done(False)
+                # Allowing nodes to be created outside of the map
+
+                if self.nodes_generated == 0:
+                    self.nodes_generated = 1
+                    self.data.generate_nodes()
 
             # This checks to see if it is on the simulation menu options
             elif menu[0] == "Run Simulation":
@@ -521,23 +529,27 @@ class RunningMain:
                 obj.clear_vision()
                 # goes though every coordinates and works out what colour is in that pixcel
 
-                for cord in vision:
+                for cordArray in vision:
                     # display.set_at((cord[0],cord[1]), black)
                     # try and catch to prevent out of array exceptions
-                    try:
-                        seenObj = 0
-                        colour = self.display.get_at((cord[0], cord[1]))
-                        # if it is red then it must be a person
-                        if colour != (255, 255, 255, 255):
-                            # Its an object of some kind
-                            seenObj = self.data.what_object(self.gui_to_map_data_coords_offset(cord))
+                    for cord in cordArray:
+                        try:
+                            seenObj = 0
+                            colour = self.display.get_at((cord[0], cord[1]))
+                            # if it is red then it must be a person
+                            if colour != (255, 255, 255, 255):
+                                # Its an object of some kind
+                                seenObj = self.data.what_object(self.gui_to_map_data_coords_offset(cord))
 
-                            obj.add_to_vision(seenObj)
-                            obj.add_to_memory(seenObj)
+                                obj.add_to_vision(seenObj)
+                                obj.add_to_memory(seenObj)
+
+                            if isinstance(seenObj, Wall):
+                                break
 
 
-                    except IndexError:
-                        nothing = 0
+                        except IndexError:
+                            nothing = 0
 
     def home_menu(self):
         """Functtion that makes the menu screen with buttons all centred automaticly"""
@@ -724,7 +736,6 @@ class RunningMain:
                     sleep(0.1)
                     self.set_current_tool(objectName)
                     self.set_new_tool()
-
                 if self.get_current_tool() == objectName:
                     colour = self.green
                 self.add_button(info,objectName,colour,50)
@@ -764,7 +775,8 @@ class RunningMain:
             return self.blue
         if object == "toilet":
             return self.orange
-        # if object == "d floor":
+        if object == "d floor":
+            return self.red
 
     def create_heatmap(self):
         heatmap = self.get_heatmap()

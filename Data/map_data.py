@@ -11,10 +11,10 @@ from Nodes import node
 from Algorithm import a_starv2
 import numpy
 
-
 # Seems to need these for allowing isinstance(example, Person), doesnt work with the above import
 from People.person import Person
 from Objects.wall import Wall
+from Objects import fireExit
 from People.flockingPerson import FlockingPerson
 
 from Objects.bar import Bar
@@ -45,13 +45,15 @@ class map_data:
         # self.add_wall_to_map()
         global constant
         if constant == 0:
-            self.generate_nodes()
+            # self.generate_nodes()
             constant += 1
         return self.mapData
 
     def add_people_to_map(self, coords, size, angle):
         """Adding people to map"""
-        newPerson = person.Person("person " + str(len(self.mapData)), coords, size, angle, self.tick_rate)
+        """CHANGED THE SIZE TO 10"""
+        # newPerson = person.Person("person " + str(len(self.mapData)), coords, 10, angle, self.tick_rate)
+        newPerson = person.Person("person " + str(len(self.mapData)), coords, 20, angle, self.tick_rate)
         newPerson.add_map(self, coords)
         self.mapData.append(newPerson)
 
@@ -59,11 +61,17 @@ class map_data:
     def add_bar_to_map(self, coords, width, height):
         """Adds a bar to the map when it is called buy the builder"""
         newBar = bar.Bar(coords, "bar " + str(len(self.mapData)),width, height)
+        self.set_nodes_values(newBar)
         self.mapData.append(newBar)
 
     def add_wall_to_map(self, cords, width, height):
         newWall = wall.Wall(cords,width,height)
+        self.set_nodes_values(newWall)
         self.get_map().append(newWall)
+
+    def add_dancefloor_to_map(self, coords, width, height):
+        newDancefloor = danceFloor.DanceFloor(coords, "dancefloor " + str(len(self.mapData)), width, height)
+        self.mapData.append(newDancefloor)
 
     def add_toilet_to_map(self, coords, width, height):
         """
@@ -75,6 +83,7 @@ class map_data:
         """
 
         newToilet = toilet.Toilet(coords, "toilet " + str(len(self.mapData)), width, height)
+        self.set_nodes_values(newToilet)
         self.mapData.append(newToilet)
 
     def get_object_colour_code(self, objectType):
@@ -145,9 +154,9 @@ class map_data:
             # print( )
         return resultArray
 
-    def angleMath(self, angle, xcord, ycord,vision):
+    def angleMath(self, angle, xcord, ycord, vision):
         """This is the maths that returns the amount the x and y cordianes need to change to produce the cordinates
-        of the new loaction """
+        of the new location """
         # These variables will be chnaged into number to change
         veritcal = 0
         horizontal = 0
@@ -203,6 +212,9 @@ class map_data:
         :param name the persons id, so it doesnt do check against itself
         """
 
+        if self.check_coordinates_in_bounds(check_coords, radius) is False:
+            return False
+
         for obj in self.mapData:
             # Checking to see how close each object is
             if obj.get_name() == name:
@@ -233,10 +245,35 @@ class map_data:
                 objSize = [obj.get_width(), obj.get_height()]
                 objCoords = obj.get_coordinates()
                 rectangleCoordRanges = self.get_coordinates_range(objCoords, objSize)
-                if self.check_circle_overlap_rectangle(edgeCoordinates, rectangleCoordRanges):
+                if obj.get_clip_through():  # Dancefloor is not a collision, and can proceed.
+                    return True
+                elif self.check_circle_overlap_rectangle(edgeCoordinates, rectangleCoordRanges):
                     return obj
 
         # Coordinates are fine to move to
+
+        return True
+
+    def check_coordinates_in_bounds(self, coordinates, radius):
+        """
+        Checks to see is a set of coordinates is out of the map bounds for the person
+        :param coordinates: the coordinates to move too
+        :param radius: the persons radius
+        :return: True if coordinates are fine
+        """
+        if coordinates[0] <= 0 or coordinates[1] <= 0:
+            return False
+
+        lowX = coordinates[0] - radius
+        lowY = coordinates[1] - radius
+        highX = coordinates[0] + radius
+        highY = coordinates[1] + radius
+
+        if lowX < 0 or lowY < 0:
+            return False
+
+        if highX > self.gui.get_screen_width() or highY > self.gui.get_screen_height():
+            return False
 
         return True
 
@@ -360,22 +397,6 @@ class map_data:
         # return [xRanges, yRanges]
         return returnValue
 
-    def get_object_colour_code(self, objectType):
-        """
-        Gets an obj colour code
-        :param objectType: The obj type you are looking for
-        :return: Returns an RGB array, false if no such obj type exists
-        """
-
-        for obj in self.mapData:
-            print("objType: " + str(type(obj)))
-            # if type(obj) == objectType:
-            searchString = "." + objectType + "'"
-            if searchString in str(type(obj)):
-                return obj.get_colour()
-
-        return False
-
 
     def what_object(self, coords):
         """This function checks to see if a cordiante is within another person and returns a reference to the object"""
@@ -419,23 +440,7 @@ class map_data:
 
         return False
 
-    def person_eyes(self, cords, angle, radias):
-        angle_left = angle - 25
-        if angle_left <= 0:
-            angle_left = angle_left + 360
 
-        angle_right = angle + 25
-
-        if angle_right > 360:
-            angle_right = angle_right - 360
-
-        # THis is the maths for the eyes
-        left_eye = self.angleMath(angle_left,cords[0],cords[1],radias-3)
-        right_eye = self.angleMath(angle_right,cords[0],cords[1],radias-3)
-        left_eye = [cords[0] + left_eye[0], cords[1] + left_eye[1]]
-        right_eye = [cords[0] + right_eye[0], cords[1] + right_eye[1]]
-
-        return [left_eye,right_eye]
 
     def export(self,file_name,save_name):
         """
@@ -503,13 +508,15 @@ class map_data:
         search_array = running_string.split("######")
         for save in search_array:
             save_array = save.split("\n")
+            if len(save_array) == 1:
+                continue
             if str(save_array[1]) == save_name.lower():
                 return False
         file.close()
         return True
 
 
-    def import_from_file(self,file,save_name):
+    def import_from_file(self, file, save_name):
         """
         This takes the maps_saves.txt and a name of a map and imports it into the system
         :param file: maps_saves.txt
@@ -530,6 +537,8 @@ class map_data:
             single_save_array =[x.strip() for x in save.split("\n")]
             new_save_array.append(single_save_array)
         for save in new_save_array:
+            if len(save) == 1:
+                continue
             if save[1] == save_name:
                 found_load = save
 
@@ -547,17 +556,25 @@ class map_data:
                     coordY = coordY.translate({ord("]"): None})
                     coords = [int(float(coordX)), int(float(coordY))]
                     if result[0] == 'person':
-                        newPerson = person.Person("person " + str(len(self.mapData)), coords, int(result[2]), int(result[3]),self.tick_rate)
-                        self.mapData.append(newPerson)
+                        self.add_people_to_map(coords, int(result[2]), int(result[3]))
+                        # newPerson = person.Person("person " + str(len(self.mapData)), coords, int(result[2]), int(result[3]),self.tick_rate)
+                        # self.mapData.append(newPerson)
                     elif result[0] == 'wall':
-                        newWall = Wall(coords,int(result[2]),int(result[3]))
-                        self.mapData.append(newWall)
+                        self.add_wall_to_map(coords, int(result[2]), int(result[3]))
+                        # newWall = Wall(coords,int(result[2]),int(result[3]))
+                        # self.mapData.append(newWall)
                     elif result[0] == "toilet":
-                        new_toilet = Toilet(coords,"toilet" + str(len(self.mapData)),int(result[2]),int(result[3]))
-                        self.mapData.append(new_toilet)
+                        self.add_toilet_to_map(coords, int(result[2]), int(result[3]))
+                        # new_toilet = Toilet(coords,"toilet" + str(len(self.mapData)),int(result[2]),int(result[3]))
+                        # self.mapData.append(new_toilet)
                     elif result[0] == "bar":
-                        newBar = bar.Bar(coords,str(len(self.get_map())),int(result[2]),int(result[3]))
-                        self.mapData.append(newBar)
+                        self.add_bar_to_map(coords, int(result[2]), int(result[3]))
+                        # newBar = bar.Bar(coords,str(len(self.get_map())),int(result[2]),int(result[3]))
+                        # self.mapData.append(newBar)
+                    elif result[0] == "dancefloor":
+                        self.add_dancefloor_to_map(coords, int(result[2]), int(result[3]))
+                        print("Dancefloor")
+            # self.generate_nodes()
             return True
         else:
             print("ERROR FILE NOT FOUND")
@@ -577,12 +594,16 @@ class map_data:
         cords = [x_cord,y_cord]
         objectType = object_type.lower()
         if objectType == 'wall':
-            self.add_wall_to_map(cords,width,height)
-
+            self.add_wall_to_map(cords, width, height)
         if objectType == 'bar':
             self.add_bar_to_map(cords, width, height)
         if objectType == "toilet":
-            self.add_toilet_to_map(cords,width,height)
+            self.add_toilet_to_map(cords, width, height)
+        if objectType == "d floor":
+            print("Dancefloor")
+            self.add_dancefloor_to_map(cords, width, height)
+        """Used to create the nodes"""
+        # self.generate_nodes()
 
     def delete_object(self,coords):
         """
@@ -593,7 +614,7 @@ class map_data:
         map_data = self.get_map()
         x_coord = coords[0]
         y_coord = coords[1]
-        index = 0;
+        index = 0
         for obj in map_data:
             if obj.get_shape != "circle":
                 cords = obj.get_coordinates()
@@ -613,12 +634,14 @@ class map_data:
 
 
     def get_map(self):
+        """Gets the map of objects"""
         return self.mapData
 
     def clear_map(self):
+        """Clears the map of objects"""
         self.mapData = []
 
-    def get_people_within_range(self, coordinates, diameter):
+    def get_people_within_range(self, coordinates, diameter, ignorePerson):
         """
         Gets an array of people within a distance of coordiantes
         :param coordinates: Coordinates to search around
@@ -635,7 +658,7 @@ class map_data:
         }
 
         for obj in self.mapData:
-            if isinstance(obj, Person) is False:
+            if isinstance(obj, Person) is False or obj == ignorePerson:
                 continue
 
             objCoordinates = obj.get_coordinates()
@@ -653,42 +676,185 @@ class map_data:
 
         return returnArray
 
-    def set_walls(self, walls):
-        for wall in walls:
-            cordX = (int(wall.get_coordinates()[0] / 50))
-            cordY = (int(wall.get_coordinates()[1] / 50))
-            width = (math.ceil(wall.get_width() / 50))
-            height = (math.ceil(wall.get_height() / 50))
-            print("SETTING WALLS" + str(width) + str(height))
+    def get_objects_within_range(self, coordinates, radius, edgeCoordinates, ignorePerson):
+        """
+        Returns an array of all objects within a range
+        :param coordinates: The target coordinates
+        :param radius: The area to search
+        :return: Array of objectss
+        """
+
+        objArray = self.get_people_within_range(coordinates, radius * 2, ignorePerson)
+        if objArray is False:
+            objArray = []
+
+        for obj in self.mapData:
+            if isinstance(obj, Person):
+                continue
+
+            object_size = [obj.get_width(), obj.get_height()]
+            rectangleProperties = self.get_coordinates_range(obj.get_coordinates(), object_size)
+            if self.check_circle_overlap_rectangle(edgeCoordinates, rectangleProperties):
+                if not obj.get_clip_through():
+                    objArray.append(obj)
+
+        return objArray
+
+    def add_fireEscape_to_map(self):
+        x = 0
+        fireEscapes = []
+        while x <= 1:
+            coords = [480, 200]
+            newFireEscape = fireExit.FireExit(coords, "fireEscape " + str(self.mapData), 20, 30)
+            self.mapData.append(newFireEscape)
+            x += 1
+
+    def calculate_starting_nodes(self):
+        screen_width = 800
+        screen_height = 600
+        node_distance = 20  # Pixel distance between each node. The higher the number, the greater granularity we get.
+        """
+        Calculates how many nodes will be generated on the starting init.
+        :return: 
+        """
+        total_pixels = (screen_height * screen_width)
+        total_nodes = total_pixels / (node_distance * node_distance)
+        return int(total_nodes)
+
+    def set_nodes_values(self, wall):
+        """
+        This function sets the wall nodes value to 1.
+        In doing so, it will make the node unavailable to travel to & through.
+        :param walls: the walls to set nodes to.
+        :return:
+        """
+        screen_width = 800
+        screen_height = 600
+        node_distance = 20 # Spacing between each node.
+        xBoundaries = int(screen_width/node_distance)
+        yBoundaries = int(screen_height/node_distance)
+        cordX = (int(wall.get_coordinates()[0] / node_distance))
+        cordY = (int(wall.get_coordinates()[1] / node_distance))
+        width = (math.ceil(wall.get_width() / node_distance))
+        height = (math.ceil(wall.get_height() / node_distance))
+        x2 = cordX + width
+        y2 = cordY + height
+
+        print("widths")
+        print((wall.get_width() / node_distance))
+        print(int(width))
+        print("heights")
+        print((wall.get_height() / node_distance))
+        print(int(height))
+
+        # If the coord starts from bottom right
+        if int(width) < 0 and int(height) < 0:
+            print("in bottom right")
+            width2 = int(abs(width)) + 1 # Rounding up on a negative number will drop by one
+            height2 = int(abs(height)) + 1
+            if width2 < height2:
+                width2 += 1
+            else:
+                height2 += 1
+            print(width2, height2)
+            for x in range(width2):
+                # self.values_to_append.append([cordX - x, cordY])
+                # self.values_to_append.append([cordX - x, y2])
+                for y in range(height2):
+                    self.values_to_append.append([cordX - x, cordY - y])
+            # for y in range(height2):
+            #     self.values_to_append.append([cordX, cordY - y])
+            #     self.values_to_append.append([x2, cordY - y])
+        # If the coord starts from top Left
+        if int(width) > 0 and int(height) > 0:
+            print("in top left")
+            print(width, height)
+            # self.values_to_append.append([cordX + width + 1, cordY + height + 1])
+            # self.values_to_append.append([cordX - 1, cordY + height + 1])
+            # self.values_to_append.append([cordX + width + 1, cordY - 1])
+            # self.values_to_append.append([cordX - 1, cordY - 1])
             for x in range(width):
-                self.values_to_append.append([cordX + x, cordY])
+                self.values_to_append.append([cordX + x, cordY])  # The top line in a rect
+                self.values_to_append.append([cordX + x, y2])  # Bottom line in a rect
+                for y in range(height):
+                    self.values_to_append.append([cordX + x, cordY + y])
             for y in range(height):
-                self.values_to_append.append([cordX, cordY + y])
-        """Check that coords are within the 10x10 grid"""
-        for v in self.values_to_append:
-            if v[0] > 9 and v[1] > 9:
-                self.values_to_append.remove(v)
-        print("APPENDED VALUES ARE: " + str(self.values_to_append))
+                self.values_to_append.append([cordX, cordY + y])  # Left like in a rect
+                self.values_to_append.append([x2, cordY + y])  # Right line in a rect
+                # self.values_to_append.append([cordX + width, cordY + y])
+        # If the coord starts from Bottom Left
+        if int(width) > 0 and int(height) < 0:
+            print("in bottom left")
+            height3 = int(abs(height)) + 1
+            if height3 < width:
+                height3 += 1
+            for x in range(width):
+                self.values_to_append.append([cordX + x, cordY])  # The top line in a rect
+                self.values_to_append.append([cordX + x, y2])
+                for y in range(height3):
+                    self.values_to_append.append([cordX + x, cordY - y])
+            for y in range(height3):
+                self.values_to_append.append([cordX, cordY - y])
+                self.values_to_append.append([x2, cordY - y])
+        # If the coord starts from Top Right
+        if int(width) < 0 and int(height) > 0:
+            print("in top right")
+            width3 = int(abs(width)) + 1
+            print(width3)
+            print(height)
+            if height > width3:
+                width3 += 1
+            for x in range(width3):
+                self.values_to_append.append([cordX - x, cordY])
+                self.values_to_append.append([cordX - x, y2])
+                for y in range(height):
+                    self.values_to_append.append([cordX - x, cordY + y])
+            for y in range(height):
+                self.values_to_append.append([cordX, cordY + y])  # Left like in a rect
+                self.values_to_append.append([x2, cordY + y])
+
+        # self.values_to_append.append([cordX + width + 1, cordY + height])
+        self.values_to_append.append([x2, y2])  # Append the corner opposite
+        # self.values_to_append.append([x2 + 1, y2])
+
+
+        """Check values are in the grid"""
+        # for v in self.values_to_append:
+        #     if v[0] > yBoundaries and v[1] > xBoundaries:
+        #         self.values_to_append.remove(v)
 
     """Generate the node objects that appear on the map"""
 
 
     def generate_nodes(self):
-        """IDs for the nodes"""
-        listofID = []
+        """
+        Generate all nodes, adding values to each node and applying this to a*
+        :return:
+        """
+        screen_width = 800
+        screen_height = 600
+        node_distance = 20
+        total_nodes = self.calculate_starting_nodes() # All nodes to being with.
+        square_root = int(math.sqrt(total_nodes)) # The total length of the node map.
+        maxX = int(screen_width/node_distance)
+        maxY = int(screen_height/node_distance)
+
+        listofID = []  # IDs for the nodes
+        # print(self.calculate_starting_nodes())
         """Basic 10x10 grid"""
         simpleCords = []
-        for number in range(0, 100):
+        for number in range(0, total_nodes):
             listofID.append(number)
-        """Create cords for the 10x10 grid"""
-        for x in range(100):
-            simpleCords.append([math.floor(x / 10), (x % 10)])
+        """Create cords for the grid"""
+        for x in range(maxX):
+            for y in range(maxY):
+                simpleCords.append([x, y])
         """Create 100 nodes, apply the coords"""
-        for n in range(100):
+        for n in range(total_nodes):
             self.nodeList.append(node.Node(simpleCords[n], 0))
         """Obtaining last coord in the simple grid to create the range of maze"""
-        """Create the empty node graph"""
-        graph = numpy.zeros((10, 10), int)
+        """Create the empty node graph, adding 0's"""
+        graph = numpy.zeros((maxX, maxY), int)
         """For the values in append, apply the value of 1 to the node object"""
         """1 Represents a wall"""
         for v in self.values_to_append:
@@ -702,11 +868,23 @@ class map_data:
                 graph[cords.get_idCoords()[0]][cords.get_idCoords()[1]] = cords.get_value()
             elif cords.get_value() == 0:  # Cord should be added to list of open nodes
                 openNodes.append(cords.get_idCoords())
-        """Placeholder locations - Need to run the algo from the person class"""
         print(graph)
         """Stores all free nodes in a_star class"""
         a_starv2.set_open_nodes(openNodes)
         """Store all the nodes in the a_star class"""
-
         a_starv2.store_all_nodes(graph)
+
+    def get_person_cord_info(self):
+        personCoords = []
+        personState = []
+        personName = []
+        personNeeds = []
+        current_map = self.mapData
+        for p in current_map:
+            if "person" in p.get_name():
+                print(p.get_name())
+                personCoords.append(p.get_coordinates())
+                personName.append(p.get_name())
+                personState.append(p.get_state_action())
+                personNeeds.append(p.get_person_needs())
 

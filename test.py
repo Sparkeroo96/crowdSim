@@ -25,7 +25,7 @@ class RunningMain:
     blue = (0, 0, 153)
     orange = (255, 128, 0)
     yellow = (250,250,0)
-
+    purple = (128,0,128)
     exit = False
 
     # Menu flags
@@ -45,8 +45,8 @@ class RunningMain:
     # screen_height = 800
     screen_height = 700
 
-    sim_screen_width = screen_width - (screen_width / 3)
-    sim_screen_height = screen_height - (screen_height/ 4)
+    sim_screen_width = math.floor(screen_width - (screen_width / 3))
+    sim_screen_height = math.floor(screen_height - (screen_height/ 4))
 
     offset = 0
 
@@ -90,6 +90,8 @@ class RunningMain:
     menu_bar_info = None
     menu_bar_clicked = None
     pause_toggle = False
+
+    show_nodes = False
 
     def __init__(self):
         self.set_offset(self.centre([0, 0, self.get_screen_width(), self.get_screen_height()],[self.get_sim_screen_width(), self.get_sim_screen_height()]))
@@ -469,8 +471,20 @@ class RunningMain:
             self.menu_option(self.menu_bar_clicked)
         # self.node_icon((100,100))
         # self.draw_path([(120,210),(200,200),(300,300),(800,1022)])
-        x, y = self.get_offset()
-        pygame.draw.rect(self.get_display(),self.black,[x,y,self.get_sim_screen_width(), self.get_sim_screen_height()],2)
+        x_offset, y_offset = self.get_offset()
+        if self.show_nodes:
+            list_nodes = self.get_map_data().open_nodes
+            if not list_nodes == []:
+                for node in list_nodes:
+                    x1, y1  = node
+                    x1 = x1 * 20
+                    y1 = y1 * 20
+                    x1 = x1 + x_offset
+                    y1 = y1 + y_offset
+                    self.node_icon((x1,y1))
+                    # print(x)
+
+        pygame.draw.rect(self.get_display(),self.black,[x_offset,y_offset,self.get_sim_screen_width(), self.get_sim_screen_height()],2)
         # Goes though the map array obj
         objectArray = self.data.get_map()
         for obj in objectArray:
@@ -492,6 +506,9 @@ class RunningMain:
                     saved_size_info = size_info
                     obj_colour = self.green
                     running_size = size_info
+                    path = self.get_selected_person().astarCoords
+                    if not path == []:
+                        self.draw_path(path)
                     for item in text_info:
                         text = str(item[0] + ": " + str(item[1]))
                         self.add_button(size_info,text, self.black, 20)
@@ -508,14 +525,15 @@ class RunningMain:
                 self.display.set_at((eyes[0][0], eyes[0][1]), self.white)
                 self.display.set_at((eyes[1][0], eyes[1][1]), self.white)
 
+            elif self.get_show_heatmap_toggle():
+                self.show_heatmap()
 
-            elif shape == "rectangle" or shape == "wall":
+            if shape == "rectangle" or shape == "wall":
                 # objects
                 height = obj.get_height()
                 pygame.draw.rect(self.display, obj_colour, [coordinates[0], coordinates[1], width, height])
 
-            elif self.get_show_heatmap_toggle():
-                self.show_heatmap()
+
 
         for obj in objectArray:
 
@@ -535,11 +553,14 @@ class RunningMain:
                     for cord in cordArray:
                         try:
                             seenObj = 0
-                            colour = self.display.get_at((cord[0], cord[1]))
+                            cords_new = self.map_data_to_gui_coords_offset((cord[0],cord[1]))
+                            # cords_new = self.map_data_to_gui_coords_offset(cords_new)
+                            # self.display.set_at(cords_new, self.red)
+                            colour = self.display.get_at(cords_new)
                             # if it is red then it must be a person
                             if colour != (255, 255, 255, 255):
                                 # Its an object of some kind
-                                seenObj = self.data.what_object(self.gui_to_map_data_coords_offset(cord))
+                                seenObj = self.data.what_object(cord)
 
                                 obj.add_to_vision(seenObj)
                                 obj.add_to_memory(seenObj)
@@ -814,27 +835,49 @@ class RunningMain:
                         break
 
     def show_heatmap(self):
+        self.set_pause_must(False)
         max_heat_value = 0
         min_heat_value = 100000
         heat_map = self.get_heatmap()
+        average_heat = []
+        x_offset = heat_map[0][0]
+        y_offset = heat_map[0][1][0][0]
+        size_of_square = 10
+        current_x = 0
+        current_y = 0
+        screen_width = self.get_sim_screen_width()
+        remainder_x = screen_width % size_of_square
+        screen_width = screen_width - remainder_x - size_of_square
+        # print(remainder_x)
+        screen_height = self.get_sim_screen_height()
+        remainder_y = screen_height % screen_height
+        screen_height = screen_height - remainder_y - size_of_square
+        while x_offset <= screen_width:
+            y_offset = heat_map[0][1][0][0]
+            y_list = []
+            while y_offset <= screen_height:
+                for i in range(size_of_square):
+                    running_x = i + x_offset
+                    result_sum = 0
+                    for x in range(size_of_square):
+                        running_y = x + y_offset
+                        value = heat_map[running_x][1][running_y][1]
+                        value = value * 100
+                        result_sum = result_sum + value
+                average = math.floor(result_sum / (size_of_square * size_of_square))
+                y_list.append(average)
+                if average > max_heat_value:
+                    max_heat_value = average
+                if average < min_heat_value and not average == 0.0:
+                    min_heat_value = average
+                average_heat.append(y_list)
+                y_offset = y_offset + size_of_square
+            x_offset = x_offset + size_of_square
+        print(max_heat_value)
+        print(min_heat_value)
 
-        for heatmap_coord_x in heat_map:
-            y_coord = 0
-            while y_coord < math.floor(self.get_sim_screen_height()):
-                if heatmap_coord_x[1][y_coord][1] > max_heat_value:
-                    max_heat_value = heatmap_coord_x[1][y_coord][1]
-                if heatmap_coord_x[1][y_coord][1] < min_heat_value and heatmap_coord_x[1][y_coord][1] != 0:
-                    min_heat_value = heatmap_coord_x[1][y_coord][1]
-                y_coord = y_coord + 1
-        for heatmap_coord in heat_map:
-            y_coord = 0
-            while y_coord < math.floor(self.get_sim_screen_height()):
-                coord_x = heatmap_coord[0]
-                heat_value = heatmap_coord[1][y_coord][1]
-                if heat_value > 0:
-                    colour = self.colour_picker(min_heat_value,max_heat_value,heat_value)
-                    self.get_display().set_at((coord_x,heatmap_coord[1][y_coord][0]),colour)
-                y_coord = y_coord + 1
+
+
 
     def colour_picker(self,min_value,max_value,value):
         EPSILON = sys.float_info.epsilon
@@ -899,6 +942,7 @@ class RunningMain:
             self.set_add_person_on_click()
             self.menu_bar_clicked = None
         elif option == 3:
+            self.show_nodes = not self.show_nodes
             self.menu_bar_clicked = None
         elif option == 4:
             self.menu_bar_clicked = None
@@ -912,21 +956,24 @@ class RunningMain:
         bottom_coord = (x, y + 5)
         left_coord = (x - 5, y)
         right_coord = (x + 5, y)
-        pygame.draw.line(self.get_display(),self.black,top_coord,left_coord)
-        pygame.draw.line(self.get_display(),self.black,left_coord,bottom_coord)
-        pygame.draw.line(self.get_display(),self.black,bottom_coord,right_coord)
-        pygame.draw.line(self.get_display(),self.black,right_coord,top_coord)
-        pygame.draw.line(self.get_display(),self.black,top_coord,bottom_coord)
-        pygame.draw.line(self.get_display(),self.black,left_coord,right_coord)
+        pygame.draw.line(self.get_display(),self.purple,top_coord,left_coord)
+        pygame.draw.line(self.get_display(),self.purple,left_coord,bottom_coord)
+        pygame.draw.line(self.get_display(),self.purple,bottom_coord,right_coord)
+        pygame.draw.line(self.get_display(),self.purple,right_coord,top_coord)
+        pygame.draw.line(self.get_display(),self.purple,top_coord,bottom_coord)
+        pygame.draw.line(self.get_display(),self.purple,left_coord,right_coord)
 
     def draw_path(self, coords):
         end_of_line = len(coords)
         index = 0
+        x_offset, y_offset = self.get_offset()
         while index < end_of_line:
-            start_line = coords[index]
+            x, y  = coords[index]
+            start_line = (x + x_offset, y + y_offset)
             if not index + 1 == end_of_line:
-                finish_line = coords[index + 1]
-                pygame.draw.line(self.get_display(), self.black, start_line, finish_line,2)
+                x1, y1 = coords[index + 1]
+                finish_line = (x1 + x_offset, y1 + y_offset)
+                pygame.draw.line(self.get_display(), self.purple, start_line, finish_line,2)
             index = index + 1
 
 
@@ -945,6 +992,9 @@ class RunningMain:
 
     def set_pause(self):
         self.pause = not self.pause
+
+    def set_pause_must(self, value):
+        self.pause = value
 
     def get_screen_width(self):
         return self.screen_width

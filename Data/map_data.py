@@ -35,6 +35,7 @@ class map_data:
     tick_rate = 0
     sim_screen_width = None
     sim_screen_height = None
+    open_nodes = None
 
     def __init__(self, gui, tick_rate):
         self.gui = gui
@@ -245,9 +246,10 @@ class map_data:
                 objSize = [obj.get_width(), obj.get_height()]
                 objCoords = obj.get_coordinates()
                 rectangleCoordRanges = self.get_coordinates_range(objCoords, objSize)
-                if self.check_circle_overlap_rectangle(edgeCoordinates, rectangleCoordRanges):
-                    if obj.get_clip_through() == False: #
-                        return obj
+                if obj.get_clip_through():  # Dancefloor is not a collision, and can proceed.
+                    return True
+                elif self.check_circle_overlap_rectangle(edgeCoordinates, rectangleCoordRanges):
+                    return obj
 
         # Coordinates are fine to move to
         return True
@@ -863,6 +865,7 @@ class map_data:
                 graph[cords.get_idCoords()[0]][cords.get_idCoords()[1]] = cords.get_value()
             elif cords.get_value() == 0:  # Cord should be added to list of open nodes
                 openNodes.append(cords.get_idCoords())
+        self.open_nodes = openNodes
         print(graph)
         """Stores all free nodes in a_star class"""
         a_starv2.set_open_nodes(openNodes)

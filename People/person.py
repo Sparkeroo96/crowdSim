@@ -953,8 +953,8 @@ class Person:
                 value = [x1 + value[0], y1 + value[1]]
                 # resultArray.append(value)
                 tempArray.append(value)
-                x = x + 1
-            i = i + 3
+                x = x + 3
+            i = i + 1
             x = 12
             resultArray.append(tempArray)
 

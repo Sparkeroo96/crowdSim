@@ -240,20 +240,14 @@ class map_data:
 
             else:
                 # Object is instance of baseObject, i.e. Bar
-                # width = obj.get_width()
-                # height = obj.get_height()
                 objSize = [obj.get_width(), obj.get_height()]
                 objCoords = obj.get_coordinates()
                 rectangleCoordRanges = self.get_coordinates_range(objCoords, objSize)
                 if self.check_circle_overlap_rectangle(edgeCoordinates, rectangleCoordRanges):
-                    print("circle overlaps rectangle")
-
                     if obj.get_clip_through() == False: #
                         return obj
 
         # Coordinates are fine to move to
-
-        print("There has been no collision")
         return True
 
     def check_coordinates_in_bounds(self, coordinates, radius):

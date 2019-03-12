@@ -34,6 +34,7 @@ class map_data:
     tick_rate = 0
     sim_screen_width = None
     sim_screen_height = None
+    open_nodes = None
 
     def __init__(self, gui, tick_rate):
         self.gui = gui
@@ -870,6 +871,7 @@ class map_data:
                 graph[cords.get_idCoords()[0]][cords.get_idCoords()[1]] = cords.get_value()
             elif cords.get_value() == 0:  # Cord should be added to list of open nodes
                 openNodes.append(cords.get_idCoords())
+        self.open_nodes = openNodes
         # print(graph)
         """Stores all free nodes in a_star class"""
         a_starv2.set_open_nodes(openNodes)

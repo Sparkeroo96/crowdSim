@@ -129,9 +129,7 @@ class Person:
         self.orderedDrink = 0
         self.hasDrink = 0
         # Persons "needs" first value is importance second is how much they want to do it
-        self.brain = [["Toilet", 100],
-                 ["Drink", 100],
-                 ["Dance", 100]]
+        self.brain = [["Toilet", randint(0,100)],["Drink", randint(0,100)],["Dance", randint(0,100)]]
 
         self.random_node = None
 

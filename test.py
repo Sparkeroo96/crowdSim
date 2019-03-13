@@ -86,6 +86,7 @@ class RunningMain:
     selected_button = None
     temp_width = None
     nodes_generated = 0
+    current_route = []
 
     menu_bar_info = None
     menu_bar_clicked = None
@@ -823,18 +824,10 @@ class RunningMain:
         max_heat_value = 0
         min_heat_value = 100000
         heat_map = self.get_heatmap()
-        # print(heat_map)
         average_heat = []
         size_of_square = 10
-        current_x = 0
-        current_y = 0
         screen_width = self.get_sim_screen_width()
-        remainder_x = screen_width % size_of_square
-        screen_width = screen_width - remainder_x - size_of_square
-        # print(remainder_x)
         screen_height = self.get_sim_screen_height()
-        remainder_y = screen_height % screen_height
-        screen_height = screen_height - remainder_y - size_of_square
 
         for x in range(math.floor(len(heat_map)/size_of_square)):
             y_list = []
@@ -953,8 +946,12 @@ class RunningMain:
 
     def draw_path(self, coords):
         end_of_line = len(coords)
+        # print(coords)
         index = 0
         x_offset, y_offset = self.get_offset()
+        if self.current_route == []:
+            self.current_route = coords
+        # print(self.current_route)
         while index < end_of_line:
             x, y  = coords[index]
             start_line = (x + x_offset, y + y_offset)

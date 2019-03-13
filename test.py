@@ -286,13 +286,12 @@ class RunningMain:
                     # Gets the map from map data
                     objectArray = self.data.get_map()
                     # if it is empty then it loads the default
-                    if objectArray == []:
-                        self.data.export("maps_saves","default")
+                    if len(self.get_map_data().get_map()) == 0:
+                        print("Load Default")
+                        self.get_map_data().import_from_file("maps_saves","default")
 
-                    elif success:
-                        # If there was a succesful load then it uses the user chosen one
-                        self.draw_display()
                     self.draw_display()
+                    # self.draw_display()
                 # Starts the user input function
                 if menu[1] == "Floor Plan Load":
                     self.data.clear_map()

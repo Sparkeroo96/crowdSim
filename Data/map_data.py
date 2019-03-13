@@ -884,3 +884,18 @@ class map_data:
     def set_size_screen(self, width, height):
         self.sim_screen_width = width
         self.sim_screen_height = height
+
+    def calculate_distance_between_two_points(self, c1, c2):
+        """
+        Caluclates the distance between two points
+        :param c1: First set of coordinates
+        :param c2: Second set of coordinates
+        :return: The distance between the two poits
+        """
+
+        xDiff = (c2[0] - c1[0]) * (c2[0] - c1[0])
+        yDiff = (c2[1] - c1[1]) * (c2[1] - c1[1])
+
+        distance = math.sqrt(xDiff + yDiff)
+
+        return distance

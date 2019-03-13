@@ -126,7 +126,7 @@ class RunningMain:
                 # This allows an agent to be selected to see what they are thinking
                 main_sim_screen = [self.get_offset()[0],self.get_offset()[1],self.get_sim_screen_width(), self.get_sim_screen_height()]
                 if event.type == pygame.MOUSEBUTTONDOWN and self.get_menu()[1] == 'Start' and self.in_area(pygame.mouse.get_pos(), main_sim_screen):
-                    selected = self.get_map_data().what_object(self.gui_to_map_data_coords_offset(pygame.mouse.get_pos()))
+                    selected = self.get_map_data().what_object(self.gui_to_map_data_coords_offset(pygame.mouse.get_pos()), True)
                     if isinstance(selected, Person):
                         self.set_selected_person(selected)
                     else:
@@ -496,7 +496,10 @@ class RunningMain:
             shape = obj.get_shape()
             # the process of adding a person and the funcitons that get called
             if isinstance(obj, Person) and not self.get_show_heatmap_toggle():
-                self.add_heatmap(coordinates)
+                try:
+                    self.add_heatmap(coordinates)
+                except:
+                    nothing = 1
                 # Creating the cicle with the variables provided
                 if(obj == self.get_selected_person()):
                     text_info = self.get_selected_person().get_person_needs()
@@ -561,7 +564,7 @@ class RunningMain:
                             # if it is red then it must be a person
                             if colour != (255, 255, 255, 255):
                                 # Its an object of some kind
-                                seenObj = self.data.what_object(cord)
+                                seenObj = self.data.what_object(cord, False)
 
                                 obj.add_to_vision(seenObj)
                                 obj.add_to_memory(seenObj)
@@ -606,7 +609,7 @@ class RunningMain:
         """
         i = 0
         # sleep(0.1)
-        button_text = ["New", "Load", "Back", "Exit"]
+        button_text = ["New", "Back", "Exit"]
         num_buttons = len(button_text)
         height_of_buttons = 50
         width_of_buttons = 300
@@ -641,7 +644,7 @@ class RunningMain:
         """
         i = 0
         # sleep(0.1)
-        button_text = ["Start","Floor Plan Load", "Options", "Back", "Exit"]
+        button_text = ["Start","Floor Plan Load", "Back", "Exit"]
         num_buttons = len(button_text)
         height_of_buttons = 50
         width_of_buttons = 300
@@ -917,7 +920,7 @@ class RunningMain:
             return False
 
     def menu_bar(self):
-        button_names = ["Home", "Pause", "Add Person", "Show Nodes", "Add Nodes","Heat Map"]
+        button_names = ["Home", "Pause", "Add Person", "Show Nodes","Heat Map"]
         height_of_button = self.get_screen_height() / 10
         width_of_button = self.get_screen_width() / 8
         start_coords = [1,self.get_screen_height() - height_of_button - 1]
@@ -945,10 +948,11 @@ class RunningMain:
             self.show_nodes = not self.show_nodes
             self.menu_bar_clicked = None
         elif option == 4:
-            self.menu_bar_clicked = None
-        elif option == 5:
+            self.set_selected_person(None)
+            self.set_pause()
             self.set_show_heatmap_toggle()
             self.menu_bar_clicked = None
+
 
     def node_icon(self, coord):
         x, y = coord

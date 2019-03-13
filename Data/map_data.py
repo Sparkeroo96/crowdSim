@@ -398,11 +398,10 @@ class map_data:
         return returnValue
 
 
-    def what_object(self, coords):
+    def what_object(self, coords, searching_people):
         """This function checks to see if a cordiante is within another person and returns a reference to the object"""
         for obj in self.mapData:
             objCoords = obj.get_coordinates()
-
             if obj.get_shape() == "circle":
                 x = objCoords[0]
                 y = objCoords[1]
@@ -415,7 +414,7 @@ class map_data:
                 if distanceRoot <= radias:
                     return obj
 
-            else:
+            elif not searching_people:
                 width = obj.get_width()
                 height = obj.get_height()
                 # coordsRange = self.get_coordinates_range(coords, [width, height])

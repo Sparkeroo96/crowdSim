@@ -21,9 +21,9 @@ class TestAStar(unittest.TestCase):
         """
         test_array = numpy.zeros((10, 10), int)
         test_start = (0, 0)
-        test_dest = (1, 9)
+        test_dest = (1, 19)
         result = a_starv2.astar(test_array, test_start, test_dest)
-        self.assertTrue(result)
+        self.assertFalse(result)
 
     def test_astar_type_error(self):
         """
@@ -33,6 +33,9 @@ class TestAStar(unittest.TestCase):
         test_array = numpy.zeros((10, 10), int)
         test_start = "1, 10"
         test_dest = (1, 9)
+        with self.assertRaises(TypeError):
+            result = a_starv2.astar(test_array, test_start, test_dest)
+        test_start = [200, 400]
         with self.assertRaises(TypeError):
             result = a_starv2.astar(test_array, test_start, test_dest)
 
@@ -74,14 +77,24 @@ class TestAStar(unittest.TestCase):
         result = a_starv2.return_waypoints(data)
         self.assertEqual(result, [(0, 0)])
 
+    def test_return_waypoints_with_no_result(self):
+        """
+        Test to check return waypoints returns one value as a waypoint
+        :return: True, as there is only one data value in the starting array
+        """
+        data = []
+        result = a_starv2.return_waypoints(data)
+        self.assertEqual(result, None)
+
     def test_convert_to_simple(self):
         """
-        Test to see if convert to simple converts two numbers to 0 - 10 coords
+        Test to see if convert to simple converts two numbers to simpliefied coords
+        The coords are in multiples of 20.
         :return: True
         """
         data = [240, 430]
         result = a_starv2.convert_to_simple(data)
-        self.assertEqual(result, (4, 8))
+        self.assertEqual(result, (12, 21))
 
     def test_convert_to_simple_negative_numbers(self):
         """
@@ -98,7 +111,7 @@ class TestAStar(unittest.TestCase):
         :return: True
         """
         data = [(0, 0), (1, 1), (2, 2)]
-        intended_result = [(0, 0), (50, 50), (100, 100)]
+        intended_result = [(0, 0), (20, 20), (40, 40)]
         result = a_starv2.locations(data)
         self.assertEqual(result, intended_result)
 

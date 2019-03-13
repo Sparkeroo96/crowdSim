@@ -835,12 +835,14 @@ class map_data:
         for number in range(0, total_nodes):
             listofID.append(number)
         """Create cords for the grid"""
-        print(maxX, maxY)
+        # print(maxX, maxY)
 
         for x in range(maxX):
             for y in range(maxY):
                 simpleCords.append([x, y])
         """apply the coords to the nodes"""
+        # print("Simple cords")
+        # print(len(simpleCords))
         for n in range(total_nodes):
             nodeList.append(node.Node(simpleCords[n], 0))
         """Obtaining last coord in the simple grid to create the range of maze"""

@@ -11,7 +11,7 @@ from Nodes import node
 from Algorithm import a_starv2
 import numpy
 
-numpy.set_printoptions(threshold=numpy.nan)
+# numpy.set_printoptions(threshold=numpy.nan)
 # Seems to need these for allowing isinstance(example, Person), doesnt work with the above import
 from People.person import Person
 from Objects.wall import Wall
@@ -576,7 +576,6 @@ class map_data:
                         # self.mapData.append(newBar)
                     elif result[0] == "dancefloor":
                         self.add_dancefloor_to_map(coords, int(result[2]), int(result[3]))
-                        print("Dancefloor")
             self.generate_nodes()
             return True
         else:
@@ -741,9 +740,9 @@ class map_data:
         height = offset[1]
         x2 = cordX + width
         y2 = cordY + height
-        print("width and height")
-        print(widthTest, heightTest)
-        print(width, height)
+        # print("width and height")
+        # print(widthTest, heightTest)
+        # print(width, height)
         # If the coord starts from bottom right
         if int(width) < 0 and int(height) < 0:
             # print("in bottom right")
@@ -754,7 +753,7 @@ class map_data:
                     self.values_to_append.append([cordX - x, cordY - y])
         # If the cord starts from top left
         if int(width) > 0 and int(height) > 0:
-            print("X and Y are: " + str(cordX) + str(cordY))
+            # print("X and Y are: " + str(cordX) + str(cordY))
             for x in range(width):
                 self.values_to_append.append([cordX + x, cordY])
                 self.values_to_append.append([cordX + x, y2])
@@ -776,7 +775,7 @@ class map_data:
                 self.values_to_append.append([x2, cordY - y])
         # If the coord starts from Top Right
         if int(width) < 0 and int(height) > 0:
-            print("top right")
+            # print("top right")
             width3 = int(abs(width))
             print(width3)
             for x in range(width3 + 1):
@@ -816,7 +815,7 @@ class map_data:
         node_distance = 20
         total_width = int(math.ceil(self.sim_screen_width/node_distance))
         total_height = int(math.ceil(self.sim_screen_height/node_distance))
-        print(total_height, total_width)
+        # print(total_height, total_width)
         for x in range(total_width):
             for y in range(total_height):
                 self.values_to_append.append([x, 0]) # Left column
@@ -835,7 +834,7 @@ class map_data:
         """
         node_distance = 20
         total_nodes = self.calculate_starting_nodes() # All nodes to being with.
-        print("total Nodes are" + str(total_nodes))
+        # print("total Nodes are" + str(total_nodes))
         maxX = int(math.ceil(self.sim_screen_width/node_distance))
         maxY = int(math.ceil(self.sim_screen_height/node_distance))
         nodeList = []
@@ -847,14 +846,14 @@ class map_data:
         for number in range(0, total_nodes):
             listofID.append(number)
         """Create cords for the grid"""
-        print(maxX, maxY)
+        # print(maxX, maxY)
 
         for x in range(maxX):
             for y in range(maxY):
                 simpleCords.append([x, y])
         """apply the coords to the nodes"""
-        print("Simple cords")
-        print(len(simpleCords))
+        # print("Simple cords")
+        # print(len(simpleCords))
         for n in range(total_nodes):
             nodeList.append(node.Node(simpleCords[n], 0))
         """Obtaining last coord in the simple grid to create the range of maze"""
@@ -874,7 +873,7 @@ class map_data:
             elif cords.get_value() == 0:  # Cord should be added to list of open nodes
                 openNodes.append(cords.get_idCoords())
         self.open_nodes = openNodes
-        print(graph)
+        # print(graph)
         """Stores all free nodes in a_star class"""
         a_starv2.set_open_nodes(openNodes)
         """Store all the nodes in the a_star class"""

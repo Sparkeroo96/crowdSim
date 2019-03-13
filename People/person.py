@@ -132,9 +132,6 @@ class Person:
         self.brain = [["Toilet", 100],
                  ["Drink", 100],
                  ["Dance", 100]]
-
-        self.random_node = None
-
         self.inside_dance_floor = False
         self.random_dance_area = None
 
@@ -155,6 +152,7 @@ class Person:
             return "Waiting"
 
         stateAction = self.get_state_action()
+        print("My state action is: " + str(stateAction))
         # print("currentState: " + self.currentState + " / stateAction " + stateAction)
         # self.random_move()
         if stateAction == "navigateToRememberedObj":
@@ -206,6 +204,8 @@ class Person:
         Starts to move to the remembered Object
         :return: True on success
         """
+
+        print("my state is" + str(self.currentState))
         # Hopefully this will allow someone to flock around objects in front of them, whilst navigiating to the remembered object
         objectsWithinRejection = self.map.get_objects_within_range(self.coordinates, self.get_rejection_area(), self.get_edge_coordinates_array(self.coordinates, self.get_rejection_area()), self)
 
@@ -381,25 +381,6 @@ class Person:
             self.objectFailedCount = 1
 
         return collisionObject
-
-    def set_explore_node(self):
-        """
-        Gets a node to navigate to in order to explore the environment they are in
-        Node cant be too close to them, or its pointless exploring
-        :return:
-        """
-        x = self.coordinates[0]
-        y = self.coordinates[1]
-        nextMove = [x, y]
-        nodes = a_starv2.get_open_nodes()
-        nodes_length = len(a_starv2.get_open_nodes())
-        self.random_node = nodes[randint(0, nodes_length - 1)]
-        if self.astarCoords:
-            self.navigate_via_astar(nextMove)
-        else: # No Astar cords found. This is due to the location not being available to travel, or first time initiating exploring.
-            # print("no astar cords found")
-            self.set_cords_from_algo()
-            self.find_action() # Keep going back to find to see if object has been found.
 
 
     def person_rotate(self, clockwise = True):
@@ -1090,6 +1071,7 @@ class Person:
 
         if self.rememberedObj.get_person_using_toilet() == self:
             self.brain[0][1] += 100 # Set toilet back up to default
+            print("using toilet")
             self.get_person_needs()
 
             self.rememberedObj.person_stop_using_toilet(self)
@@ -1157,19 +1139,22 @@ class Person:
             print("TARGET COORDS ARE" + str(targetCoordinates))
             locations = a_starv2.run_astar(startingLoc, targetCoordinates)
         else:
-            print("Move into random node" + str(self.random_node))
-            locations = a_starv2.run_astar(startingLoc, self.random_node)
+            locations = a_starv2.run_astar(startingLoc, self.exploreNode)
 
         # print("LOCATIONS ARE " + str(locations))
         if not locations:
             return False
         else:
             for location in locations:
+                print("locations are: " + str(location))
                 self.store_waypoints(location)
 
     def store_waypoints(self, cord):
         """Stores the waypoints in cords var"""
-        self.astarCoords.append([cord[0], cord[1]])
+        try:
+            self.astarCoords.append([cord[0], cord[1]])
+        except:
+            print("no astar coords")
 
 
 

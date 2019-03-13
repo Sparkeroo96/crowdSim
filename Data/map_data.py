@@ -736,11 +736,35 @@ class map_data:
         objBuffer = 5
 
         node_distance = 20 # Spacing between each node.
-        cordX = (int(wall.get_coordinates()[0] / node_distance))
-        cordY = (int(wall.get_coordinates()[1] / node_distance))
-        width = (math.ceil(wall.get_width() / node_distance))
-        height = (math.ceil(wall.get_height() / node_distance))
 
+        cordX = wall.get_coordinates()[0] - objBuffer if wall.get_width() > 0 else wall.get_coordinates()[0] + objBuffer
+        cordY = wall.get_coordinates()[1] - objBuffer if wall.get_height() > 0 else wall.get_coordinates()[1] + objBuffer
+        cordX = (int(cordX / node_distance))
+        cordY = (int(cordY / node_distance))
+
+        width = wall.get_width() + objBuffer + objBuffer if wall.get_width() > 0 else wall.get_width() - objBuffer + objBuffer
+        height = wall.get_height() + objBuffer + objBuffer if wall.get_height() > 0 else wall.get_height() - objBuffer + objBuffer
+
+        # cordX = (int(wall.get_coordinates()[0] / node_distance))
+        # cordY = (int(wall.get_coordinates()[1] / node_distance))
+        # width = (math.ceil(wall.get_width() / node_distance))
+        # height = (math.ceil(wall.get_height() / node_distance))
+
+        print("cordX")
+        for x in range(width):
+
+            addX = x
+            if width < 0:
+                addX = 0 - x
+
+            for y in range(height):
+                addY = y
+                if height < 0:
+                    addY = 0 - y
+                print("do shit")
+                self.values_to_append.append([cordX + addX, cordY + addY])
+
+        return
 
         x2 = cordX + width
         y2 = cordY + height
@@ -757,10 +781,11 @@ class map_data:
             # print("in bottom right")
             width2 = int(abs(width)) + objBuffer # Rounding up on a negative number will drop by one
             height2 = int(abs(height)) + objBuffer
-            if width2 < height2:
-                width2 += objBuffer
-            else:
-                height2 += objBuffer
+            # Sam - Not sure what this is doing, not sure why we're adding the objBuffer again
+            # if width2 < height2:
+            #     width2 += objBuffer
+            # else:
+            #     height2 += objBuffer
             for x in range(width2):
                 for y in range(height2):
                     self.values_to_append.append([cordX - x, cordY - y])

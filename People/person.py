@@ -96,6 +96,7 @@ class Person:
         self.objectFailed = 0
         self.objectFailedCount = 0
 
+
         # A flocking parameter, dont want to be within 10 pixels of a nearby object, will attempt to move out of them
         self.rejectionArea = 10
         self.rejectionStrength = 1
@@ -150,7 +151,7 @@ class Person:
         """What the person is going to do"""
         self.currentState = self.stateMachine.get_current_state()
         self.usedSpeed = 0
-        # print(" My current state " + self.currentState)
+        print(" My current state " + self.currentState)
 
         if self.wait_on_action_count():
             return "Waiting"
@@ -183,14 +184,14 @@ class Person:
                 self.objectFailedCount = 0
                 self.clear_explore_node()
 
-            if self.rememberedObjType != "" and not self.exploreNode:
+            if self.rememberedObjType != "" and (not self.exploreNode or self.exploreNode is None):
                 # if self.rememberedObjType != "" and self.exploreNode == []:
                 self.exploreNode = a_starv2.get_random_waypoint()
                 self.astarCoords = a_starv2.run_astar(self.find_nearest_waypoint(), self.exploreNode)
                 # print("setting explore node")
 
             # print("exploreNode " + str(self.exploreNode) + " mycoords " + str(self.coordinates))
-
+            print("rememberedObjType " + str(self.rememberedObjType))
             self.navigate_to_remembered_object()
 
         elif stateAction == "dance":
@@ -230,6 +231,7 @@ class Person:
             # self.placeholder += 1
 
         if self.astarCoords:
+            print("astartCords " + str(self.astarCoords))
             self.navigate_via_astar(nextMove)
         else:
             if self.rememberedObj:

@@ -535,8 +535,6 @@ class RunningMain:
                 height = obj.get_height()
                 pygame.draw.rect(self.display, obj_colour, [coordinates[0], coordinates[1], width, height])
 
-
-
         for obj in objectArray:
 
             if isinstance(obj, Person):

@@ -154,6 +154,7 @@ class Person:
         stateAction = self.get_state_action()
         print("My state action is: " + str(stateAction))
         # print("currentState: " + self.currentState + " / stateAction " + stateAction)
+
         # self.random_move()
         if stateAction == "navigateToRememberedObj":
             self.navigate_to_remembered_object()
@@ -222,16 +223,22 @@ class Person:
 
         # if not self.astarCoords:
         if self.astarCoords == [] or not self.astarCoords:
-            # print("ASTAR IS EMPTY, SETTING CORDS TO GET TO THE OBJECT")
+            print("ASTAR IS EMPTY, SETTING CORDS TO GET TO THE OBJECT")
             self.set_cords_from_algo()
+            #
             #self.set_cords_from_algo("known_location")
             # self.placeholder += 1
 
         if self.astarCoords:
+            print("My current astar cords are: " + str(self.astarCoords))
             self.navigate_via_astar(nextMove)
         else:
+            print("There are no astar cords")
             if self.rememberedObj:
+                print("Checking if we're here")
                 targetCoordinates = self.work_out_objects_closest_point(self.rememberedObj)
+                print(targetCoordinates)
+                print(nextMove)
             else:
                 targetCoordinates = self.exploreNode
 
@@ -839,6 +846,7 @@ class Person:
         if key == "":
             return False
 
+        if not self.memory[key]:
             self.memory[key].append(obj)
             return True
 
@@ -1129,7 +1137,7 @@ class Person:
         locations = None
 
         if self.rememberedObj:
-            # print("THERE IS A REMEMBERED OBJECT AND THAT IS" + str(self.rememberedObj))
+            print("THERE IS A REMEMBERED OBJECT AND THAT IS" + str(self.rememberedObj))
             targetCoordinates = self.work_out_objects_closest_point(self.rememberedObj)
             locations = a_starv2.run_astar(startingLoc, targetCoordinates)
         else:
@@ -1137,6 +1145,7 @@ class Person:
 
         # print("LOCATIONS ARE " + str(locations))
         if not locations:
+            print("None achieved")
             return False
         else:
             for location in locations:
@@ -1439,7 +1448,7 @@ class Person:
     def relax(self):
         # print("In relax")
         dec_thirst = randint(0, 1)
-        dec_toilet = randint(0, 1)
+        dec_toilet = randint(0, 0)
         dec_dance = randint(0, 3)
         self.brain[0][1] -= dec_toilet
         self.brain[1][1] -= dec_thirst

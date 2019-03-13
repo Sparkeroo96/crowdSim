@@ -270,11 +270,11 @@ class map_data:
 
         simOffsets = self.gui.get_offset()
 
-        if lowX < simOffsets[0] or lowY < simOffsets[1]:
-            return False
+        # if lowX < simOffsets[0] or lowY < simOffsets[1]:
+        #     return False
 
-
-        if highX > simOffsets[0] + self.gui.get_sim_screen_width() or highY > simOffsets[1] + self.gui.get_sim_screen_height():
+        if highX > simOffsets[0] + self.gui.get_sim_screen_width() or highY > simOffsets[
+            1] + self.gui.get_sim_screen_height():
             return False
 
         return True

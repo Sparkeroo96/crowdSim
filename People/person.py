@@ -158,8 +158,8 @@ class Person:
 
         stateAction = self.get_state_action()
         # print("currentState: " + self.currentState + " / stateAction " + stateAction)
-        # print(" my memory #FuckYouChris " + str(self.memory))
-        # print(" my vision #FuckYouChris2 " + str(self.vision))
+        print(" my memory #FuckYouChris " + str(self.memory))
+        print(" my vision #FuckYouChris2 " + str(self.vision))
         # self.random_move()
         if stateAction == "navigateToRememberedObj":
             self.navigate_to_remembered_object()
@@ -184,7 +184,8 @@ class Person:
                 self.objectFailedCount = 0
                 self.clear_explore_node()
 
-            if self.rememberedObjType != "" and (not self.exploreNode or self.exploreNode is None):
+            # if self.rememberedObjType != "" and (not self.exploreNode or self.exploreNode is None):
+            if not self.exploreNode or self.exploreNode is None:
                 # if self.rememberedObjType != "" and self.exploreNode == []:
                 self.exploreNode = a_starv2.get_random_waypoint()
                 self.astarCoords = a_starv2.run_astar(self.find_nearest_waypoint(), self.exploreNode)
@@ -376,6 +377,7 @@ class Person:
 
             return True
 
+        print("person not moving because of " + str(collisionObject))
         self.coordinatesFailed += 1
         if self.objectFailed == collisionObject:
             self.objectFailedCount += 1
@@ -863,7 +865,7 @@ class Person:
         if key == "":
             return False
 
-        # if not self.memory[key]:
+        if not self.memory[key]:
             self.memory[key].append(obj)
             return True
 

@@ -56,8 +56,17 @@ class map_data:
         """Adding people to map"""
         """CHANGED THE SIZE TO 10"""
         newPerson = person.Person("person " + str(len(self.mapData)), coords, size, angle, self.tick_rate)
-        newPerson.add_map(self, coords)
-        self.mapData.append(newPerson)
+
+        newPersonEdgeCoordinates = newPerson.get_edge_coordinates_array(coords, size)
+
+        if self.check_coordinates_for_person(coords, size, None, newPersonEdgeCoordinates) is True:
+            newPerson.add_map(self, coords)
+            self.mapData.append(newPerson)
+            return True
+
+        return False
+
+
 
 
     def add_bar_to_map(self, coords, width, height):
@@ -269,10 +278,6 @@ class map_data:
 
         simOffsets = self.gui.get_offset()
 
-        if lowX < simOffsets[0] or lowY < simOffsets[1]:
-            return False
-
-
         if highX > simOffsets[0] + self.gui.get_sim_screen_width() or highY > simOffsets[1] + self.gui.get_sim_screen_height():
             return False
 
@@ -357,8 +362,6 @@ class map_data:
         """
         xCoord = coordinates[0]
         yCoord = coordinates[1]
-        # print("object size = " +str(object_size))
-        # print("coordinates = " + str(coordinates))
         if isinstance(object_size, list):
             # If there is a width and height give it as a list
             xSize = object_size[0]
@@ -394,8 +397,6 @@ class map_data:
             "X" : xRanges,
             "Y" : yRanges
         }
-        # print("get coords range " + str(returnValue))
-        # return [xRanges, yRanges]
         return returnValue
 
 
@@ -485,7 +486,6 @@ class map_data:
                 # Different data needed to record person objects
 
                 if isinstance(obj,Person):
-                    # print("ran")
                     obj_type = 'Person'
                     coords = obj.get_coordinates()
                     angle = obj.get_angle()
@@ -578,7 +578,6 @@ class map_data:
                         # self.mapData.append(newBar)
                     elif result[0] == "dancefloor":
                         self.add_dancefloor_to_map(coords, int(result[2]), int(result[3]))
-                        print("Dancefloor")
             self.generate_nodes()
             return True
         else:
@@ -732,77 +731,46 @@ class map_data:
         :param walls: the walls to set nodes to.
         :return:
         """
-        # This is to stop nodes being generate right next to an object
-        objBuffer = 5
-
-        node_distance = 20 # Spacing between each node.
-
-        cordX = wall.get_coordinates()[0] - objBuffer if wall.get_width() > 0 else wall.get_coordinates()[0] + objBuffer
-        cordY = wall.get_coordinates()[1] - objBuffer if wall.get_height() > 0 else wall.get_coordinates()[1] + objBuffer
-        cordX = (int(cordX / node_distance))
-        cordY = (int(cordY / node_distance))
-
-        width = wall.get_width() + objBuffer + objBuffer if wall.get_width() > 0 else wall.get_width() - objBuffer + objBuffer
-        height = wall.get_height() + objBuffer + objBuffer if wall.get_height() > 0 else wall.get_height() - objBuffer + objBuffer
-
-        # cordX = (int(wall.get_coordinates()[0] / node_distance))
-        # cordY = (int(wall.get_coordinates()[1] / node_distance))
-        # width = (math.ceil(wall.get_width() / node_distance))
-        # height = (math.ceil(wall.get_height() / node_distance))
-
-        print("cordX")
-        for x in range(width):
-
-            addX = x
-            if width < 0:
-                addX = 0 - x
-
-            for y in range(height):
-                addY = y
-                if height < 0:
-                    addY = 0 - y
-                print("do shit")
-                self.values_to_append.append([cordX + addX, cordY + addY])
-
-        return
-
+        screen_width = 800
+        screen_height = 600
+        node_distance = 20  # Spacing between each node.
+        xBoundaries = int(screen_width / node_distance)
+        yBoundaries = int(screen_height / node_distance)
+        cordX = (int(wall.get_coordinates()[0] / node_distance))
+        cordY = (int(wall.get_coordinates()[1] / node_distance))
+        width = (math.ceil(wall.get_width() / node_distance))
+        height = (math.ceil(wall.get_height() / node_distance))
         x2 = cordX + width
         y2 = cordY + height
-
-        # print("widths")
-        # print((wall.get_width() / node_distance))
-        # print(int(width))
-        # print("heights")
-        # print((wall.get_height() / node_distance))
-        # print(int(height))
 
         # If the coord starts from bottom right
         if int(width) < 0 and int(height) < 0:
             # print("in bottom right")
-            width2 = int(abs(width)) + objBuffer # Rounding up on a negative number will drop by one
-            height2 = int(abs(height)) + objBuffer
-            # Sam - Not sure what this is doing, not sure why we're adding the objBuffer again
-            # if width2 < height2:
-            #     width2 += objBuffer
-            # else:
-            #     height2 += objBuffer
+            width2 = int(abs(width)) + 1  # Rounding up on a negative number will drop by one
+            height2 = int(abs(height)) + 1
+            if width2 < height2:
+                width2 += 1
+            else:
+                height2 += 1
+            # print(width2, height2)
             for x in range(width2):
                 for y in range(height2):
                     self.values_to_append.append([cordX - x, cordY - y])
+        # If the coord starts from top Left
         if int(width) > 0 and int(height) > 0:
             for x in range(width):
-                self.values_to_append.append([cordX + x, cordY])
-                self.values_to_append.append([cordX + x, y2])
+                self.values_to_append.append([cordX + x, cordY])  # The top line in a rect
+                self.values_to_append.append([cordX + x, y2])  # Bottom line in a rect
                 for y in range(height):
                     self.values_to_append.append([cordX + x, cordY + y])
             for y in range(height):
-                self.values_to_append.append([cordX, cordY + y])
-                self.values_to_append.append([x2, cordY + y])
+                self.values_to_append.append([cordX, cordY + y])  # Left like in a rect
+                self.values_to_append.append([x2, cordY + y])  # Right line in a rect
+        # If the coord starts from Bottom Left
         if int(width) > 0 and int(height) < 0:
-            # height3 = int(abs(height)) + 1
-            height3 = int(abs(height)) + objBuffer
+            height3 = int(abs(height)) + 1
             if height3 < width:
-                height3 += objBuffer
+                height3 += 1
             for x in range(width):
                 self.values_to_append.append([cordX + x, cordY])  # The top line in a rect
                 self.values_to_append.append([cordX + x, y2])
@@ -827,13 +795,6 @@ class map_data:
 
         self.values_to_append.append([x2, y2])  # Append the corner opposite
 
-
-        """Check values are in the grid"""
-        # for v in self.values_to_append:
-        #     if v[0] > yBoundaries and v[1] > xBoundaries:
-        #         self.values_to_append.remove(v)
-
-
     def set_grid_area(self):
         """
         Set the area around the grid so out of bounds does not occur.
@@ -848,9 +809,6 @@ class map_data:
                 self.values_to_append.append([0, y])
                 self.values_to_append.append([x, total_height - 1])
                 self.values_to_append.append([total_width - 1, y])
-
-
-
 
     """Generate the node objects that appear on the map"""
     def generate_nodes(self):
@@ -878,8 +836,6 @@ class map_data:
             for y in range(maxY):
                 simpleCords.append([x, y])
         """apply the coords to the nodes"""
-        print("Simple cords")
-        print(len(simpleCords))
         for n in range(total_nodes):
             nodeList.append(node.Node(simpleCords[n], 0))
         """Obtaining last coord in the simple grid to create the range of maze"""

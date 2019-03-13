@@ -206,7 +206,10 @@ class RunningMain:
 
                 # Adds a person to the map if clicked
                 if self.get_add_person_on_click() and event.type == pygame.MOUSEBUTTONUP and not self.get_build_active() and self.in_area(pygame.mouse.get_pos(),[self.get_offset()[0],self.get_offset()[1],self.get_sim_screen_width(),self.get_sim_screen_height()]):
-                    self.get_map_data().add_people_to_map(self.gui_to_map_data_coords_offset(pygame.mouse.get_pos()),20,0)
+                    #Need to have a check to say if you can create a person at these coordinates
+                    personCoordinates = self.gui_to_map_data_coords_offset(pygame.mouse.get_pos())
+                    size = 20
+                    self.get_map_data().add_people_to_map(personCoordinates, size, 0)
 
                 #The remove object function
                 if self.get_current_tool() == "Remove" and event.type == pygame.MOUSEBUTTONUP:
@@ -535,10 +538,7 @@ class RunningMain:
                 height = obj.get_height()
                 pygame.draw.rect(self.display, obj_colour, [coordinates[0], coordinates[1], width, height])
 
-
-
         for obj in objectArray:
-
             if isinstance(obj, Person):
                 objCoordinates = obj.get_coordinates()
                 angle = obj.get_angle()

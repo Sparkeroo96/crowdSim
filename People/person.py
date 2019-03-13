@@ -183,7 +183,6 @@ class Person:
             if self.rememberedObjType != "" and not self.exploreNode:
                 # if self.rememberedObjType != "" and self.exploreNode == []:
                 self.exploreNode = a_starv2.get_random_waypoint()
-                print(self.exploreNode)
                 self.astarCoords = a_starv2.run_astar(self.find_nearest_waypoint(), self.exploreNode)
                 # print("setting explore node")
 
@@ -193,7 +192,6 @@ class Person:
 
         elif stateAction == "dance":
             if self.inside_dance_floor:
-
                 print("dance")
                 self.advance_state_machine()
             self.astarCoords.clear()
@@ -1492,8 +1490,6 @@ class Person:
         self.set_random_dance_area()
         # print(self.coordinates)
         # print("random dance area")
-        # print(self.random_dance_area)
-        # print(self.coordinates)
         # print(self.random_dance_area)
         if self.random_dance_area != self.coordinates:
             # print("MOVE INSIDE DANCE FLOOR")

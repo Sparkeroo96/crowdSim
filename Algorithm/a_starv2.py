@@ -12,7 +12,7 @@ heatmap_store = {}
 #  The binary heap keeps the open list in order
 def astar(array, start, dest):
     """THE DESTINATION WILL BE DEEMED AS A 1"""
-    print("array in astar" + str(array))
+    # print("array in astar" + str(array))
 
     neighbours = [(0, 1), (0, -1), (1, 0), (-1, 0), (1, 1), (-1, -1), (1, -1), (-1, 1)]
 
@@ -124,14 +124,14 @@ def return_waypoints(locations):
             else:
                 waypoints.append(locations[i])
         except IndexError:
-                print("")
+                print("Index error " + str(IndexError))
         i += 1
     if not locations:
         return
     else:
         """Add the destination to the final waypoint"""
         waypoints.append(locations[-1])
-    print("WAYPOINTS ARE: " + str(waypoints))
+    # print("WAYPOINTS ARE: " + str(waypoints))
     global mapLocations
     mapLocations = waypoints
     return waypoints
@@ -202,7 +202,7 @@ def get_random_waypoint():
 
     global n
     nodeCount = len(n)
-    randNodeKey = randint(0, nodeCount - 1)
+    # randNodeKey = randint(0, nodeCount - 1)
 
     nodes = get_open_nodes()
     nodes_length = len(nodes)

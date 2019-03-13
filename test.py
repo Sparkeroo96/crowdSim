@@ -72,7 +72,7 @@ class RunningMain:
     save_active = None
     save_name = False
 
-    tick_rate = 30
+    tick_rate = 20
 
     heat_map = []
 
@@ -115,11 +115,9 @@ class RunningMain:
         # Main loop for the applicaion
         while not self.get_exit():
 
-            # print(self.get_map_data().get_map())
             self.get_display().fill(self.white)
             # This gets all the key presses and mouse movements and passes them as events
             for event in pygame.event.get():
-                # print(event)
                 # Quit Function
                 if event.type == pygame.QUIT:
                     self.set_exit()
@@ -131,7 +129,7 @@ class RunningMain:
                         self.set_selected_person(selected)
                     else:
                         self.set_selected_person(None)
-                    sleep(0.2)
+                    sleep(0.1)
                 # This is gets the button in the info pannel they seleced
                 if self.get_selected_person() is not None:
                     if event.type == pygame.MOUSEBUTTONDOWN and self.get_size_info_pannel() is not None:
@@ -206,7 +204,10 @@ class RunningMain:
 
                 # Adds a person to the map if clicked
                 if self.get_add_person_on_click() and event.type == pygame.MOUSEBUTTONUP and not self.get_build_active() and self.in_area(pygame.mouse.get_pos(),[self.get_offset()[0],self.get_offset()[1],self.get_sim_screen_width(),self.get_sim_screen_height()]):
-                    self.get_map_data().add_people_to_map(self.gui_to_map_data_coords_offset(pygame.mouse.get_pos()),20,0)
+                    #Need to have a check to say if you can create a person at these coordinates
+                    personCoordinates = self.gui_to_map_data_coords_offset(pygame.mouse.get_pos())
+                    size = 20
+                    self.get_map_data().add_people_to_map(personCoordinates, size, 0)
 
                 #The remove object function
                 if self.get_current_tool() == "Remove" and event.type == pygame.MOUSEBUTTONUP:
@@ -457,7 +458,6 @@ class RunningMain:
         This function handeles the button presses in pygame, save, pause and creation of walls
         """
         for event in pygame.event.get():
-            # print(event)
             # Gets the starting cordinates for the walls
             # quits if x button is pressed
             if event.type == pygame.QUIT:
@@ -484,7 +484,6 @@ class RunningMain:
                     x1 = x1 + x_offset
                     y1 = y1 + y_offset
                     self.node_icon((x1,y1))
-                    # print(x)
 
         pygame.draw.rect(self.get_display(),self.black,[x_offset,y_offset,self.get_sim_screen_width(), self.get_sim_screen_height()],2)
         # Goes though the map array obj
@@ -497,7 +496,6 @@ class RunningMain:
             width = obj.get_width()
             obj_colour = obj.get_colour()
             shape = obj.get_shape()
-            # print("shape = " + shape)
             # the process of adding a person and the funcitons that get called
             if isinstance(obj, Person) and not self.get_show_heatmap_toggle():
                 self.add_heatmap(coordinates)
@@ -517,7 +515,9 @@ class RunningMain:
                         self.need_bar(item[0],item[1],size_info)
                         size_info = [size_info[0],size_info[1] + size_info[3],size_info[2],size_info[3]]
                         running_size =[size_info[0],size_info[1],size_info[2], size_info[3]+ running_size[3]]
-
+                    current_state = self.get_selected_person().currentState
+                    size_info = [0,150,150,50]
+                    self.add_button(size_info,current_state,self.black,20)
                     running_size =[saved_size_info[0],saved_size_info[1],saved_size_info[2], running_size[3] - size_info[3], len(text_info)]
                     self.set_size_info_pannel(running_size)
 
@@ -536,7 +536,6 @@ class RunningMain:
                 pygame.draw.rect(self.display, obj_colour, [coordinates[0], coordinates[1], width, height])
 
         for obj in objectArray:
-
             if isinstance(obj, Person):
                 objCoordinates = obj.get_coordinates()
                 angle = obj.get_angle()
@@ -747,7 +746,12 @@ class RunningMain:
         current = self.get_current_tool()
         info = [0, self.get_screen_height() * 0.90, button_width,button_height]
         colour = self.black
+        colour1 = self.black
+        if self.in_area(pygame.mouse.get_pos(), info):
+            colour = self.green
+
         self.add_button(info,current,colour,50)
+
         if pygame.mouse.get_pos()[0] >= info[0] and pygame.mouse.get_pos()[0] <= info[0] + info[2] and pygame.mouse.get_pos()[1] >= info[1] and pygame.mouse.get_pos()[1] <= info[1] + info[3] and pygame.mouse.get_pressed()[0]:
             self.set_new_tool()
             sleep(0.1)
@@ -765,6 +769,16 @@ class RunningMain:
                     colour = self.green
                 self.add_button(info,objectName,colour,50)
                 i= i + 1
+
+        info = [button_width, self.get_screen_height() - button_height, button_width, button_height]
+        if self.in_area(pygame.mouse.get_pos(), info):
+            colour1 = self.green
+            if(pygame.mouse.get_pressed()[0]):
+                self.set_save_active(True)
+                self.set_save_name(True)
+        self.add_button(info, "save", colour1, 50)
+
+        # pygame.draw.rect(self.get_display(), self.green, info)
 
     def save(self):
         """Function that pulls up the save icon, it checks to see if the name is alread in use and then asks for a different name
@@ -949,12 +963,10 @@ class RunningMain:
 
     def draw_path(self, coords):
         end_of_line = len(coords)
-        # print(coords)
         index = 0
         x_offset, y_offset = self.get_offset()
         if self.current_route == []:
             self.current_route = coords
-        # print(self.current_route)
         while index < end_of_line:
             x, y  = coords[index]
             start_line = (x + x_offset, y + y_offset)
@@ -1047,6 +1059,7 @@ class RunningMain:
         self.text_done = False
         self.builder_active = False
         self.clear_heat_map()
+        self.show_nodes = False
 
     def get_exit(self):
         return self.exit

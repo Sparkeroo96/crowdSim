@@ -26,6 +26,7 @@ class RunningMain:
     orange = (255, 128, 0)
     yellow = (250,250,0)
     purple = (128,0,128)
+
     exit = False
 
     # Menu flags
@@ -547,20 +548,19 @@ class RunningMain:
                 # clears the person vision from the previous ittoration
                 obj.clear_vision()
                 # goes though every coordinates and works out what colour is in that pixcel
-
                 for cordArray in vision:
-                    # display.set_at((cord[0],cord[1]), black)
                     # try and catch to prevent out of array exceptions
                     for cord in cordArray:
                         try:
                             seenObj = 0
-                            cords_new = self.map_data_to_gui_coords_offset((cord[0],cord[1]))
-                            # cords_new = self.map_data_to_gui_coords_offset(cords_new)
-                            # self.display.set_at(cords_new, self.red)
-                            colour = self.display.get_at(cords_new)
                             # if it is red then it must be a person
+                            newCoords = self.map_data_to_gui_coords_offset(cord)
+                            colour = self.display.get_at(newCoords)
+
+                            # if it is coloured then it must be an object
                             if colour != (255, 255, 255, 255):
                                 # Its an object of some kind
+
                                 seenObj = self.data.what_object(cord)
 
                                 obj.add_to_vision(seenObj)
@@ -703,6 +703,7 @@ class RunningMain:
         if self.nodes_generated == 0:
             self.nodes_generated = 1
             self.data.generate_nodes()
+
         result = map.import_from_file(file, search)
         if result:
             return True

@@ -212,12 +212,10 @@ class Person:
         if objectsWithinRejection and self.rememberedObj not in objectsWithinRejection:
             # print("objects within rejection")
             # print(objectsWithinRejection)
-            # return self.flock_away_from_objects(objectsWithinRejection)
             # Sam - Keeping the flocking in but not allowing it to move two blocks to its destination
             self.flock_away_from_objects(objectsWithinRejection)
             # return self.flock_away_from_objects(objectsWithinRejection)
 
-        # print(self.name + " Attempting to navigate to remembered " + str(self.rememberedObj))
         x = self.coordinates[0]
         y = self.coordinates[1]
         nextMove = [x, y]
@@ -841,7 +839,6 @@ class Person:
         if key == "":
             return False
 
-        if not self.memory[key]:
             self.memory[key].append(obj)
             return True
 
@@ -1069,7 +1066,7 @@ class Person:
         :return: the action count of how long they are going to be waiting for
         """
 
-        if self.rememberedObj.get_person_using_toilet() == self:
+        if self.rememberedObj.check_person_using_toilet(self) is True:
             self.brain[0][1] += 100 # Set toilet back up to default
             print("using toilet")
             self.get_person_needs()
@@ -1129,14 +1126,11 @@ class Person:
             startingLoc = self.find_nearest_waypoint()
         """NEED TO ADD THE DESTINATION OF REQUIRED OBJECT"""
         # Sam - Trying to change it to use startingLoc as its making a huge jump as it goes to the node
-        # locations = a_starv2.run_astar(startingLoc, self.rememberedObj.get_coordinates())
         locations = None
 
         if self.rememberedObj:
             # print("THERE IS A REMEMBERED OBJECT AND THAT IS" + str(self.rememberedObj))
             targetCoordinates = self.work_out_objects_closest_point(self.rememberedObj)
-            print(str(targetCoordinates) + "Target coords")
-            print("TARGET COORDS ARE" + str(targetCoordinates))
             locations = a_starv2.run_astar(startingLoc, targetCoordinates)
         else:
             locations = a_starv2.run_astar(startingLoc, self.exploreNode)

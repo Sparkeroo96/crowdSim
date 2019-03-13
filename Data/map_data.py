@@ -246,10 +246,9 @@ class map_data:
                 objSize = [obj.get_width(), obj.get_height()]
                 objCoords = obj.get_coordinates()
                 rectangleCoordRanges = self.get_coordinates_range(objCoords, objSize)
-                if obj.get_clip_through():  # Dancefloor is not a collision, and can proceed.
-                    return True
-                elif self.check_circle_overlap_rectangle(edgeCoordinates, rectangleCoordRanges):
-                    return obj
+                if self.check_circle_overlap_rectangle(edgeCoordinates, rectangleCoordRanges):
+                    if obj.get_clip_through() == False: #
+                        return obj
 
         # Coordinates are fine to move to
         return True
@@ -269,10 +268,13 @@ class map_data:
         highX = coordinates[0] + radius
         highY = coordinates[1] + radius
 
-        if lowX < 0 or lowY < 0:
+        simOffsets = self.gui.get_offset()
+
+        if lowX < simOffsets[0] or lowY < simOffsets[1]:
             return False
 
-        if highX > self.gui.get_screen_width() or highY > self.gui.get_screen_height():
+
+        if highX > simOffsets[0] + self.gui.get_sim_screen_width() or highY > simOffsets[1] + self.gui.get_sim_screen_height():
             return False
 
         return True
@@ -410,7 +412,7 @@ class map_data:
                 x1 = coords[0]
                 y1 = coords[1]
                 # This is pythagorous and works out if the point is within the circle
-                distance = math.pow(x1 - x,2) + math.pow(y1 - y,2)
+                distance = math.pow(x1 - x,2) + math.pow(y1 - y, 2)
                 distanceRoot = math.sqrt(distance)
                 if distanceRoot <= radias:
                     return obj
@@ -418,10 +420,11 @@ class map_data:
             else:
                 width = obj.get_width()
                 height = obj.get_height()
-                # coordsRange = self.get_coordinates_range(coords, [width, height])
                 coordsRange = self.get_coordinates_range(objCoords, [width, height])
-                if self.point_in_coordinates_range(coords, coordsRange):
+
+                if self.point_in_coordinates_range(coords, coordsRange) is True:
                     return obj
+        return False
 
 
     def point_in_coordinates_range(self, coordinates, range):
@@ -435,7 +438,7 @@ class map_data:
         x = coordinates[0]
         y = coordinates[1]
 
-        if x >= range["X"][0] and x <= range["X"][1] and y >= range["Y"][0] and y <= range["Y"][1]:
+        if range["X"][0] <= x <= range["X"][1] and range["Y"][0] <= y <= range["Y"][1]:
             return True
 
         return False
@@ -741,9 +744,14 @@ class map_data:
         height = offset[1]
         x2 = cordX + width
         y2 = cordY + height
-        print("width and height")
-        print(widthTest, heightTest)
-        print(width, height)
+
+        # print("widths")
+        # print((wall.get_width() / node_distance))
+        # print(int(width))
+        # print("heights")
+        # print((wall.get_height() / node_distance))
+        # print(int(height))
+
         # If the coord starts from bottom right
         if int(width) < 0 and int(height) < 0:
             # print("in bottom right")
@@ -816,7 +824,6 @@ class map_data:
         node_distance = 20
         total_width = int(math.ceil(self.sim_screen_width/node_distance))
         total_height = int(math.ceil(self.sim_screen_height/node_distance))
-        print(total_height, total_width)
         for x in range(total_width):
             for y in range(total_height):
                 self.values_to_append.append([x, 0]) # Left column
@@ -874,7 +881,6 @@ class map_data:
             elif cords.get_value() == 0:  # Cord should be added to list of open nodes
                 openNodes.append(cords.get_idCoords())
         self.open_nodes = openNodes
-        print(graph)
         """Stores all free nodes in a_star class"""
         a_starv2.set_open_nodes(openNodes)
         """Store all the nodes in the a_star class"""

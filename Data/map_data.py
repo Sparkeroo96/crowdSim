@@ -731,33 +731,30 @@ class map_data:
         :return:
         """
         node_distance = 20 # Spacing between each node.
-        cordX = (int(wall.get_coordinates()[0] / node_distance))
-        cordY = (int(wall.get_coordinates()[1] / node_distance))
-        width = (math.ceil(wall.get_width() / node_distance))
-        height = (math.ceil(wall.get_height() / node_distance))
+        cordX = (int(math.floor(wall.get_coordinates()[0] / node_distance)))
+        cordY = (int(math.floor(wall.get_coordinates()[1] / node_distance)))
+
+        widthTest = (wall.get_width() / node_distance)
+        heightTest = (wall.get_height() / node_distance)
+        offset = self.add_offset(widthTest, heightTest)
+        width = offset[0]
+        height = offset[1]
         x2 = cordX + width
         y2 = cordY + height
-
-        # print("widths")
-        # print((wall.get_width() / node_distance))
-        # print(int(width))
-        # print("heights")
-        # print((wall.get_height() / node_distance))
-        # print(int(height))
-
+        print("width and height")
+        print(widthTest, heightTest)
+        print(width, height)
         # If the coord starts from bottom right
         if int(width) < 0 and int(height) < 0:
             # print("in bottom right")
-            width2 = int(abs(width)) + 1 # Rounding up on a negative number will drop by one
-            height2 = int(abs(height)) + 1
-            if width2 < height2:
-                width2 += 1
-            else:
-                height2 += 1
+            width2 = int(abs(width))# Rounding up on a negative number will drop by one
+            height2 = int(abs(height))
             for x in range(width2):
                 for y in range(height2):
                     self.values_to_append.append([cordX - x, cordY - y])
+        # If the cord starts from top left
         if int(width) > 0 and int(height) > 0:
+            print("X and Y are: " + str(cordX) + str(cordY))
             for x in range(width):
                 self.values_to_append.append([cordX + x, cordY])
                 self.values_to_append.append([cordX + x, y2])
@@ -766,10 +763,9 @@ class map_data:
             for y in range(height):
                 self.values_to_append.append([cordX, cordY + y])
                 self.values_to_append.append([x2, cordY + y])
+        # Bottom Left
         if int(width) > 0 and int(height) < 0:
-            height3 = int(abs(height)) + 1
-            if height3 < width:
-                height3 += 1
+            height3 = int(abs(height))
             for x in range(width):
                 self.values_to_append.append([cordX + x, cordY])  # The top line in a rect
                 self.values_to_append.append([cordX + x, y2])
@@ -780,26 +776,37 @@ class map_data:
                 self.values_to_append.append([x2, cordY - y])
         # If the coord starts from Top Right
         if int(width) < 0 and int(height) > 0:
-            width3 = int(abs(width)) + 1
-            if height > width3:
-                width3 += 1
-            for x in range(width3):
-                self.values_to_append.append([cordX - x, cordY])
-                self.values_to_append.append([cordX - x, y2])
-                for y in range(height):
+            print("top right")
+            width3 = int(abs(width))
+            print(width3)
+            for x in range(width3 + 1):
+                for y in range(height + 1):
                     self.values_to_append.append([cordX - x, cordY + y])
-            for y in range(height):
-                self.values_to_append.append([cordX, cordY + y])  # Left like in a rect
-                self.values_to_append.append([x2, cordY + y])
 
         self.values_to_append.append([x2, y2])  # Append the corner opposite
 
+    def add_offset(self, width, height):
+        """
+        Return offset values
+        :param width:
+        :param height:
+        :return:
+        """
+        offset = []
+        if width >= 0:
+            width += 0.2
+            offset.append(int(math.ceil(width)))
+        else:
+            width -= 0.2
+            offset.append(int(math.floor(width)))
 
-        """Check values are in the grid"""
-        # for v in self.values_to_append:
-        #     if v[0] > yBoundaries and v[1] > xBoundaries:
-        #         self.values_to_append.remove(v)
-
+        if height >= 0:
+            height += 0.2
+            offset.append(int(math.ceil(height)))
+        else:
+            height -= 0.2
+            offset.append(int(math.floor(height)))
+        return offset
 
     def set_grid_area(self):
         """
@@ -809,10 +816,11 @@ class map_data:
         node_distance = 20
         total_width = int(math.ceil(self.sim_screen_width/node_distance))
         total_height = int(math.ceil(self.sim_screen_height/node_distance))
+        print(total_height, total_width)
         for x in range(total_width):
             for y in range(total_height):
-                self.values_to_append.append([x, 0])
-                self.values_to_append.append([0, y])
+                self.values_to_append.append([x, 0]) # Left column
+                self.values_to_append.append([0, y]) # Top row
                 self.values_to_append.append([x, total_height - 1])
                 self.values_to_append.append([total_width - 1, y])
 

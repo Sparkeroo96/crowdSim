@@ -183,6 +183,7 @@ class Person:
             if self.rememberedObjType != "" and not self.exploreNode:
                 # if self.rememberedObjType != "" and self.exploreNode == []:
                 self.exploreNode = a_starv2.get_random_waypoint()
+                print(self.exploreNode)
                 self.astarCoords = a_starv2.run_astar(self.find_nearest_waypoint(), self.exploreNode)
                 # print("setting explore node")
 
@@ -1158,6 +1159,7 @@ class Person:
             print("TARGET COORDS ARE" + str(targetCoordinates))
             locations = a_starv2.run_astar(startingLoc, targetCoordinates)
         else:
+            print("Move into random node" + str(self.random_node))
             locations = a_starv2.run_astar(startingLoc, self.random_node)
 
         # print("LOCATIONS ARE " + str(locations))

@@ -124,14 +124,13 @@ def return_waypoints(locations):
             else:
                 waypoints.append(locations[i])
         except IndexError:
-                print("")
+                print("Index error " + str(IndexError))
         i += 1
     if not locations:
         return
     else:
         """Add the destination to the final waypoint"""
         waypoints.append(locations[-1])
-    print("WAYPOINTS ARE: " + str(waypoints))
     global mapLocations
     mapLocations = waypoints
     return waypoints
@@ -149,7 +148,7 @@ def run_astar(start, dest):
     """Convert coords to the node boys"""
     allNodes = get_all_nodes()
     result = None
-    if allNodes is not False:
+    if allNodes is not False and a is not None:
         result = astar(allNodes, a, b)
 
 
@@ -164,6 +163,8 @@ def run_astar(start, dest):
 """Convert coords that we have as our start and dest to simple 0 - 9 coords."""
 def convert_to_simple(cords):
     converted = []
+    if cords is None:
+        return False
     for c in cords:
         change = math.floor(c / 20)
         if change <= 0:

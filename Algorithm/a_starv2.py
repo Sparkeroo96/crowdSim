@@ -124,7 +124,7 @@ def return_waypoints(locations):
             else:
                 waypoints.append(locations[i])
         except IndexError:
-                print("")
+                nothing = 1
         i += 1
     if not locations:
         return

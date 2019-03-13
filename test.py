@@ -7,6 +7,7 @@ Modified by Sam Parker swp5
 import pygame
 import math
 import sys
+import os
 from Data import map_data
 from time import sleep
 from People.person import Person
@@ -95,6 +96,8 @@ class RunningMain:
     show_nodes = False
 
     def __init__(self):
+        os.environ['SDL_VIDEO_WINDOW_POS'] = str(0) + "," + str(0)
+
         self.set_offset(self.centre([0, 0, self.get_screen_width(), self.get_screen_height()],[self.get_sim_screen_width(), self.get_sim_screen_height()]))
         """This is the constructor that starts the main loop of the simulation"""
         #Starts the pygame
@@ -552,7 +555,8 @@ class RunningMain:
                             seenObj = 0
                             cords_new = self.map_data_to_gui_coords_offset((cord[0],cord[1]))
                             # cords_new = self.map_data_to_gui_coords_offset(cords_new)
-                            # self.display.set_at(cords_new, self.red)
+                            if(self.selected_person == obj):
+                                self.display.set_at(cords_new, self.red)
                             colour = self.display.get_at(cords_new)
                             # if it is red then it must be a person
                             if colour != (255, 255, 255, 255):

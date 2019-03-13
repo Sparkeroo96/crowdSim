@@ -215,6 +215,7 @@ class Person:
         if objectsWithinRejection and self.rememberedObj not in objectsWithinRejection:
             # print("objects within rejection")
             # print(objectsWithinRejection)
+            # return self.flock_away_from_objects(objectsWithinRejection)
             # Sam - Keeping the flocking in but not allowing it to move two blocks to its destination
             self.flock_away_from_objects(objectsWithinRejection)
             # return self.flock_away_from_objects(objectsWithinRejection)
@@ -231,7 +232,7 @@ class Person:
             # self.placeholder += 1
 
         if self.astarCoords:
-            print("astartCords " + str(self.astarCoords))
+            # print("astartCords " + str(self.astarCoords))
             self.navigate_via_astar(nextMove)
         else:
             if self.rememberedObj:
@@ -862,6 +863,7 @@ class Person:
         if key == "":
             return False
 
+        # if not self.memory[key]:
             self.memory[key].append(obj)
             return True
 
@@ -1077,7 +1079,7 @@ class Person:
         Agent has reached an area on the dancefloor and is now dancing.
         :return:
         """
-        print("In dance function")
+        # print("In dance function")
         self.brain[2][1] += 200
         self.set_action_count(5, 10)
 
@@ -1559,3 +1561,8 @@ class Person:
             return True
         else:
             return False
+
+
+    def set_needs_values(self, index,value):
+        array = self.brain
+        array[index][1] = value

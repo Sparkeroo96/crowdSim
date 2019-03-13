@@ -80,7 +80,6 @@ class Person:
         self.add_states_to_machine()
 
         self.currentState = self.idleState
-        # self.currentState = self.defaultState
         self.stateMachine.set_current_state(self.currentState)
 
         self.tick_rate = tick_rate
@@ -193,6 +192,7 @@ class Person:
 
         elif stateAction == "dance":
             if self.inside_dance_floor:
+                print("dance")
                 self.advance_state_machine()
             self.astarCoords.clear()
 
@@ -384,7 +384,6 @@ class Person:
 
     def set_explore_node(self):
         """
-
         Gets a node to navigate to in order to explore the environment they are in
         Node cant be too close to them, or its pointless exploring
         :return:
@@ -399,7 +398,7 @@ class Person:
             self.navigate_via_astar(nextMove)
         else: # No Astar cords found. This is due to the location not being available to travel, or first time initiating exploring.
             # print("no astar cords found")
-            self.set_cords_from_algo("random_node")
+            self.set_cords_from_algo()
             self.find_action() # Keep going back to find to see if object has been found.
 
 
@@ -609,6 +608,8 @@ class Person:
 
             # if self.map.check_circle_overlap_rectangle(selfEdge, rectangleCoordRanges):
             if self.map.check_person_touching_object(selfEdge, rectangleCoordRanges):
+                print("TOUCHING OBJECT ")
+                self.astarCoords.clear()
                 self.advance_state_machine()
                 self.change_angle_to_move_direction(self.coordinates, self.rememberedObj.get_coordinates())
 
@@ -666,7 +667,6 @@ class Person:
             # Cant find object do a circle to see it
             if self.rotate < 12:
                 action = "rotate"
-
             else:
                 action = "explore"
                 # self.set_explore_node()
@@ -1040,6 +1040,10 @@ class Person:
         """
         self.hasDrink = 1
         self.orderedDrink = 0
+        #Update drink meter
+        print("IN served Drink")
+        self.brain[1][1] = 99
+        self.astarCoords.clear()
 
         self.advance_state_machine()
 
@@ -1073,7 +1077,8 @@ class Person:
         Agent has reached an area on the dancefloor and is now dancing.
         :return:
         """
-        self.random_move()
+        print("In dance function")
+        self.brain[2][1] += 200
         self.set_action_count(5, 10)
 
     def use_toilet(self):
@@ -1134,23 +1139,28 @@ class Person:
         return False
 
     """gets the cord from the a* and returns the cords needed"""
-    def set_cords_from_algo(self, came_from):
+    def set_cords_from_algo(self):
 
         """If the current cords are the nearest node"""
         startingLoc = self.coordinates
         if self.find_nearest_waypoint() != self.coordinates:
             startingLoc = self.find_nearest_waypoint()
-
         """NEED TO ADD THE DESTINATION OF REQUIRED OBJECT"""
         # Sam - Trying to change it to use startingLoc as its making a huge jump as it goes to the node
-        locations = a_starv2.run_astar(startingLoc, self.rememberedObj.get_coordinates())
+        # locations = a_starv2.run_astar(startingLoc, self.rememberedObj.get_coordinates())
+        locations = None
 
-        if self.rememberedObj and came_from is "known_location":
+        if self.rememberedObj:
+            # print("THERE IS A REMEMBERED OBJECT AND THAT IS" + str(self.rememberedObj))
             targetCoordinates = self.work_out_objects_closest_point(self.rememberedObj)
+            print(str(targetCoordinates) + "Target coords")
+            print("TARGET COORDS ARE" + str(targetCoordinates))
             locations = a_starv2.run_astar(startingLoc, targetCoordinates)
         else:
+            print("Move into random node" + str(self.random_node))
             locations = a_starv2.run_astar(startingLoc, self.random_node)
 
+        # print("LOCATIONS ARE " + str(locations))
         if not locations:
             return False
         else:
@@ -1442,9 +1452,6 @@ class Person:
             return False
         return [xDiff, yDiff]
 
-    def get_memory(self):
-        return self.brain
-
     """Returns array of persons current needs, alone with value"""
     def get_person_needs(self):
         return self.brain
@@ -1453,8 +1460,8 @@ class Person:
     def relax(self):
         # print("In relax")
         dec_thirst = randint(0, 1)
-        dec_toilet = randint(0, 2)
-        dec_dance = randint(2, 5)
+        dec_toilet = randint(0, 1)
+        dec_dance = randint(0, 3)
         self.brain[0][1] -= dec_toilet
         self.brain[1][1] -= dec_thirst
         self.brain[2][1] -= dec_dance
@@ -1516,12 +1523,13 @@ class Person:
             nextMove = [x, y]
             moveReturn = self.move(nextMove)
             if moveReturn is not True:
-                newCoords = self.get_coordinates_for_move_avoiding_collision_object(targetCoordinates, moveReturn, nextMove)
+                newCoords = self.get_coordinates_for_move_avoiding_collision_object(self.random_dance_area, moveReturn, nextMove)
                 self.move(newCoords)
                 # return self.move(nextMove)
 
         if self.coordinates == self.random_dance_area:
-            self.brain[2][1] = 1000
+            # print("REACHED TARGET WOOO")
+            self.brain[2][1] = 99
             """DELAY here?"""
             self.random_dance_area = None
             self.inside_dance_floor = True
@@ -1551,8 +1559,3 @@ class Person:
             return True
         else:
             return False
-
-
-    def set_needs_values(self, index,value):
-        array = self.brain
-        array[index][1] = value

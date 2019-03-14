@@ -209,7 +209,7 @@ class Person:
         nextMove = [x, y]
 
         # if not self.astarCoords:
-        if len(self.astarCoords) == 0  or not self.astarCoords:
+        if len(self.astarCoords) == 0 or not self.astarCoords:
             self.set_cords_from_algo()
 
         if self.astarCoords and (targetDistance > (self.get_rejection_area() / 2) or self.object_in_vision(self.rememberedObj) is True and self.count_objects_in_vision(False) > 1):

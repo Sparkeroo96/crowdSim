@@ -148,28 +148,22 @@ def run_astar(start, dest):
     b = convert_to_simple(dest)
     destx = b[0] + 1
     desty = b[1] + 1
-    """Convert coords to the nodes"""
-    print("my destination is: " + str(b))
     allNodes = get_all_nodes()
     result = None
     if allNodes is not False and a is not None:
         result = astar(allNodes, a, b)
-    if result is False: # Catch if there are no astar coords.
+    if result is False: # Catch if there are no astar coords and attempt to move to the top right node.
         new_dest = destx, desty
-        print("new dest is: " + str(new_dest))
         result = astar(allNodes, a, new_dest)
-        print("Modded Destination is: " + str(result))
-    if result is False: # Catch if there are no astar coords.
+    if result is False: # Catch if there are no astar coords and attempt to move to the bottom left node.
         destxv2 = b[0] - 1
         destyv2 = b[1] - 1
         new_dest_v2 = destxv2, destyv2
-        print("new dest v2 is: " + str(new_dest_v2))
         result = astar(allNodes, a, new_dest_v2)
-        print("Modded Destination v2 is: " + str(result))
-
-    if len(result) <= 2:
-        return False
-    if result is not None or result is not False:
+    if result is not None and result is not False:
+        print(result)
+        if len(result) <= 2:  # At this point, the agent is near enough to the object.
+            return False
         waypoint = return_waypoints(store_node_details(result))
         # return store_node_details(result)
         return locations(waypoint)

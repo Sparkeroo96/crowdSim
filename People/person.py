@@ -228,24 +228,24 @@ class Person:
                 y = self.coordinates[1]
 
                 if targetCoordinates[0] > x:
-                    if targetCoordinates[0] > x + 1 and self.usedSpeed == 0:
+                    if targetCoordinates[0] > x + 2 and self.usedSpeed == 0:
                         x += 2
                     else:
                         x += 1
 
                 elif targetCoordinates[0] < x:
-                    if targetCoordinates[0] < x - 1 and self.usedSpeed == 0:
+                    if targetCoordinates[0] < x - 2 and self.usedSpeed == 0:
                         x -= 2
                     else:
                         x -= 1
 
                 if targetCoordinates[1] > y:
-                    if targetCoordinates[1] > y + 1 and self.usedSpeed == 0:
+                    if targetCoordinates[1] > y + 2 and self.usedSpeed == 0:
                         y += 2
                     else:
                         y += 1
                 elif targetCoordinates[1] < y:
-                    if targetCoordinates[1] < y - 1 and self.usedSpeed == 0:
+                    if targetCoordinates[1] < y - 2 and self.usedSpeed == 0:
                         y -= 2
                     else:
                         y -= 1
@@ -318,11 +318,18 @@ class Person:
             self.objectFailedCount = 0
             self.clear_explore_node()
 
+        if len(self.exploreNode) == 2:
+            if self.exploreNode[0] == self.coordinates[0] and self.exploreNode[1] == self.coordinates[1]:
+                self.clear_explore_node()
+
         # if self.rememberedObjType != "" and (not self.exploreNode or self.exploreNode is None):
         if not self.exploreNode or self.exploreNode is None:
+            print("setting explore node")
             # if self.rememberedObjType != "" and self.exploreNode == []:
             self.exploreNode = a_starv2.get_random_waypoint()
             self.astarCoords = a_starv2.run_astar(self.find_nearest_waypoint(), self.exploreNode)
+        else:
+            print("has explore node " + str(self.exploreNode) + " my coordinates " + str(self.coordinates))
 
     def get_coordinates_for_move_avoiding_collision_object(self, targetCoordinates,  collisionObject, attemptedMove):
         """
@@ -380,8 +387,8 @@ class Person:
 
         print("person not moving because of " + str(collisionObject))
 
-        if self.rememberedObj != "":
-            self.check_person_collided_with_target(collisionObject)
+        # if self.rememberedObj != "":
+        #     self.check_person_collided_with_target(collisionObject)
 
         self.coordinatesFailed += 1
         if self.objectFailed == collisionObject:
@@ -600,6 +607,9 @@ class Person:
 
                 # self.astarCoords.clear()
                 self.astarCoords = []
+                print("Arrived at object " + str(self.coordinates))
+                print("object " + str(self.rememberedObj))
+                print("a* " + str(self.astarCoords))
                 self.advance_state_machine()
                 self.change_angle_to_move_direction(self.coordinates, self.rememberedObj.get_coordinates())
             else:
@@ -650,10 +660,13 @@ class Person:
         if self.find_object(self.rememberedObjType):
             action = "navigateToRememberedObj"
             self.rotate = 0
+            print("found object " + str(self.currentState))
             self.advance_state_machine()
+            print("new state " + self.currentState)
 
             if self.astarCoords or self.exploreNode:
                 self.clear_explore_node()
+
         else:
             # Cant find object do a circle to see it
             if self.rotate < 12:
@@ -1557,14 +1570,9 @@ class Person:
         array[index][1] = value
 
     def check_person_collided_with_target(self, collisionObj):
-        """
-        Checking to see if a person has collided with an object in move that it was aiming for
-        BitchFix
-        :param collisionObj: The object that was collided with
-        :return:
-        """
 
-        if collisionObj == self.rememberedObj or isinstance(collisionObj, self.rememberedObjType) is True:
+        print("rememberedObjectType " + str(self.rememberedObjType))
+        if collisionObj == self.rememberedObj or type(collisionObj) is type(self.rememberedObj) is True:
             # Found your way there goon, do your thing
             self.advance_state_machine()
             return True

@@ -98,7 +98,7 @@ class RunningMain:
     dance_floor_info = None
 
     def __init__(self):
-        os.environ['SDL_VIDEO_WINDOW_POS'] = str(10) + "," + str(10)
+        os.environ['SDL_VIDEO_WINDOW_POS'] = str(0) + "," + str(0)
 
         self.set_offset(self.centre([0, 0, self.get_screen_width(), self.get_screen_height()],[self.get_sim_screen_width(), self.get_sim_screen_height()]))
         """This is the constructor that starts the main loop of the simulation"""
@@ -537,6 +537,8 @@ class RunningMain:
                         size_info = [size_info[0],size_info[1] + size_info[3],size_info[2],size_info[3]]
                         running_size =[size_info[0],size_info[1],size_info[2], size_info[3]+ running_size[3]]
                     current_state = self.get_selected_person().currentState
+                    if current_state is None:
+                        current_state = ""
                     size_info = [0,150,150,50]
                     self.add_button(size_info,current_state,self.black,20)
                     # size_info = [0, 200, 150, 50]

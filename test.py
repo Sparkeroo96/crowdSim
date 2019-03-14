@@ -7,6 +7,7 @@ Modified by Sam Parker swp5
 import pygame
 import math
 import sys
+import os
 from Data import map_data
 from time import sleep
 from People.person import Person
@@ -26,7 +27,6 @@ class RunningMain:
     orange = (255, 128, 0)
     yellow = (250,250,0)
     purple = (128,0,128)
-
     exit = False
 
     # Menu flags
@@ -96,6 +96,8 @@ class RunningMain:
     show_nodes = False
 
     def __init__(self):
+        os.environ['SDL_VIDEO_WINDOW_POS'] = str(0) + "," + str(0)
+
         self.set_offset(self.centre([0, 0, self.get_screen_width(), self.get_screen_height()],[self.get_sim_screen_width(), self.get_sim_screen_height()]))
         """This is the constructor that starts the main loop of the simulation"""
         #Starts the pygame
@@ -204,10 +206,7 @@ class RunningMain:
 
                 # Adds a person to the map if clicked
                 if self.get_add_person_on_click() and event.type == pygame.MOUSEBUTTONUP and not self.get_build_active() and self.in_area(pygame.mouse.get_pos(),[self.get_offset()[0],self.get_offset()[1],self.get_sim_screen_width(),self.get_sim_screen_height()]):
-                    #Need to have a check to say if you can create a person at these coordinates
-                    personCoordinates = self.gui_to_map_data_coords_offset(pygame.mouse.get_pos())
-                    size = 20
-                    self.get_map_data().add_people_to_map(personCoordinates, size, 0)
+                    self.get_map_data().add_people_to_map(self.gui_to_map_data_coords_offset(pygame.mouse.get_pos()),20,0)
 
                 #The remove object function
                 if self.get_current_tool() == "Remove" and event.type == pygame.MOUSEBUTTONUP:
@@ -290,13 +289,12 @@ class RunningMain:
                     # Gets the map from map data
                     objectArray = self.data.get_map()
                     # if it is empty then it loads the default
-                    if objectArray == []:
-                        self.data.export("maps_saves","default")
+                    if len(self.get_map_data().get_map()) == 0:
+                        print("Load Default")
+                        self.get_map_data().import_from_file("maps_saves","default")
 
-                    elif success:
-                        # If there was a succesful load then it uses the user chosen one
-                        self.draw_display()
                     self.draw_display()
+                    # self.draw_display()
                 # Starts the user input function
                 if menu[1] == "Floor Plan Load":
                     self.data.clear_map()
@@ -535,7 +533,10 @@ class RunningMain:
                 height = obj.get_height()
                 pygame.draw.rect(self.display, obj_colour, [coordinates[0], coordinates[1], width, height])
 
+
+
         for obj in objectArray:
+
             if isinstance(obj, Person):
                 objCoordinates = obj.get_coordinates()
                 angle = obj.get_angle()
@@ -550,14 +551,14 @@ class RunningMain:
                     for cord in cordArray:
                         try:
                             seenObj = 0
+                            cords_new = self.map_data_to_gui_coords_offset((cord[0],cord[1]))
+                            # cords_new = self.map_data_to_gui_coords_offset(cords_new)
+                            if(self.selected_person == obj):
+                                self.display.set_at(cords_new, self.red)
+                            colour = self.display.get_at(cords_new)
                             # if it is red then it must be a person
-                            newCoords = self.map_data_to_gui_coords_offset(cord)
-                            colour = self.display.get_at(newCoords)
-
-                            # if it is coloured then it must be an object
                             if colour != (255, 255, 255, 255):
                                 # Its an object of some kind
-
                                 seenObj = self.data.what_object(cord)
 
                                 obj.add_to_vision(seenObj)
@@ -700,7 +701,6 @@ class RunningMain:
         if self.nodes_generated == 0:
             self.nodes_generated = 1
             self.data.generate_nodes()
-
         result = map.import_from_file(file, search)
         if result:
             return True

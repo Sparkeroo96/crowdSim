@@ -130,9 +130,10 @@ class Person:
         self.orderedDrink = 0
         self.hasDrink = 0
         # Persons "needs" first value is importance second is how much they want to do it
-        self.brain = [["Toilet", 100],
-                 ["Drink", 100],
-                 ["Dance", 100]]
+        self.brain = [["Toilet", randint(0,100)],["Drink", randint(0,100)],["Dance", randint(0,100)]]
+
+        self.random_node = None
+
         self.inside_dance_floor = False
         self.random_dance_area = None
 
@@ -149,9 +150,10 @@ class Person:
         self.currentState = self.stateMachine.get_current_state()
         self.usedSpeed = 0
 
+
         if self.wait_on_action_count():
             return "Waiting"
-
+        # print(" My current state " + self.currentState)
         stateAction = self.get_state_action()
         if stateAction == "navigateToRememberedObj":
             self.navigate_to_remembered_object()
@@ -207,15 +209,12 @@ class Person:
         nextMove = [x, y]
 
         # if not self.astarCoords:
-        if self.astarCoords == [] or not self.astarCoords:
+        if len(self.astarCoords) == 0  or not self.astarCoords:
             self.set_cords_from_algo()
 
-        if self.astarCoords and (targetDistance > (self.get_rejection_area() / 2) or self.object_in_vision(self.rememberedObj) is True and self.count_objects_in_vision(False)):
-            print("navigating via a*")
-            print(self.object_in_vision(self.rememberedObj))
+        if self.astarCoords and (targetDistance > (self.get_rejection_area() / 2) or self.object_in_vision(self.rememberedObj) is True and self.count_objects_in_vision(False) > 1):
             self.navigate_via_astar(nextMove)
         else:
-            # print("just walking there, target " + str(self.rememberedObj) + " targetDistance " + str(targetDistance))
             if targetCoordinates != nextMove:
                 # while targetCoordinates != nextMove:
                 x = self.coordinates[0]
@@ -318,12 +317,9 @@ class Person:
 
         # if self.rememberedObjType != "" and (not self.exploreNode or self.exploreNode is None):
         if not self.exploreNode or self.exploreNode is None:
-            print("setting explore node")
             # if self.rememberedObjType != "" and self.exploreNode == []:
             self.exploreNode = a_starv2.get_random_waypoint()
             self.astarCoords = a_starv2.run_astar(self.find_nearest_waypoint(), self.exploreNode)
-        else:
-            print("has explore node " + str(self.exploreNode) + " my coordinates " + str(self.coordinates))
 
     def get_coordinates_for_move_avoiding_collision_object(self, targetCoordinates,  collisionObject, attemptedMove):
         """
@@ -376,12 +372,10 @@ class Person:
             self.lastCoordinates = self.coordinates
             self.coordinates = coordinates
             self.coordinatesFailed = 0
-            print("person not moving because of " + str(collisionObject))
 
             return True
 
-        # print("person not moving because of " + str(collisionObject))
-        print("ASTAR Right now is: " + str(self.astarCoords))
+        print("person not moving because of " + str(collisionObject))
 
         # if self.rememberedObj != "":
         #     self.check_person_collided_with_target(collisionObject)
@@ -392,7 +386,7 @@ class Person:
             print("THIS IS OCCURING")
             # Phil - Put this here as a test of b-line. Ignore if not neccesary in future commits
             print("Navigate still")
-            self.navigate_to_remembered_object()
+            # self.navigate_to_remembered_object()
         else:
             self.objectFailed = collisionObject
             self.objectFailedCount = 1
@@ -590,12 +584,11 @@ class Person:
             # Person moving to object
             action = "navigateToRememberedObj"
             rememberedObjectCoords = 0
-
+            objectClosestPoint = -1
             if self.object_in_vision(self.rememberedObj):
-                rememberedObjectCoords = self.work_out_objects_closest_point(self.rememberedObj)
-            else:
-                #If the person is next to the thing they are supposed to be on like a bar, advance the state again
-                rememberedObjectCoords = self.rememberedObj.get_coordinates()
+                objectClosestPoint = self.work_out_objects_closest_point(self.rememberedObj)
+
+            rememberedObjectCoords = self.rememberedObj.get_coordinates()
 
             objectSize = [self.rememberedObj.get_width(), self.rememberedObj.get_height()]
             rectangleCoordRanges = self.map.get_coordinates_range(rememberedObjectCoords, objectSize)
@@ -603,17 +596,9 @@ class Person:
 
             # if self.map.check_circle_overlap_rectangle(selfEdge, rectangleCoordRanges):
             if self.map.check_person_touching_object(selfEdge, rectangleCoordRanges):
-                print("person touching object " + str(rememberedObjectCoords) + " coord ranges " + str(rectangleCoordRanges))
-
-                # self.astarCoords.clear()
                 self.astarCoords = []
-                print("Arrived at object " + str(self.coordinates))
-                print("object " + str(self.rememberedObj))
-                print("a* " + str(self.astarCoords))
                 self.advance_state_machine()
                 self.change_angle_to_move_direction(self.coordinates, self.rememberedObj.get_coordinates())
-            # else:
-                # print("person not touching object " + str(rememberedObjectCoords) + " coord ranges " + str(rectangleCoordRanges))
 
         elif self.currentState == "orderDrink":
             # Person is ordering their drink
@@ -640,8 +625,6 @@ class Person:
             if self.inside_dance_floor:
                 self.dance()
                 self.advance_state_machine()
-                self.inside_dance_floor = False
-                # self.inside_dance_floor = False
 
         elif self.currentState == "useToilet":
 
@@ -1063,8 +1046,7 @@ class Person:
         self.hasDrink = 1
         self.orderedDrink = 0
         #Update drink meter
-        print("IN served Drink")
-        self.brain[1][1] = 99
+        self.incriment_need(1, 1)
         self.astarCoords.clear()
 
         self.advance_state_machine()
@@ -1077,7 +1059,6 @@ class Person:
         :return:
         """
         if self.hasDrink:
-            self.brain[1][1] += 100  # Increase the drink level
             return True
 
         return False
@@ -1099,10 +1080,9 @@ class Person:
         Agent has reached an area on the dancefloor and is now dancing.
         :return:
         """
-        print("In dance function")
-        self.brain[2][1] = 100
+        self.incriment_need(2,1)
         self.set_action_count(5, 10)
-        self.clear_remembered_object()
+        # self.clear_remembered_object()
 
     def use_toilet(self):
         """
@@ -1112,8 +1092,7 @@ class Person:
         """
 
         if self.rememberedObj.check_person_using_toilet(self) is True:
-            self.brain[0][1] += 100 # Set toilet back up to default
-            print("using toilet")
+            self.brain[0][1] = 100 # Set toilet back up to default
             self.get_person_needs()
 
             self.rememberedObj.person_stop_using_toilet(self)
@@ -1576,10 +1555,18 @@ class Person:
 
     def check_person_collided_with_target(self, collisionObj):
 
-        print("rememberedObjectType " + str(self.rememberedObjType))
         if collisionObj == self.rememberedObj or type(collisionObj) is type(self.rememberedObj) is True:
             # Found your way there goon, do your thing
             self.advance_state_machine()
             return True
 
         return False
+
+    def incriment_need(self, index, value_of_incriment):
+        needs = self.brain
+        current_value = needs[index][1]
+        current_value = (current_value + value_of_incriment) % 100
+        needs[index][1] = current_value
+        needs[index][1] = current_value
+
+

@@ -210,7 +210,7 @@ class Person:
         nextMove = [x, y]
 
         # if not self.astarCoords:
-        if self.astarCoords == [] or not self.astarCoords:
+        if len(self.astarCoords) == 0  or not self.astarCoords:
             self.set_cords_from_algo()
             #self.set_cords_from_algo("known_location")
             # self.placeholder += 1

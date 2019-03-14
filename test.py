@@ -12,6 +12,7 @@ from Data import map_data
 from time import sleep
 from People.person import Person
 from Objects.wall import Wall
+from Objects.danceFloor import DanceFloor
 
 
 class RunningMain:
@@ -94,6 +95,7 @@ class RunningMain:
     pause_toggle = False
 
     show_nodes = False
+    dance_floor_info = None
 
     def __init__(self):
         os.environ['SDL_VIDEO_WINDOW_POS'] = str(0) + "," + str(0)
@@ -276,11 +278,6 @@ class RunningMain:
                     search = self.get_user_input_result()
                     success = self.load_map('maps_saves', search)
                     self.set_text_done(False)
-                # Allowing nodes to be created outside of the map
-
-                # if self.nodes_generated == 0:
-                #     self.nodes_generated = 1
-                #     self.data.generate_nodes()
 
             # This checks to see if it is on the simulation menu options
             elif menu[0] == "Run Simulation":
@@ -469,8 +466,6 @@ class RunningMain:
         if not self.builder_active:
             self.menu_bar()
             self.menu_option(self.menu_bar_clicked)
-        # self.node_icon((100,100))
-        # self.draw_path([(120,210),(200,200),(300,300),(800,1022)])
         x_offset, y_offset = self.get_offset()
         if self.show_nodes:
             list_nodes = self.get_map_data().open_nodes
@@ -482,7 +477,7 @@ class RunningMain:
                     x1 = x1 + x_offset
                     y1 = y1 + y_offset
                     self.node_icon((x1,y1))
-
+        # Draws the border around the simulation
         pygame.draw.rect(self.get_display(),self.black,[x_offset,y_offset,self.get_sim_screen_width(), self.get_sim_screen_height()],2)
         # Goes though the map array obj
         objectArray = self.data.get_map()
@@ -503,13 +498,24 @@ class RunningMain:
                     nothing = 1
                 if obj.get_state_action() == "dance":
                     red, blue, green = obj.colour
-                    lowest = min(red, blue, green)
                     red = (red + 10) % 225
                     blue = (blue + 20) % 225
                     green = (green + 30) % 225
                     obj.colour = (red, blue, green)
                 else:
                     obj.colour = self.red
+
+                # This is a check to make sure that the people are inside of the area
+                # if not self.dance_floor_info == None:
+                #     dance_floor_x, dance_floor_y = self.dance_floor_info.get_coordinates()
+                #     dance_floor_width = self.dance_floor_info.get_width()
+                #     dance_floor_height = self.dance_floor_info.get_height()
+                #     dance_floor_x, dance_floor_y = self.map_data_to_gui_coords_offset((dance_floor_x, dance_floor_y))
+                #     info = [dance_floor_x, dance_floor_y, dance_floor_width, dance_floor_height]
+                #     self.get_map_data().get_coordinates_range()
+                #     if self.in_area(coordinates, info):
+                #         obj.colour = self.black
+
                 if(obj == self.get_selected_person()):
                     text_info = self.get_selected_person().get_person_needs()
                     size_info = [0,0,150,50]
@@ -528,6 +534,8 @@ class RunningMain:
                     current_state = self.get_selected_person().currentState
                     size_info = [0,150,150,50]
                     self.add_button(size_info,current_state,self.black,20)
+                    # size_info = [0, 200, 150, 50]
+                    # self.add_button(size_info, str(obj.coordinates), self.black, 20)
                     running_size =[saved_size_info[0],saved_size_info[1],saved_size_info[2], running_size[3] - size_info[3], len(text_info)]
                     self.set_size_info_pannel(running_size)
 
@@ -544,6 +552,9 @@ class RunningMain:
                 # objects
                 height = obj.get_height()
                 pygame.draw.rect(self.display, obj_colour, [coordinates[0], coordinates[1], width, height])
+                # testing
+                # if isinstance(obj, DanceFloor):
+                #     self.dance_floor_info = obj
 
 
 

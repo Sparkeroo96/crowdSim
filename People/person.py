@@ -622,6 +622,8 @@ class Person:
                 self.clear_remembered_object()
 
             elif self.has_drink():
+                """PHIL - Adding this change in"""
+                self.brain[1][1] = 100
                 self.advance_state_machine()
 
 

@@ -216,6 +216,7 @@ class Person:
 
         if self.astarCoords and (targetDistance > (self.get_rejection_area() / 2) or self.object_in_vision(self.rememberedObj) is True and self.count_objects_in_vision(False) > 1):
             print("THIS IS TRUE AND IM NAVIGATING HERE")
+            print(str(self.astarCoords))
             self.navigate_via_astar(nextMove)
         else:
             if targetCoordinates != nextMove:
@@ -619,11 +620,11 @@ class Person:
             action = "wait"
             if self.has_ordered_drink() == 0 and self.has_drink() is False:
                 self.order_drink()
+                self.brain[1][1] = 100
                 self.clear_remembered_object()
 
             elif self.has_drink():
                 """PHIL - Adding this change in"""
-                self.brain[1][1] = 100
                 self.advance_state_machine()
 
 
@@ -1113,6 +1114,8 @@ class Person:
 
         if self.rememberedObj.check_person_using_toilet(self) is True:
             self.get_person_needs()
+            """Phil- Added this as a placeholder"""
+            self.brain[0][1] = 100
 
             self.rememberedObj.person_stop_using_toilet(self)
             self.advance_state_machine()

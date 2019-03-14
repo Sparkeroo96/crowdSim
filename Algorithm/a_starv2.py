@@ -161,7 +161,6 @@ def run_astar(start, dest):
         new_dest_v2 = destxv2, destyv2
         result = astar(allNodes, a, new_dest_v2)
     if result is not None and result is not False:
-        print(result)
         if len(result) <= 2:  # At this point, the agent is near enough to the object.
             return False
         waypoint = return_waypoints(store_node_details(result))

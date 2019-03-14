@@ -202,8 +202,6 @@ class Person:
         Starts to move to the remembered Object
         :return: True on success
         """
-
-        print("my state is" + str(self.currentState))
         # Hopefully this will allow someone to flock around objects in front of them, whilst navigiating to the remembered object
         objectsWithinRejection = self.map.get_objects_within_range(self.coordinates, self.get_rejection_area(), self.get_edge_coordinates_array(self.coordinates, self.get_rejection_area()), self)
 
@@ -227,6 +225,8 @@ class Person:
         nextMove = [x, y]
 
         # if not self.astarCoords:
+        if self.astarCoords is False:
+            self.astarCoords = []
         if len(self.astarCoords) == 0 or not self.astarCoords:
             self.set_cords_from_algo()
 
@@ -315,8 +315,7 @@ class Person:
         y_distance = abs(y2 - y1)
         distance = (x_distance * x_distance) + (y_distance * y_distance)
         distance = math.sqrt(distance)
-        if distance < self.width + self.width * 0.3:
-            print("AM I GETTING STUCK HERE?")
+        if distance < (self.width + self.width) * 0.3:
             self.astarCoords.pop(0)
             if len(self.astarCoords) == 0:
                 self.clear_explore_node()
@@ -400,7 +399,6 @@ class Person:
 
             return True
 
-        print("person not moving because of " + str(collisionObject))
 
         if self.rememberedObj != "":
             self.check_person_collided_with_target(collisionObject)
@@ -408,10 +406,6 @@ class Person:
         self.coordinatesFailed += 1
         if self.objectFailed == collisionObject:
             self.objectFailedCount += 1
-            print("THIS IS OCCURING")
-            # Phil - Put this here as a test of b-line. Ignore if not neccesary in future commits
-            print("Navigate still")
-            # self.navigate_to_remembered_object()
         else:
             self.objectFailed = collisionObject
             self.objectFailedCount = 1
@@ -582,8 +576,6 @@ class Person:
 
         """NEED TO CHECK HERE FOR NEEDS"""
         """IF STATE IS GREATEST NEED"""
-        print("CURRENT STATE IS: ")
-        print(self.currentState)
         if self.currentState == self.idleState:
             """While there are no current needs, the person will relax."""
             """relax will reduce the needs of the person"""
@@ -675,9 +667,7 @@ class Person:
         if self.find_object(self.rememberedObjType):
             action = "navigateToRememberedObj"
             self.rotate = 0
-            print("found object " + str(self.currentState))
             self.advance_state_machine()
-            print("new state " + self.currentState)
 
             if self.astarCoords or self.exploreNode:
                 self.clear_explore_node()
@@ -1128,7 +1118,6 @@ class Person:
         Agent has reached an area on the dancefloor and is now dancing.
         :return:
         """
-        print("dancing")
         # self.brain[2][1] = 100
         self.increment_need(2, 1)
         # self.set_action_count(5, 10)
@@ -1505,7 +1494,7 @@ class Person:
     """This will be in an idle state when a person has no desire of drinking, dancing or wanting the toilet"""
     def relax(self):
         for i in range(len(self.brain)):
-            self.incriment_need(i,-1)
+            self.increment_need(i,-1)
 
     def set_random_dance_area(self):
         if self.random_dance_area is None:
@@ -1624,16 +1613,6 @@ class Person:
             current_value = 0
 
         self.brain[index][1] = current_value
-
-    def incriment_need(self, index, value_of_incriment):
-        needs = self.brain
-        current_value = needs[index][1]
-        current_value = (current_value + value_of_incriment)
-        if current_value > 100:
-            current_value = 100
-        if current_value < 0:
-            current_value = 0
-        needs[index][1] = current_value
 
     def probility_choice_need(self):
         """

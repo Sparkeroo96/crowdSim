@@ -867,7 +867,7 @@ class map_data:
         a_starv2.set_open_nodes(openNodes)
         """Store all the nodes in the a_star class"""
         a_starv2.store_all_nodes(graph)
-        print(graph)
+        # print(graph)
 
     def get_person_cord_info(self):
         personCoords = []

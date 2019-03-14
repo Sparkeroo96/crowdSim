@@ -83,6 +83,9 @@ class Person:
         self.currentState = self.idleState
         self.stateMachine.set_current_state(self.currentState)
 
+        self.starting_value = None
+        self.doing_task = False
+
         self.tick_rate = tick_rate
 
         # variable declaration
@@ -175,10 +178,10 @@ class Person:
 
             self.navigate_to_remembered_object()
 
-        elif stateAction == "dance":
-            if self.inside_dance_floor:
-                self.advance_state_machine()
-            self.astarCoords.clear()
+        # elif stateAction == "dance":
+        #     if self.inside_dance_floor:
+        #         self.advance_state_machine()
+        #     self.astarCoords.clear()
 
         else:
             # self.random_move()
@@ -299,7 +302,7 @@ class Person:
         y_distance = abs(y2 - y1)
         distance = (x_distance * x_distance) + (y_distance * y_distance)
         distance = math.sqrt(distance)
-        if distance < self.width:
+        if distance < self.width + self.width * 0.3:
             self.astarCoords.pop(0)
             if len(self.astarCoords) == 0:
                 self.clear_explore_node()
@@ -1085,6 +1088,8 @@ class Person:
         :return:
         """
         self.incriment_need(2,1)
+        self.incriment_need(1,-1)
+        self.incriment_need(0,-1)
         self.set_action_count(5, 10)
         # self.clear_remembered_object()
 
@@ -1457,12 +1462,8 @@ class Person:
 
     """This will be in an idle state when a person has no desire of drinking, dancing or wanting the toilet"""
     def relax(self):
-        dec_thirst = randint(0, 1)
-        dec_toilet = randint(0, 1)
-        dec_dance = randint(0, 3)
-        self.brain[0][1] -= dec_toilet
-        self.brain[1][1] -= dec_thirst
-        self.brain[2][1] -= dec_dance
+        for i in range(len(self.brain)):
+            self.incriment_need(i,-1)
 
     def set_random_dance_area(self):
         if self.random_dance_area is None:
@@ -1567,8 +1568,36 @@ class Person:
     def incriment_need(self, index, value_of_incriment):
         needs = self.brain
         current_value = needs[index][1]
-        current_value = (current_value + value_of_incriment) % 100
-        needs[index][1] = current_value
+        current_value = (current_value + value_of_incriment)
+        if current_value > 100:
+            current_value = 100
+        if current_value < 0:
+            current_value = 0
         needs[index][1] = current_value
 
-
+    def probility_choice_need(self):
+        """
+        This function takes all the needs and selects one based on the probibility of it being needed
+        :return:
+        """
+        needs = self.brain
+        toilet = 100 - needs[0][1]
+        if toilet == 0:
+            toilet = 1
+        drink = 100 - needs[1][1]
+        if drink == 0:
+            drink = 1
+        dance = 100 - needs[2][1]
+        if dance == 0:
+            dance = 1
+        sum_of_needs = toilet + drink + dance
+        prob_toilet = (toilet / sum_of_needs) * 100
+        prob_drink = (drink / sum_of_needs) * 100
+        prob_dance = (dance / sum_of_needs) * 100
+        rand_num = randint(0,100)
+        if prob_toilet > rand_num:
+            return needs[0]
+        elif prob_toilet + prob_drink > rand_num:
+            return needs[1]
+        elif prob_drink + prob_toilet + prob_dance > rand_num:
+            return needs[2]

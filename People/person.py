@@ -1045,7 +1045,7 @@ class Person:
         self.hasDrink = 1
         self.orderedDrink = 0
         #Update drink meter
-        self.brain[1][1] = 99
+        self.incriment_need(1, 1)
         self.astarCoords.clear()
 
         self.advance_state_machine()
@@ -1058,9 +1058,6 @@ class Person:
         :return:
         """
         if self.hasDrink:
-            self.brain[1][1] += 100  # Increase the drink level
-            if self.brain[1][1] > 100:
-                self.brain[1][1] = 100
             return True
 
         return False
@@ -1082,9 +1079,9 @@ class Person:
         Agent has reached an area on the dancefloor and is now dancing.
         :return:
         """
-        self.brain[2][1] = 100
+        self.incriment_need(2,1)
         self.set_action_count(5, 10)
-        self.clear_remembered_object()
+        # self.clear_remembered_object()
 
     def use_toilet(self):
         """
@@ -1094,7 +1091,7 @@ class Person:
         """
 
         if self.rememberedObj.check_person_using_toilet(self) is True:
-            self.brain[0][1] += 100 # Set toilet back up to default
+            self.brain[0][1] = 100 # Set toilet back up to default
             self.get_person_needs()
 
             self.rememberedObj.person_stop_using_toilet(self)
@@ -1561,3 +1558,12 @@ class Person:
             return True
 
         return False
+
+    def incriment_need(self, index, value_of_incriment):
+        needs = self.brain
+        current_value = needs[index][1]
+        current_value = (current_value + value_of_incriment) % 100
+        needs[index][1] = current_value
+        needs[index][1] = current_value
+
+

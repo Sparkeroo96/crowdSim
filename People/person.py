@@ -176,12 +176,19 @@ class Person:
 
             # if self.rememberedObjType != "" and (not self.exploreNode or self.exploreNode is None):
             if not self.exploreNode or self.exploreNode is None:
+                print("explore node is empty")
                 # if self.rememberedObjType != "" and self.exploreNode == []:
                 self.exploreNode = a_starv2.get_random_waypoint()
-                self.astarCoords = a_starv2.run_astar(self.find_nearest_waypoint(), self.exploreNode)
+                if self.find_nearest_waypoint() != self.coordinates:
+                    startingLoc = self.find_nearest_waypoint()
+                else:
+                    startingLoc = self.coordinates
+                self.astarCoords = a_starv2.run_astar(startingLoc, self.exploreNode)
+                print(str(self.astarCoords))
 
             print("within the explore state action about to navigate to remembered boi")
             self.setup_explore()
+            print("Do i reach this?")
 
             self.navigate_to_remembered_object()
 
@@ -1613,9 +1620,12 @@ class Person:
         :param collisionObj: The object that was collided with
         :return:
         """
+        print(self.rememberedObjType)
+        print("Before crash")
 
-        if collisionObj == self.rememberedObj or isinstance(collisionObj, self.rememberedObjType) is True:
-            # Found your way there goon, do your thing
+        if collisionObj == self.rememberedObj:
+            # or isinstance(collisionObj, self.rememberedObjType) is True:
+            print("Found your way there goon, do your thing")
             self.advance_state_machine()
             return True
 

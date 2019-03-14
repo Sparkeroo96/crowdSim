@@ -57,7 +57,7 @@ class map_data:
     def add_people_to_map(self, coords, size, angle):
         """Adding people to map"""
         """CHANGED THE SIZE TO 10"""
-        newPerson = person.Person("person " + str(len(self.mapData)), coords, size, angle, self.tick_rate)
+        newPerson = person.Person("person " + str(len(self.mapData)), coords, 15, angle, self.tick_rate)
 
         newPersonEdgeCoordinates = newPerson.get_edge_coordinates_array(coords, size)
 
@@ -602,7 +602,7 @@ class map_data:
         if objectType == "d floor":
             self.add_dancefloor_to_map(cords, width, height)
         """Used to create the nodes"""
-        # self.generate_nodes()
+        self.generate_nodes()
 
     def delete_object(self,coords):
         """

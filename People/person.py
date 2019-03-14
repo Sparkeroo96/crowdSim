@@ -301,6 +301,7 @@ class Person:
         distance = (x_distance * x_distance) + (y_distance * y_distance)
         distance = math.sqrt(distance)
         if distance < self.width + self.width * 0.3:
+            print("AM I GETTING STUCK HERE?")
             self.astarCoords.pop(0)
             if len(self.astarCoords) == 0:
                 self.clear_explore_node()

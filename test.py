@@ -28,6 +28,7 @@ class RunningMain:
     orange = (255, 128, 0)
     yellow = (250,250,0)
     purple = (128,0,128)
+
     exit = False
 
     # Menu flags
@@ -208,7 +209,10 @@ class RunningMain:
 
                 # Adds a person to the map if clicked
                 if self.get_add_person_on_click() and event.type == pygame.MOUSEBUTTONUP and not self.get_build_active() and self.in_area(pygame.mouse.get_pos(),[self.get_offset()[0],self.get_offset()[1],self.get_sim_screen_width(),self.get_sim_screen_height()]):
-                    self.get_map_data().add_people_to_map(self.gui_to_map_data_coords_offset(pygame.mouse.get_pos()),20,0)
+                    #Need to have a check to say if you can create a person at these coordinates
+                    personCoordinates = self.gui_to_map_data_coords_offset(pygame.mouse.get_pos())
+                    size = 20
+                    self.get_map_data().add_people_to_map(personCoordinates, size, 0)
 
                 #The remove object function
                 if self.get_current_tool() == "Remove" and event.type == pygame.MOUSEBUTTONUP:
@@ -481,6 +485,7 @@ class RunningMain:
         pygame.draw.rect(self.get_display(),self.black,[x_offset,y_offset,self.get_sim_screen_width(), self.get_sim_screen_height()],2)
         # Goes though the map array obj
         objectArray = self.data.get_map()
+
         for obj in objectArray:
             obj.action()
             coordinates = obj.get_coordinates()
@@ -523,7 +528,7 @@ class RunningMain:
                     obj_colour = self.green
                     running_size = size_info
                     path = self.get_selected_person().astarCoords
-                    if not path == []:
+                    if not path == [] and path is not None:
                         self.draw_path(path)
                     for item in text_info:
                         text = str(item[0] + ": " + str(item[1]))
@@ -556,10 +561,7 @@ class RunningMain:
                 # if isinstance(obj, DanceFloor):
                 #     self.dance_floor_info = obj
 
-
-
         for obj in objectArray:
-
             if isinstance(obj, Person):
                 objCoordinates = obj.get_coordinates()
                 angle = obj.get_angle()
@@ -569,9 +571,7 @@ class RunningMain:
                 # clears the person vision from the previous ittoration
                 obj.clear_vision()
                 # goes though every coordinates and works out what colour is in that pixcel
-
                 for cordArray in vision:
-                    # display.set_at((cord[0],cord[1]), black)
                     # try and catch to prevent out of array exceptions
                     for cord in cordArray:
                         try:
@@ -582,6 +582,10 @@ class RunningMain:
                                 self.display.set_at(cords_new, self.red)
                             colour = self.display.get_at(cords_new)
                             # if it is red then it must be a person
+                            newCoords = self.map_data_to_gui_coords_offset(cord)
+                            colour = self.display.get_at(newCoords)
+
+                            # if it is coloured then it must be an object
                             if colour != (255, 255, 255, 255):
                                 # Its an object of some kind
                                 seenObj = self.data.what_object(cord, False)
@@ -726,6 +730,7 @@ class RunningMain:
         if self.nodes_generated == 0:
             self.nodes_generated = 1
             self.data.generate_nodes()
+
         result = map.import_from_file(file, search)
         if result:
             return True

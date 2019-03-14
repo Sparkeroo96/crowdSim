@@ -1032,6 +1032,8 @@ class Person:
         """
         if self.hasDrink:
             self.brain[1][1] += 100  # Increase the drink level
+            if self.brain[1][1] > 100:
+                self.brain[1][1] = 100
             return True
 
         return False
@@ -1053,7 +1055,7 @@ class Person:
         Agent has reached an area on the dancefloor and is now dancing.
         :return:
         """
-        self.brain[2][1] += 200
+        self.brain[2][1] = 100
         self.set_action_count(5, 10)
 
     def use_toilet(self):

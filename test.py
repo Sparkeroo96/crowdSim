@@ -497,10 +497,19 @@ class RunningMain:
             # the process of adding a person and the funcitons that get called
             if isinstance(obj, Person) and not self.get_show_heatmap_toggle():
                 try:
+                    # Adds the coordinates to the heat map in a try to avoid an error where and object is created outside of the area
                     self.add_heatmap(coordinates)
                 except:
                     nothing = 1
-                # Creating the cicle with the variables provided
+                if obj.get_state_action() == "dance":
+                    red, blue, green = obj.colour
+                    lowest = min(red, blue, green)
+                    red = (red + 10) % 225
+                    blue = (blue + 20) % 225
+                    green = (green + 30) % 225
+                    obj.colour = (red, blue, green)
+                else:
+                    obj.colour = self.red
                 if(obj == self.get_selected_person()):
                     text_info = self.get_selected_person().get_person_needs()
                     size_info = [0,0,150,50]

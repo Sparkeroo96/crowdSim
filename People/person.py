@@ -597,7 +597,9 @@ class Person:
             # if self.map.check_circle_overlap_rectangle(selfEdge, rectangleCoordRanges):
             if self.map.check_person_touching_object(selfEdge, rectangleCoordRanges):
                 print("person touching object " + str(rememberedObjectCoords) + " coord ranges " + str(rectangleCoordRanges))
-                self.astarCoords.clear()
+
+                # self.astarCoords.clear()
+                self.astarCoords = []
                 self.advance_state_machine()
                 self.change_angle_to_move_direction(self.coordinates, self.rememberedObj.get_coordinates())
             else:
@@ -608,6 +610,7 @@ class Person:
             action = "wait"
             if self.has_ordered_drink() == 0 and self.has_drink() is False:
                 self.order_drink()
+                self.clear_remembered_object()
                 self.clear_remembered_object()
 
             elif self.has_drink():
@@ -1084,6 +1087,7 @@ class Person:
         """
         self.brain[2][1] += 200
         self.set_action_count(5, 10)
+        self.clear_remembered_object()
 
     def use_toilet(self):
         """
@@ -1098,6 +1102,7 @@ class Person:
 
             self.rememberedObj.person_stop_using_toilet(self)
             self.advance_state_machine()
+            self.clear_remembered_object()
 
         elif self.rememberedObj.person_use_toilet(self):
             self.set_action_count(8, 10)

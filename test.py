@@ -488,6 +488,7 @@ class RunningMain:
         pygame.draw.rect(self.get_display(),self.black,[x_offset,y_offset,self.get_sim_screen_width(), self.get_sim_screen_height()],2)
         # Goes though the map array obj
         objectArray = self.data.get_map()
+
         for obj in objectArray:
             obj.action()
             coordinates = obj.get_coordinates()

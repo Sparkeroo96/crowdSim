@@ -149,16 +149,14 @@ class Person:
         """What the person is going to do"""
         self.currentState = self.stateMachine.get_current_state()
         self.usedSpeed = 0
-        print(" My current state " + self.currentState)
+
 
         if self.wait_on_action_count():
             return "Waiting"
-
+        # print(" My current state " + self.currentState)
         stateAction = self.get_state_action()
-        print("My state action is: " + str(stateAction))
+        # print("My state action is: " + str(stateAction))
         # print("currentState: " + self.currentState + " / stateAction " + stateAction)
-        print(" my memory #FuckYouChris " + str(self.memory))
-        print(" my vision #FuckYouChris2 " + str(self.vision))
         # self.random_move()
         if stateAction == "navigateToRememberedObj":
             self.navigate_to_remembered_object()
@@ -213,15 +211,12 @@ class Person:
         # if not self.astarCoords:
         if self.astarCoords == [] or not self.astarCoords:
             self.set_cords_from_algo()
-            print("set a* coords in navigate " + str(self.astarCoords))
             #self.set_cords_from_algo("known_location")
             # self.placeholder += 1
 
-        if self.astarCoords and (targetDistance > (self.get_rejection_area() / 2) or self.object_in_vision(self.rememberedObj) is True and self.count_objects_in_vision(False)):
-            print("navigating via a*")
+        if self.astarCoords and (targetDistance > (self.get_rejection_area() / 2) or self.object_in_vision(self.rememberedObj) is True and self.count_objects_in_vision(False) > 1):
             self.navigate_via_astar(nextMove)
         else:
-            print("just walking there, target " + str(self.rememberedObj) + " targetDistance " + str(targetDistance))
             if targetCoordinates != nextMove:
                 # while targetCoordinates != nextMove:
                 x = self.coordinates[0]
@@ -324,12 +319,9 @@ class Person:
 
         # if self.rememberedObjType != "" and (not self.exploreNode or self.exploreNode is None):
         if not self.exploreNode or self.exploreNode is None:
-            print("setting explore node")
             # if self.rememberedObjType != "" and self.exploreNode == []:
             self.exploreNode = a_starv2.get_random_waypoint()
             self.astarCoords = a_starv2.run_astar(self.find_nearest_waypoint(), self.exploreNode)
-        else:
-            print("has explore node " + str(self.exploreNode) + " my coordinates " + str(self.coordinates))
 
     def get_coordinates_for_move_avoiding_collision_object(self, targetCoordinates,  collisionObject, attemptedMove):
         """
@@ -385,7 +377,6 @@ class Person:
 
             return True
 
-        print("person not moving because of " + str(collisionObject))
 
         # if self.rememberedObj != "":
         #     self.check_person_collided_with_target(collisionObject)
@@ -590,12 +581,11 @@ class Person:
             # Person moving to object
             action = "navigateToRememberedObj"
             rememberedObjectCoords = 0
-
+            objectClosestPoint = -1
             if self.object_in_vision(self.rememberedObj):
-                rememberedObjectCoords = self.work_out_objects_closest_point(self.rememberedObj)
-            else:
-                #If the person is next to the thing they are supposed to be on like a bar, advance the state again
-                rememberedObjectCoords = self.rememberedObj.get_coordinates()
+                objectClosestPoint = self.work_out_objects_closest_point(self.rememberedObj)
+
+            rememberedObjectCoords = self.rememberedObj.get_coordinates()
 
             objectSize = [self.rememberedObj.get_width(), self.rememberedObj.get_height()]
             rectangleCoordRanges = self.map.get_coordinates_range(rememberedObjectCoords, objectSize)
@@ -603,17 +593,9 @@ class Person:
 
             # if self.map.check_circle_overlap_rectangle(selfEdge, rectangleCoordRanges):
             if self.map.check_person_touching_object(selfEdge, rectangleCoordRanges):
-                print("person touching object " + str(rememberedObjectCoords) + " coord ranges " + str(rectangleCoordRanges))
-
-                # self.astarCoords.clear()
                 self.astarCoords = []
-                print("Arrived at object " + str(self.coordinates))
-                print("object " + str(self.rememberedObj))
-                print("a* " + str(self.astarCoords))
                 self.advance_state_machine()
                 self.change_angle_to_move_direction(self.coordinates, self.rememberedObj.get_coordinates())
-            else:
-                print("person not touching object " + str(rememberedObjectCoords) + " coord ranges " + str(rectangleCoordRanges))
 
         elif self.currentState == "orderDrink":
             # Person is ordering their drink
@@ -660,9 +642,7 @@ class Person:
         if self.find_object(self.rememberedObjType):
             action = "navigateToRememberedObj"
             self.rotate = 0
-            print("found object " + str(self.currentState))
             self.advance_state_machine()
-            print("new state " + self.currentState)
 
             if self.astarCoords or self.exploreNode:
                 self.clear_explore_node()
@@ -789,6 +769,7 @@ class Person:
                 nextState = "moveTo"
 
             nextState += keyword
+
         elif "move" in current_state:
             if "Bar" in current_state:
                 nextState = "orderDrink"
@@ -1571,7 +1552,6 @@ class Person:
 
     def check_person_collided_with_target(self, collisionObj):
 
-        print("rememberedObjectType " + str(self.rememberedObjType))
         if collisionObj == self.rememberedObj or type(collisionObj) is type(self.rememberedObj) is True:
             # Found your way there goon, do your thing
             self.advance_state_machine()

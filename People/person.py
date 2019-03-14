@@ -210,7 +210,7 @@ class Person:
         nextMove = [x, y]
 
         # if not self.astarCoords:
-        if len(self.astarCoords) == 0  or not self.astarCoords:
+        if self.astarCoords == []  or not self.astarCoords:
             self.set_cords_from_algo()
             #self.set_cords_from_algo("known_location")
             # self.placeholder += 1
@@ -293,8 +293,13 @@ class Person:
                 newCoords = self.get_coordinates_for_move_avoiding_collision_object(targetCoordinates, moveReturn, nextMove)
                 self.move(newCoords)
                 # return self.move(nextMove)
-
-        if self.coordinates == list(self.astarCoords[0]):
+        x1, y1 = self.coordinates
+        x2, y2 = self.astarCoords[0]
+        x_distance = abs(x2 - x1)
+        y_distance = abs(y2 - y1)
+        distance = (x_distance * x_distance) + (y_distance * y_distance)
+        distance = math.sqrt(distance)
+        if distance < self.width:
             self.astarCoords.pop(0)
             if len(self.astarCoords) == 0:
                 self.clear_explore_node()

@@ -165,30 +165,7 @@ class Person:
 
         elif stateAction == "explore":
             # Person will pick a random node and navigate to it
-
-            # Failed to explore a certain way a number of times moving back
-            if self.coordinatesFailed == 5 or self.objectFailedCount == 5:
-                # Could have gone off the map or something is going wrong, try to go somewhere else instead
-                self.coordinatesFailed = 0
-                self.objectFailed = 0
-                self.objectFailedCount = 0
-                self.clear_explore_node()
-
-            # if self.rememberedObjType != "" and (not self.exploreNode or self.exploreNode is None):
-            if not self.exploreNode or self.exploreNode is None:
-                print("explore node is empty")
-                # if self.rememberedObjType != "" and self.exploreNode == []:
-                self.exploreNode = a_starv2.get_random_waypoint()
-                if self.find_nearest_waypoint() != self.coordinates:
-                    startingLoc = self.find_nearest_waypoint()
-                else:
-                    startingLoc = self.coordinates
-                self.astarCoords = a_starv2.run_astar(startingLoc, self.exploreNode)
-                print(str(self.astarCoords))
-
-            print("within the explore state action about to navigate to remembered boi")
             self.setup_explore()
-            print("Do i reach this?")
 
             self.navigate_to_remembered_object()
 
@@ -230,7 +207,6 @@ class Person:
         nextMove = [x, y]
 
         # if not self.astarCoords:
-        """near object must be false here????/"""
         if self.astarCoords == [] or not self.astarCoords:
             self.set_cords_from_algo()
 
@@ -245,24 +221,24 @@ class Person:
                 y = self.coordinates[1]
 
                 if targetCoordinates[0] > x:
-                    if targetCoordinates[0] > x + 1 and self.usedSpeed == 0:
+                    if targetCoordinates[0] > x + 2 and self.usedSpeed == 0:
                         x += 2
                     else:
                         x += 1
 
                 elif targetCoordinates[0] < x:
-                    if targetCoordinates[0] < x - 1 and self.usedSpeed == 0:
+                    if targetCoordinates[0] < x - 2 and self.usedSpeed == 0:
                         x -= 2
                     else:
                         x -= 1
 
                 if targetCoordinates[1] > y:
-                    if targetCoordinates[1] > y + 1 and self.usedSpeed == 0:
+                    if targetCoordinates[1] > y + 2 and self.usedSpeed == 0:
                         y += 2
                     else:
                         y += 1
                 elif targetCoordinates[1] < y:
-                    if targetCoordinates[1] < y - 1 and self.usedSpeed == 0:
+                    if targetCoordinates[1] < y - 2 and self.usedSpeed == 0:
                         y -= 2
                     else:
                         y -= 1
@@ -271,25 +247,6 @@ class Person:
                 moveReturn = self.move(nextMove)
                 # if moveReturn is not True:
                 #     newCoords = self.get_coordinates_for_move_avoiding_collision_object(targetCoordinates, moveReturn, nextMove)
-
-    def check_near_object(self):
-        """
-        Check the current agent is within the cordinates of the remembered objects closest point
-        Currently defunct
-        :return: True if close, False if not.
-        """
-
-        currentX = self.coordinates[0]
-        currentY = self.coordinates[1]
-        try:
-            target = self.work_out_objects_closest_point(self.rememberedObj)
-            targetX = target[0]
-            targetY = target[1]
-            if abs(currentX-targetX) <= 100 and abs(currentY-targetY) <= 100:
-                return True
-        except:
-            return False
-        return False
 
     def navigate_via_astar(self, nextMove):
         """
@@ -354,11 +311,18 @@ class Person:
             self.objectFailedCount = 0
             self.clear_explore_node()
 
+        if len(self.exploreNode) == 2:
+            if self.exploreNode[0] == self.coordinates[0] and self.exploreNode[1] == self.coordinates[1]:
+                self.clear_explore_node()
+
         # if self.rememberedObjType != "" and (not self.exploreNode or self.exploreNode is None):
         if not self.exploreNode or self.exploreNode is None:
+            print("setting explore node")
             # if self.rememberedObjType != "" and self.exploreNode == []:
             self.exploreNode = a_starv2.get_random_waypoint()
             self.astarCoords = a_starv2.run_astar(self.find_nearest_waypoint(), self.exploreNode)
+        else:
+            print("has explore node " + str(self.exploreNode) + " my coordinates " + str(self.coordinates))
 
     def get_coordinates_for_move_avoiding_collision_object(self, targetCoordinates,  collisionObject, attemptedMove):
         """
@@ -416,8 +380,8 @@ class Person:
 
         print("person not moving because of " + str(collisionObject))
 
-        if self.rememberedObj != "":
-            self.check_person_collided_with_target(collisionObject)
+        # if self.rememberedObj != "":
+        #     self.check_person_collided_with_target(collisionObject)
 
         self.coordinatesFailed += 1
         if self.objectFailed == collisionObject:
@@ -639,6 +603,9 @@ class Person:
 
                 # self.astarCoords.clear()
                 self.astarCoords = []
+                print("Arrived at object " + str(self.coordinates))
+                print("object " + str(self.rememberedObj))
+                print("a* " + str(self.astarCoords))
                 self.advance_state_machine()
                 self.change_angle_to_move_direction(self.coordinates, self.rememberedObj.get_coordinates())
             else:
@@ -689,7 +656,9 @@ class Person:
         if self.find_object(self.rememberedObjType):
             action = "navigateToRememberedObj"
             self.rotate = 0
+            print("found object " + str(self.currentState))
             self.advance_state_machine()
+            print("new state " + self.currentState)
 
             if self.astarCoords or self.exploreNode:
                 self.clear_explore_node()
@@ -1198,33 +1167,20 @@ class Person:
         """NEED TO ADD THE DESTINATION OF REQUIRED OBJECT"""
         # Sam - Trying to change it to use startingLoc as its making a huge jump as it goes to the node
         locations = None
-        """Run the check near object from here???"""
+
         if self.rememberedObj:
             print("THERE IS A REMEMBERED OBJECT AND THAT IS" + str(self.rememberedObj))
             targetCoordinates = self.work_out_objects_closest_point(self.rememberedObj)
             print("Target coords for the remembered object is: " + str(targetCoordinates))
             locations = a_starv2.run_astar(startingLoc, targetCoordinates)
-            # if not locations:
-            #     targetCoordinates[0] = targetCoordinates[0] - 20
-            #     targetCoordinates[1] = targetCoordinates[1] - 20
-            #     print("Target coords for the remembered object is modified again: " + str(targetCoordinates))
-            #     locations = a_starv2.run_astar(startingLoc, targetCoordinates)
-            #     if not locations:
-            #         targetCoordinates[0] = targetCoordinates[0] + 40
-            #         targetCoordinates[1] = targetCoordinates[1] + 40
-            #         print("Target coords for the remembered object is modified twice now: " + str(targetCoordinates))
-            #         locations = a_starv2.run_astar(startingLoc, targetCoordinates)
         else:
             locations = a_starv2.run_astar(startingLoc, self.exploreNode)
 
         if not locations:
-            print("None achieved")
             return False
         else:
             for location in locations:
-                print("locations are: " + str(location))
                 self.store_waypoints(location)
-                return True
 
     def store_waypoints(self, cord):
         """Stores the waypoints in cords var"""
@@ -1614,18 +1570,10 @@ class Person:
         array[index][1] = value
 
     def check_person_collided_with_target(self, collisionObj):
-        """
-        Checking to see if a person has collided with an object in move that it was aiming for
-        BitchFix
-        :param collisionObj: The object that was collided with
-        :return:
-        """
-        print(self.rememberedObjType)
-        print("Before crash")
 
-        if collisionObj == self.rememberedObj:
-            # or isinstance(collisionObj, self.rememberedObjType) is True:
-            print("Found your way there goon, do your thing")
+        print("rememberedObjectType " + str(self.rememberedObjType))
+        if collisionObj == self.rememberedObj or type(collisionObj) is type(self.rememberedObj) is True:
+            # Found your way there goon, do your thing
             self.advance_state_machine()
             return True
 

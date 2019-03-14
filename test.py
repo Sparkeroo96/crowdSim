@@ -505,7 +505,7 @@ class RunningMain:
                     obj_colour = self.green
                     running_size = size_info
                     path = self.get_selected_person().astarCoords
-                    if not path == []:
+                    if not path == [] and path is not None:
                         self.draw_path(path)
                     for item in text_info:
                         text = str(item[0] + ": " + str(item[1]))

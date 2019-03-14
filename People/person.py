@@ -131,9 +131,10 @@ class Person:
         self.orderedDrink = 0
         self.hasDrink = 0
         # Persons "needs" first value is importance second is how much they want to do it
-        self.brain = [["Toilet", 100],
-                 ["Drink", 100],
-                 ["Dance", 100]]
+        self.brain = [["Toilet", randint(0,100)],["Drink", randint(0,100)],["Dance", randint(0,100)]]
+
+        self.random_node = None
+
         self.inside_dance_floor = False
         self.random_dance_area = None
 
@@ -209,7 +210,7 @@ class Person:
         nextMove = [x, y]
 
         # if not self.astarCoords:
-        if self.astarCoords == [] or not self.astarCoords:
+        if len(self.astarCoords) == 0  or not self.astarCoords:
             self.set_cords_from_algo()
             #self.set_cords_from_algo("known_location")
             # self.placeholder += 1
@@ -1058,6 +1059,8 @@ class Person:
         """
         if self.hasDrink:
             self.brain[1][1] += 100  # Increase the drink level
+            if self.brain[1][1] > 100:
+                self.brain[1][1] = 100
             return True
 
         return False
@@ -1079,7 +1082,7 @@ class Person:
         Agent has reached an area on the dancefloor and is now dancing.
         :return:
         """
-        self.brain[2][1] += 200
+        self.brain[2][1] = 100
         self.set_action_count(5, 10)
         self.clear_remembered_object()
 

@@ -7,10 +7,12 @@ Modified by Sam Parker swp5
 import pygame
 import math
 import sys
+import os
 from Data import map_data
 from time import sleep
 from People.person import Person
 from Objects.wall import Wall
+from Objects.danceFloor import DanceFloor
 
 
 class RunningMain:
@@ -94,8 +96,11 @@ class RunningMain:
     pause_toggle = False
 
     show_nodes = False
+    dance_floor_info = None
 
     def __init__(self):
+        os.environ['SDL_VIDEO_WINDOW_POS'] = str(0) + "," + str(0)
+
         self.set_offset(self.centre([0, 0, self.get_screen_width(), self.get_screen_height()],[self.get_sim_screen_width(), self.get_sim_screen_height()]))
         """This is the constructor that starts the main loop of the simulation"""
         #Starts the pygame
@@ -124,7 +129,7 @@ class RunningMain:
                 # This allows an agent to be selected to see what they are thinking
                 main_sim_screen = [self.get_offset()[0],self.get_offset()[1],self.get_sim_screen_width(), self.get_sim_screen_height()]
                 if event.type == pygame.MOUSEBUTTONDOWN and self.get_menu()[1] == 'Start' and self.in_area(pygame.mouse.get_pos(), main_sim_screen):
-                    selected = self.get_map_data().what_object(self.gui_to_map_data_coords_offset(pygame.mouse.get_pos()))
+                    selected = self.get_map_data().what_object(self.gui_to_map_data_coords_offset(pygame.mouse.get_pos()), True)
                     if isinstance(selected, Person):
                         self.set_selected_person(selected)
                     else:
@@ -277,11 +282,6 @@ class RunningMain:
                     search = self.get_user_input_result()
                     success = self.load_map('maps_saves', search)
                     self.set_text_done(False)
-                # Allowing nodes to be created outside of the map
-
-                # if self.nodes_generated == 0:
-                #     self.nodes_generated = 1
-                #     self.data.generate_nodes()
 
             # This checks to see if it is on the simulation menu options
             elif menu[0] == "Run Simulation":
@@ -290,13 +290,12 @@ class RunningMain:
                     # Gets the map from map data
                     objectArray = self.data.get_map()
                     # if it is empty then it loads the default
-                    if objectArray == []:
-                        self.data.export("maps_saves","default")
+                    if len(self.get_map_data().get_map()) == 0:
+                        print("Load Default")
+                        self.get_map_data().import_from_file("maps_saves","default")
 
-                    elif success:
-                        # If there was a succesful load then it uses the user chosen one
-                        self.draw_display()
                     self.draw_display()
+                    # self.draw_display()
                 # Starts the user input function
                 if menu[1] == "Floor Plan Load":
                     self.data.clear_map()
@@ -471,8 +470,6 @@ class RunningMain:
         if not self.builder_active:
             self.menu_bar()
             self.menu_option(self.menu_bar_clicked)
-        # self.node_icon((100,100))
-        # self.draw_path([(120,210),(200,200),(300,300),(800,1022)])
         x_offset, y_offset = self.get_offset()
         if self.show_nodes:
             list_nodes = self.get_map_data().open_nodes
@@ -484,7 +481,7 @@ class RunningMain:
                     x1 = x1 + x_offset
                     y1 = y1 + y_offset
                     self.node_icon((x1,y1))
-
+        # Draws the border around the simulation
         pygame.draw.rect(self.get_display(),self.black,[x_offset,y_offset,self.get_sim_screen_width(), self.get_sim_screen_height()],2)
         # Goes though the map array obj
         objectArray = self.data.get_map()
@@ -499,8 +496,31 @@ class RunningMain:
             shape = obj.get_shape()
             # the process of adding a person and the funcitons that get called
             if isinstance(obj, Person) and not self.get_show_heatmap_toggle():
-                self.add_heatmap(coordinates)
-                # Creating the cicle with the variables provided
+                try:
+                    # Adds the coordinates to the heat map in a try to avoid an error where and object is created outside of the area
+                    self.add_heatmap(coordinates)
+                except:
+                    nothing = 1
+                if obj.get_state_action() == "dance":
+                    red, blue, green = obj.colour
+                    red = (red + 10) % 225
+                    blue = (blue + 20) % 225
+                    green = (green + 30) % 225
+                    obj.colour = (red, blue, green)
+                else:
+                    obj.colour = self.red
+
+                # This is a check to make sure that the people are inside of the area
+                # if not self.dance_floor_info == None:
+                #     dance_floor_x, dance_floor_y = self.dance_floor_info.get_coordinates()
+                #     dance_floor_width = self.dance_floor_info.get_width()
+                #     dance_floor_height = self.dance_floor_info.get_height()
+                #     dance_floor_x, dance_floor_y = self.map_data_to_gui_coords_offset((dance_floor_x, dance_floor_y))
+                #     info = [dance_floor_x, dance_floor_y, dance_floor_width, dance_floor_height]
+                #     self.get_map_data().get_coordinates_range()
+                #     if self.in_area(coordinates, info):
+                #         obj.colour = self.black
+
                 if(obj == self.get_selected_person()):
                     text_info = self.get_selected_person().get_person_needs()
                     size_info = [0,0,150,50]
@@ -519,6 +539,8 @@ class RunningMain:
                     current_state = self.get_selected_person().currentState
                     size_info = [0,150,150,50]
                     self.add_button(size_info,current_state,self.black,20)
+                    # size_info = [0, 200, 150, 50]
+                    # self.add_button(size_info, str(obj.coordinates), self.black, 20)
                     running_size =[saved_size_info[0],saved_size_info[1],saved_size_info[2], running_size[3] - size_info[3], len(text_info)]
                     self.set_size_info_pannel(running_size)
 
@@ -535,6 +557,9 @@ class RunningMain:
                 # objects
                 height = obj.get_height()
                 pygame.draw.rect(self.display, obj_colour, [coordinates[0], coordinates[1], width, height])
+                # testing
+                # if isinstance(obj, DanceFloor):
+                #     self.dance_floor_info = obj
 
         for obj in objectArray:
             if isinstance(obj, Person):
@@ -551,6 +576,11 @@ class RunningMain:
                     for cord in cordArray:
                         try:
                             seenObj = 0
+                            cords_new = self.map_data_to_gui_coords_offset((cord[0],cord[1]))
+                            # cords_new = self.map_data_to_gui_coords_offset(cords_new)
+                            if(self.selected_person == obj):
+                                self.display.set_at(cords_new, self.red)
+                            colour = self.display.get_at(cords_new)
                             # if it is red then it must be a person
                             newCoords = self.map_data_to_gui_coords_offset(cord)
                             colour = self.display.get_at(newCoords)
@@ -558,8 +588,7 @@ class RunningMain:
                             # if it is coloured then it must be an object
                             if colour != (255, 255, 255, 255):
                                 # Its an object of some kind
-
-                                seenObj = self.data.what_object(cord)
+                                seenObj = self.data.what_object(cord, False)
 
                                 obj.add_to_vision(seenObj)
                                 obj.add_to_memory(seenObj)
@@ -604,7 +633,7 @@ class RunningMain:
         """
         i = 0
         # sleep(0.1)
-        button_text = ["New", "Load", "Back", "Exit"]
+        button_text = ["New", "Back", "Exit"]
         num_buttons = len(button_text)
         height_of_buttons = 50
         width_of_buttons = 300
@@ -639,7 +668,7 @@ class RunningMain:
         """
         i = 0
         # sleep(0.1)
-        button_text = ["Start","Floor Plan Load", "Options", "Back", "Exit"]
+        button_text = ["Start","Floor Plan Load", "Back", "Exit"]
         num_buttons = len(button_text)
         height_of_buttons = 50
         width_of_buttons = 300
@@ -916,7 +945,7 @@ class RunningMain:
             return False
 
     def menu_bar(self):
-        button_names = ["Home", "Pause", "Add Person", "Show Nodes", "Add Nodes","Heat Map"]
+        button_names = ["Home", "Pause", "Add Person", "Show Nodes","Heat Map"]
         height_of_button = self.get_screen_height() / 10
         width_of_button = self.get_screen_width() / 8
         start_coords = [1,self.get_screen_height() - height_of_button - 1]
@@ -944,10 +973,11 @@ class RunningMain:
             self.show_nodes = not self.show_nodes
             self.menu_bar_clicked = None
         elif option == 4:
-            self.menu_bar_clicked = None
-        elif option == 5:
+            self.set_selected_person(None)
+            self.set_pause()
             self.set_show_heatmap_toggle()
             self.menu_bar_clicked = None
+
 
     def node_icon(self, coord):
         x, y = coord

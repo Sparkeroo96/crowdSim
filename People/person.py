@@ -213,6 +213,7 @@ class Person:
             self.set_cords_from_algo()
 
         if self.astarCoords and (targetDistance > (self.get_rejection_area() / 2) or self.object_in_vision(self.rememberedObj) is True and self.count_objects_in_vision(False) > 1):
+            print("THIS IS TRUE AND IM NAVIGATING HERE")
             self.navigate_via_astar(nextMove)
         else:
             if targetCoordinates != nextMove:
@@ -377,8 +378,8 @@ class Person:
 
         print("person not moving because of " + str(collisionObject))
 
-        # if self.rememberedObj != "":
-        #     self.check_person_collided_with_target(collisionObject)
+        if self.rememberedObj != "":
+            self.check_person_collided_with_target(collisionObject)
 
         self.coordinatesFailed += 1
         if self.objectFailed == collisionObject:
@@ -1161,6 +1162,7 @@ class Person:
             locations = a_starv2.run_astar(startingLoc, self.exploreNode)
 
         if not locations:
+            print("No locations found")
             return False
         else:
             for location in locations:

@@ -556,6 +556,8 @@ class Person:
 
         """NEED TO CHECK HERE FOR NEEDS"""
         """IF STATE IS GREATEST NEED"""
+        print("CURRENT STATE IS: ")
+        print(self.currentState)
         if self.currentState == self.idleState:
             """While there are no current needs, the person will relax."""
             """relax will reduce the needs of the person"""
@@ -563,9 +565,13 @@ class Person:
             if self.check_needs() == False:
                 self.relax()
                 """RETURN THE ACTION OF DOING NOTHING, THERE IS NO NEED"""
+                print("WHEN AM I HERE?")
+                print(action)
                 return action
             """Setting the current state to the persons needs."""
+            print("Currently here within the get_state_action")
             self.currentState = self.stateMachine.get_need_state(self.check_needs())
+            print(self.currentState)
 
         if "want" in str(self.currentState):
             # Person has a want desire
@@ -625,7 +631,9 @@ class Person:
             self.move_inside_dance_floor()
             if self.inside_dance_floor:
                 self.dance()
-                self.advance_state_machine()
+                """PHIL STUFF HERE"""
+                if self.check_needs() is not False:
+                    self.advance_state_machine()
 
         elif self.currentState == "useToilet":
 
@@ -1082,6 +1090,7 @@ class Person:
         :return:
         """
         self.incriment_need(2,1)
+        print("IN DANCE - HOW MANY TICKS?")
         self.set_action_count(5, 10)
         # self.clear_remembered_object()
 
@@ -1567,7 +1576,7 @@ class Person:
     def incriment_need(self, index, value_of_incriment):
         needs = self.brain
         current_value = needs[index][1]
-        current_value = (current_value + value_of_incriment) % 100
+        current_value = (current_value + value_of_incriment)
         needs[index][1] = current_value
         needs[index][1] = current_value
 

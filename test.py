@@ -498,7 +498,7 @@ class RunningMain:
             if isinstance(obj, Person) and not self.get_show_heatmap_toggle():
                 try:
                     # Adds the coordinates to the heat map in a try to avoid an error where and object is created outside of the area
-                    if not obj.currentState == "getDrink":
+                    if not obj.currentState == "drink":
                         self.add_heatmap(coordinates)
                 except:
                     nothing = 1

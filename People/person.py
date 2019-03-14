@@ -1462,7 +1462,7 @@ class Person:
     """This will be in an idle state when a person has no desire of drinking, dancing or wanting the toilet"""
     def relax(self):
         for i in range(len(self.brain)):
-            self.incriment_need(i,-1)
+            self.incriment_need(i,-0.1)
 
     def set_random_dance_area(self):
         if self.random_dance_area is None:

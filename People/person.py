@@ -147,18 +147,13 @@ class Person:
         """What the person is going to do"""
         self.currentState = self.stateMachine.get_current_state()
         self.usedSpeed = 0
-        print(" My current state " + self.currentState)
 
         if self.wait_on_action_count():
             return "Waiting"
 
         stateAction = self.get_state_action()
-        print("My state action is: " + str(stateAction))
-        # print("currentState: " + self.currentState + " / stateAction " + stateAction)
-        print(" my memory #FuckYouChris " + str(self.memory))
-        print(" my vision #FuckYouChris2 " + str(self.vision))
-        # self.random_move()
         if stateAction == "navigateToRememberedObj":
+            print("IN the action navigating to a remembered object")
             self.navigate_to_remembered_object()
 
         elif stateAction == "rotate":
@@ -185,13 +180,18 @@ class Person:
                 self.exploreNode = a_starv2.get_random_waypoint()
                 self.astarCoords = a_starv2.run_astar(self.find_nearest_waypoint(), self.exploreNode)
 
-
+            print("within the explore state action about to navigate to remembered boi")
             self.navigate_to_remembered_object()
 
         elif stateAction == "dance":
             if self.inside_dance_floor:
+                print("INSIDE DANCE FLOOR")
                 self.advance_state_machine()
-            self.astarCoords.clear()
+            print("Here still")
+            print(str(self.astarCoords))
+            print(self.coordinates)
+            # self.navigate_to_remembered_object()
+
 
         else:
             # self.random_move()
@@ -218,11 +218,10 @@ class Person:
         nextMove = [x, y]
 
         # if not self.astarCoords:
+        """near object must be false here????/"""
         if self.astarCoords == [] or not self.astarCoords:
             print("ASTAR IS EMPTY, SETTING CORDS TO GET TO THE OBJECT")
             self.set_cords_from_algo()
-            #self.set_cords_from_algo("known_location")
-            # self.placeholder += 1
 
         if self.astarCoords:
             print("My current astar cords are: " + str(self.astarCoords))
@@ -230,10 +229,16 @@ class Person:
         else:
             print("There are no astar cords")
             if self.rememberedObj:
+                # near_obj = self.check_near_object()
+                # if near_obj:
+                #     print("NEAR THIS GODDAMN OBJECT")
+                #     self.can_move_to_object = True
+                #     self.astarCoords.clear()
+                """RETURN FROM HERE"""
                 print("Checking if we're here")
                 targetCoordinates = self.work_out_objects_closest_point(self.rememberedObj)
-                print(targetCoordinates)
-                print(nextMove)
+                print("target coordinates: " + str(targetCoordinates))
+                print("next Move: " + str(nextMove))
             else:
                 targetCoordinates = self.exploreNode
 
@@ -269,6 +274,24 @@ class Person:
                 moveReturn = self.move(nextMove)
                 # if moveReturn is not True:
                 #     newCoords = self.get_coordinates_for_move_avoiding_collision_object(targetCoordinates, moveReturn, nextMove)
+
+    def check_near_object(self):
+        """
+        Check the current agent is within the cordinates of the remembered objects closest point
+        :return: True if close, False if not.
+        """
+
+        currentX = self.coordinates[0]
+        currentY = self.coordinates[1]
+        try:
+            target = self.work_out_objects_closest_point(self.rememberedObj)
+            targetX = target[0]
+            targetY = target[1]
+            if abs(currentX-targetX) <= 100 and abs(currentY-targetY) <= 100:
+                return True
+        except:
+            return False
+        return False
 
     def navigate_via_astar(self, nextMove):
         """
@@ -307,6 +330,8 @@ class Person:
                     y -= 1
 
             nextMove = [x, y]
+            print("TARGET COORDS ARE" + str(targetCoordinates))
+            print("MY NEXT MOVE IS" + str(nextMove))
             moveReturn = self.move(nextMove)
             if moveReturn is not True and moveReturn != self.rememberedObj and moveReturn != False:
                 newCoords = self.get_coordinates_for_move_avoiding_collision_object(targetCoordinates, moveReturn, nextMove)
@@ -376,6 +401,8 @@ class Person:
         self.coordinatesFailed += 1
         if self.objectFailed == collisionObject:
             self.objectFailedCount += 1
+            print("THIS IS OCCURING")
+            self.navigate_to_remembered_object()
         else:
             self.objectFailed = collisionObject
             self.objectFailedCount = 1
@@ -586,6 +613,7 @@ class Person:
             # if self.map.check_circle_overlap_rectangle(selfEdge, rectangleCoordRanges):
             if self.map.check_person_touching_object(selfEdge, rectangleCoordRanges):
                 print("TOUCHING OBJECT ")
+                print(str(self.currentState))
                 self.astarCoords.clear()
                 self.advance_state_machine()
                 self.change_angle_to_move_direction(self.coordinates, self.rememberedObj.get_coordinates())
@@ -615,6 +643,7 @@ class Person:
             if self.inside_dance_floor:
                 self.dance()
                 self.advance_state_machine()
+                self.inside_dance_floor = False
 
         elif self.currentState == "useToilet":
 
@@ -1053,7 +1082,7 @@ class Person:
         :return:
         """
         print("In dance function")
-        self.brain[2][1] += 200
+        self.brain[2][1] = 100
         self.set_action_count(5, 10)
 
     def use_toilet(self):
@@ -1123,11 +1152,22 @@ class Person:
         """NEED TO ADD THE DESTINATION OF REQUIRED OBJECT"""
         # Sam - Trying to change it to use startingLoc as its making a huge jump as it goes to the node
         locations = None
-
+        """Run the check near object from here???"""
         if self.rememberedObj:
             print("THERE IS A REMEMBERED OBJECT AND THAT IS" + str(self.rememberedObj))
             targetCoordinates = self.work_out_objects_closest_point(self.rememberedObj)
+            print("Target coords for the remembered object is: " + str(targetCoordinates))
             locations = a_starv2.run_astar(startingLoc, targetCoordinates)
+            # if not locations:
+            #     targetCoordinates[0] = targetCoordinates[0] - 20
+            #     targetCoordinates[1] = targetCoordinates[1] - 20
+            #     print("Target coords for the remembered object is modified again: " + str(targetCoordinates))
+            #     locations = a_starv2.run_astar(startingLoc, targetCoordinates)
+            #     if not locations:
+            #         targetCoordinates[0] = targetCoordinates[0] + 40
+            #         targetCoordinates[1] = targetCoordinates[1] + 40
+            #         print("Target coords for the remembered object is modified twice now: " + str(targetCoordinates))
+            #         locations = a_starv2.run_astar(startingLoc, targetCoordinates)
         else:
             locations = a_starv2.run_astar(startingLoc, self.exploreNode)
 
@@ -1138,6 +1178,7 @@ class Person:
             for location in locations:
                 print("locations are: " + str(location))
                 self.store_waypoints(location)
+                return True
 
     def store_waypoints(self, cord):
         """Stores the waypoints in cords var"""
@@ -1427,7 +1468,7 @@ class Person:
     """This will be in an idle state when a person has no desire of drinking, dancing or wanting the toilet"""
     def relax(self):
         dec_thirst = randint(0, 1)
-        dec_toilet = randint(0, 1)
+        dec_toilet = randint(0, 2)
         dec_dance = randint(0, 3)
         self.brain[0][1] -= dec_toilet
         self.brain[1][1] -= dec_thirst

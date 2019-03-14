@@ -146,20 +146,36 @@ def return_waypoints(locations):
 def run_astar(start, dest):
     a = convert_to_simple(start)
     b = convert_to_simple(dest)
-    """Convert coords to the node boys"""
+    destx = b[0]
+    desty = b[1]
+    """Convert coords to the nodes"""
+    print("my destination is: " + str(b))
     allNodes = get_all_nodes()
     result = None
     if allNodes is not False and a is not None:
         result = astar(allNodes, a, b)
+    if result is False: # Catch if there are no astar coords.
+        # new_dest = get_next_free_cord(dest)
+        # result = astar(allNodes, a, new_dest)
+        print("Modded Destination is: " + str(result))
 
-
-    if result is None:
-        return print("none")
-    else:
+    if result is not None or result is not False:
         waypoint = return_waypoints(store_node_details(result))
         # return store_node_details(result)
         return locations(waypoint)
 
+def get_next_free_cord(cord):
+    """
+    Gets the free cord around the object.
+    :param cord:
+    :return:
+    """
+    new_cord = None
+    potential_free_cords = set()
+    actual_cord = [cord[0] * 20, cord[1] * 20]
+
+
+    return new_cord
 
 """Convert coords that we have as our start and dest to simple 0 - 9 coords."""
 def convert_to_simple(cords):

@@ -21,6 +21,8 @@ from Objects.bar import Bar
 from Objects.danceFloor import DanceFloor
 from Objects.toilet import Toilet
 
+numpy.set_printoptions(threshold=numpy.nan)
+
 constant = 0
 class map_data:
     """TO DO"""
@@ -601,7 +603,7 @@ class map_data:
         if objectType == "d floor":
             self.add_dancefloor_to_map(cords, width, height)
         """Used to create the nodes"""
-        self.generate_nodes()
+        # self.generate_nodes()
 
     def delete_object(self,coords):
         """
@@ -866,6 +868,7 @@ class map_data:
         a_starv2.set_open_nodes(openNodes)
         """Store all the nodes in the a_star class"""
         a_starv2.store_all_nodes(graph)
+        print(graph)
 
     def get_person_cord_info(self):
         personCoords = []

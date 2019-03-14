@@ -142,7 +142,6 @@ class Bar(BaseObject):
 
         for x in range(staffSize):
             self.wait_timers.append(0)
-            print("wait timers " + str(len(self.wait_timers)))
 
     def decrease_wait_timers(self):
         """
@@ -154,7 +153,6 @@ class Bar(BaseObject):
         x = 0
 
         while x < len(self.wait_timers):
-            print("decreasing wait timers " + str(x))
             if self.wait_timers[x] > 0:
                 self.wait_timers[x] -= 1
 

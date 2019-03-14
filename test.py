@@ -447,6 +447,8 @@ class RunningMain:
         :param text: the string that is to be displayed
         :return: The text object and the height and width for further calucaltions
         """
+        # if text is None:
+        #     text = "ERROR"
         pygame.font.init()
         my_font = pygame.font.SysFont("Arial", size)
         text_surface = my_font.render(text, False, self.black)
@@ -532,12 +534,14 @@ class RunningMain:
                     if not path == [] and path is not None:
                         self.draw_path(path)
                     for item in text_info:
-                        text = str(item[0] + ": " + str(item[1]))
+                        text = str(item[0] + ": " + str(math.floor(item[1])))
                         self.add_button(size_info,text, self.black, 20)
                         self.need_bar(item[0],item[1],size_info)
                         size_info = [size_info[0],size_info[1] + size_info[3],size_info[2],size_info[3]]
                         running_size =[size_info[0],size_info[1],size_info[2], size_info[3]+ running_size[3]]
                     current_state = self.get_selected_person().currentState
+                    if current_state is None:
+                        current_state = ""
                     size_info = [0,150,150,50]
                     self.add_button(size_info,current_state,self.black,20)
                     # size_info = [0, 200, 150, 50]

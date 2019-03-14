@@ -151,20 +151,16 @@ class Person:
         self.currentState = self.stateMachine.get_current_state()
         self.usedSpeed = 0
 
-
         if self.wait_on_action_count():
             return "Waiting"
 
 
-        print("My current state " + self.currentState)
         stateAction = self.get_state_action()
-        print("My state action is: " + str(stateAction))
-        # print("currentState: " + self.currentState + " / stateAction " + stateAction)
-        # self.random_move()
 
-        if "dance" not in self.currentState or "Dance" not in self.currentState:
+        if "dance" not in str(self.currentState) and "Dance" not in str(self.currentState):
             # Increasing the dance amount by 1 if they arent already doing that
-            self.increment_need(2, -0.3)
+            self.increment_need(2, -0.33)
+            # print("decreasing dance")
 
         if stateAction == "navigateToRememberedObj":
             self.navigate_to_remembered_object()
@@ -183,9 +179,16 @@ class Person:
             self.navigate_to_remembered_object()
 
         elif stateAction == "dance":
+            self.move_inside_dance_floor()
+            # onObject = self.map.what_object(self.coordinates, False)
+            # if isinstance(onObject, DanceFloor) is True:
             if self.inside_dance_floor:
-                self.advance_state_machine()
-            self.astarCoords.clear()
+                self.dance()
+                if self.brain[2][1] > randint(75, 100):
+                    self.advance_state_machine()
+            # if self.inside_dance_floor:
+            #     self.advance_state_machine()
+            # self.astarCoords.clear()
 
         else:
             # self.random_move()
@@ -220,12 +223,11 @@ class Person:
         nextMove = [x, y]
 
         # if not self.astarCoords:
-        if len(self.astarCoords) == 0  or not self.astarCoords:
+        if len(self.astarCoords) == 0 or not self.astarCoords:
             self.set_cords_from_algo()
             #self.set_cords_from_algo("known_location")
             # self.placeholder += 1
 
-        print("navigating to remembered object current " + str(self.coordinates) + " astar " + str(self.astarCoords))
         # if self.astarCoords and (targetDistance > (self.get_rejection_area() / 2) or self.object_in_vision(self.rememberedObj) is True and self.count_objects_in_vision(False) > 1):
         if self.astarCoords and targetObj not in objectsWithinRejection:
             self.navigate_via_astar(nextMove)
@@ -328,10 +330,7 @@ class Person:
 
         if len(self.exploreNode) == 2:
             if self.exploreNode[0] == self.coordinates[0] and self.exploreNode[1] == self.coordinates[1]:
-                print("changing explore node ")
                 self.clear_explore_node()
-        else :
-            print("length of exploreNode " + str(len(self.exploreNode)))
 
         # if self.rememberedObjType != "" and (not self.exploreNode or self.exploreNode is None):
         if not self.exploreNode or self.exploreNode is None:
@@ -339,7 +338,6 @@ class Person:
             self.exploreNode = a_starv2.get_random_waypoint()
             self.astarCoords = a_starv2.run_astar(self.find_nearest_waypoint(), self.exploreNode)
 
-        print("explore node " + str(self.exploreNode))
     def get_coordinates_for_move_avoiding_collision_object(self, targetCoordinates,  collisionObject, attemptedMove):
         """
         Try to move to an object avoiding an object
@@ -393,8 +391,6 @@ class Person:
             self.coordinatesFailed = 0
 
             return True
-
-        print("Person failed move to " + str(coordinates) + " because of " + str(collisionObject))
 
         if self.rememberedObj != "":
             self.check_person_collided_with_target(collisionObject)
@@ -576,10 +572,10 @@ class Person:
             """While there are no current needs, the person will relax."""
             """relax will reduce the needs of the person"""
             self.clear_remembered_object()
-            if self.check_needs() == False:
-                self.relax()
-                """RETURN THE ACTION OF DOING NOTHING, THERE IS NO NEED"""
-                return action
+            # if self.check_needs() == False:
+                # self.relax()
+                #"""RETURN THE ACTION OF DOING NOTHING, THERE IS NO NEED"""
+                # return action
             """Setting the current state to the persons needs."""
             self.currentState = self.stateMachine.get_need_state(self.check_needs())
 
@@ -638,12 +634,12 @@ class Person:
         elif self.currentState == "dance":
             # Person will dance
             # self.stateMachine.get_next_state()
-            print("rememberedObject " + str(self.rememberedObj))
             action = "dance"
-            self.move_inside_dance_floor()
-            if self.inside_dance_floor:
-                self.dance()
-                self.advance_state_machine()
+            # self.move_inside_dance_floor()
+            # if self.inside_dance_floor:
+            #     self.dance()
+            #     if self.brain[2][1] > randint(75, 100):
+            #         self.advance_state_machine()
 
         elif self.currentState == "useToilet":
 
@@ -1116,8 +1112,10 @@ class Person:
         Agent has reached an area on the dancefloor and is now dancing.
         :return:
         """
-        self.brain[2][1] = 100
-        self.set_action_count(5, 10)
+        print("dancing")
+        # self.brain[2][1] = 100
+        self.increment_need(2, 1)
+        # self.set_action_count(5, 10)
         # self.clear_remembered_object()
 
     def use_toilet(self):
@@ -1494,6 +1492,7 @@ class Person:
         dec_thirst = randint(0, 1)
         dec_toilet = randint(0, 1)
         dec_dance = randint(0, 3)
+
         self.brain[0][1] -= dec_toilet
         self.brain[1][1] -= dec_thirst
         self.brain[2][1] -= dec_dance
@@ -1554,7 +1553,7 @@ class Person:
                 # return self.move(nextMove)
 
         if self.coordinates == self.random_dance_area:
-            self.brain[2][1] = 99
+            # self.brain[2][1] = 99
             """DELAY here?"""
             self.random_dance_area = None
             self.inside_dance_floor = True

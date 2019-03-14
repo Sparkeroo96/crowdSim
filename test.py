@@ -98,7 +98,7 @@ class RunningMain:
     dance_floor_info = None
 
     def __init__(self):
-        os.environ['SDL_VIDEO_WINDOW_POS'] = str(0) + "," + str(0)
+        os.environ['SDL_VIDEO_WINDOW_POS'] = str(10) + "," + str(10)
 
         self.set_offset(self.centre([0, 0, self.get_screen_width(), self.get_screen_height()],[self.get_sim_screen_width(), self.get_sim_screen_height()]))
         """This is the constructor that starts the main loop of the simulation"""
@@ -497,10 +497,11 @@ class RunningMain:
             if isinstance(obj, Person) and not self.get_show_heatmap_toggle():
                 try:
                     # Adds the coordinates to the heat map in a try to avoid an error where and object is created outside of the area
-                    self.add_heatmap(coordinates)
+                    if not obj.currentState == "getDrink":
+                        self.add_heatmap(coordinates)
                 except:
                     nothing = 1
-                if obj.get_state_action() == "dance":
+                if obj.currentState == "dance":
                     red, blue, green = obj.colour
                     red = (red + 10) % 225
                     blue = (blue + 20) % 225
@@ -530,7 +531,7 @@ class RunningMain:
                     if not path == [] and path is not None:
                         self.draw_path(path)
                     for item in text_info:
-                        text = str(item[0] + ": " + str(item[1]))
+                        text = str(item[0] + ": " + str(math.floor(item[1])))
                         self.add_button(size_info,text, self.black, 20)
                         self.need_bar(item[0],item[1],size_info)
                         size_info = [size_info[0],size_info[1] + size_info[3],size_info[2],size_info[3]]

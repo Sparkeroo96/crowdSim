@@ -5,6 +5,7 @@
 from random import randint, seed
 # import random
 from People.stateMachine import StateMachine
+from Objects.baseObject import BaseObject
 from Objects.bar import Bar
 from Objects.toilet import Toilet
 from Objects.danceFloor import DanceFloor
@@ -153,7 +154,6 @@ class Person:
 
         stateAction = self.get_state_action()
         if stateAction == "navigateToRememberedObj":
-            print("IN the action navigating to a remembered object")
             self.navigate_to_remembered_object()
 
         elif stateAction == "rotate":
@@ -181,17 +181,15 @@ class Person:
                 self.astarCoords = a_starv2.run_astar(self.find_nearest_waypoint(), self.exploreNode)
 
             print("within the explore state action about to navigate to remembered boi")
+            self.setup_explore()
+
             self.navigate_to_remembered_object()
 
         elif stateAction == "dance":
             if self.inside_dance_floor:
                 print("INSIDE DANCE FLOOR")
                 self.advance_state_machine()
-            print("Here still")
-            print(str(self.astarCoords))
-            print(self.coordinates)
-            # self.navigate_to_remembered_object()
-
+            self.astarCoords.clear()
 
         else:
             # self.random_move()
@@ -213,6 +211,13 @@ class Person:
             self.flock_away_from_objects(objectsWithinRejection)
             # return self.flock_away_from_objects(objectsWithinRejection)
 
+        targetCoordinates = None
+        if self.rememberedObj:
+            targetCoordinates = self.work_out_objects_closest_point(self.rememberedObj)
+        else:
+            targetCoordinates = self.exploreNode
+
+        targetDistance = self.map.calculate_distance_between_two_points(self.coordinates, targetCoordinates)
         x = self.coordinates[0]
         y = self.coordinates[1]
         nextMove = [x, y]
@@ -220,28 +225,13 @@ class Person:
         # if not self.astarCoords:
         """near object must be false here????/"""
         if self.astarCoords == [] or not self.astarCoords:
-            print("ASTAR IS EMPTY, SETTING CORDS TO GET TO THE OBJECT")
             self.set_cords_from_algo()
 
-        if self.astarCoords:
-            print("My current astar cords are: " + str(self.astarCoords))
+        if self.astarCoords and (targetDistance > (self.get_rejection_area() / 2) or self.object_in_vision(self.rememberedObj) is True and self.count_objects_in_vision(False)):
+            print("navigating via a*")
             self.navigate_via_astar(nextMove)
         else:
-            print("There are no astar cords")
-            if self.rememberedObj:
-                # near_obj = self.check_near_object()
-                # if near_obj:
-                #     print("NEAR THIS GODDAMN OBJECT")
-                #     self.can_move_to_object = True
-                #     self.astarCoords.clear()
-                """RETURN FROM HERE"""
-                print("Checking if we're here")
-                targetCoordinates = self.work_out_objects_closest_point(self.rememberedObj)
-                print("target coordinates: " + str(targetCoordinates))
-                print("next Move: " + str(nextMove))
-            else:
-                targetCoordinates = self.exploreNode
-
+            print("just walking there, target " + str(self.rememberedObj) + " targetDistance " + str(targetDistance))
             if targetCoordinates != nextMove:
                 # while targetCoordinates != nextMove:
                 x = self.coordinates[0]
@@ -278,6 +268,7 @@ class Person:
     def check_near_object(self):
         """
         Check the current agent is within the cordinates of the remembered objects closest point
+        Currently defunct
         :return: True if close, False if not.
         """
 
@@ -330,8 +321,6 @@ class Person:
                     y -= 1
 
             nextMove = [x, y]
-            print("TARGET COORDS ARE" + str(targetCoordinates))
-            print("MY NEXT MOVE IS" + str(nextMove))
             moveReturn = self.move(nextMove)
             if moveReturn is not True and moveReturn != self.rememberedObj and moveReturn != False:
                 newCoords = self.get_coordinates_for_move_avoiding_collision_object(targetCoordinates, moveReturn, nextMove)
@@ -342,6 +331,27 @@ class Person:
             self.astarCoords.pop(0)
             if len(self.astarCoords) == 0:
                 self.clear_explore_node()
+
+    def setup_explore(self):
+        """
+        Sets Explore node if exists
+        Changes Explore Node if it has multiple collisions with the same object
+        Needs to be used in conjunction with navigate_to_remembered_object
+        :return:
+        """
+        # Failed to explore a certain way a number of times moving back
+        if self.coordinatesFailed == 5 or self.objectFailedCount == 5:
+            # Could have gone off the map or something is going wrong, try to go somewhere else instead
+            self.coordinatesFailed = 0
+            self.objectFailed = 0
+            self.objectFailedCount = 0
+            self.clear_explore_node()
+
+        # if self.rememberedObjType != "" and (not self.exploreNode or self.exploreNode is None):
+        if not self.exploreNode or self.exploreNode is None:
+            # if self.rememberedObjType != "" and self.exploreNode == []:
+            self.exploreNode = a_starv2.get_random_waypoint()
+            self.astarCoords = a_starv2.run_astar(self.find_nearest_waypoint(), self.exploreNode)
 
     def get_coordinates_for_move_avoiding_collision_object(self, targetCoordinates,  collisionObject, attemptedMove):
         """
@@ -398,11 +408,16 @@ class Person:
             return True
 
         print("person not moving because of " + str(collisionObject))
+
+        if self.rememberedObj != "":
+            self.check_person_collided_with_target(collisionObject)
+
         self.coordinatesFailed += 1
         if self.objectFailed == collisionObject:
             self.objectFailedCount += 1
             print("THIS IS OCCURING")
-            self.navigate_to_remembered_object()
+            # Phil - Put this here as a test of b-line. Ignore if not neccesary in future commits
+            # self.navigate_to_remembered_object()
         else:
             self.objectFailed = collisionObject
             self.objectFailedCount = 1
@@ -574,6 +589,7 @@ class Person:
         if self.currentState == self.idleState:
             """While there are no current needs, the person will relax."""
             """relax will reduce the needs of the person"""
+            self.clear_remembered_object()
             if self.check_needs() == False:
                 self.relax()
                 """RETURN THE ACTION OF DOING NOTHING, THERE IS NO NEED"""
@@ -612,11 +628,14 @@ class Person:
 
             # if self.map.check_circle_overlap_rectangle(selfEdge, rectangleCoordRanges):
             if self.map.check_person_touching_object(selfEdge, rectangleCoordRanges):
-                print("TOUCHING OBJECT ")
-                print(str(self.currentState))
-                self.astarCoords.clear()
+                print("person touching object " + str(rememberedObjectCoords) + " coord ranges " + str(rectangleCoordRanges))
+
+                # self.astarCoords.clear()
+                self.astarCoords = []
                 self.advance_state_machine()
                 self.change_angle_to_move_direction(self.coordinates, self.rememberedObj.get_coordinates())
+            else:
+                print("person not touching object " + str(rememberedObjectCoords) + " coord ranges " + str(rectangleCoordRanges))
 
         elif self.currentState == "orderDrink":
             # Person is ordering their drink
@@ -643,7 +662,7 @@ class Person:
             if self.inside_dance_floor:
                 self.dance()
                 self.advance_state_machine()
-                self.inside_dance_floor = False
+                # self.inside_dance_floor = False
 
         elif self.currentState == "useToilet":
 
@@ -846,6 +865,24 @@ class Person:
                 return True
 
         return False
+
+    def count_objects_in_vision(self, includePeople):
+        """
+        Counts objects in vision
+        :param includePeople: will count people as well if true
+        :return: Number of objects
+        """
+        if includePeople is True:
+            return len(self.vision)
+
+        objCount = 0
+
+        for obj in self.vision:
+            if isinstance(obj, BaseObject):
+                objCount += 1
+
+        return objCount
+
 
     def add_to_memory(self, obj):
         """Adds an object to the persons memory so they can find it again easier
@@ -1084,6 +1121,7 @@ class Person:
         print("In dance function")
         self.brain[2][1] = 100
         self.set_action_count(5, 10)
+        self.clear_remembered_object()
 
     def use_toilet(self):
         """
@@ -1099,6 +1137,7 @@ class Person:
 
             self.rememberedObj.person_stop_using_toilet(self)
             self.advance_state_machine()
+            self.clear_remembered_object()
 
         elif self.rememberedObj.person_use_toilet(self):
             self.set_action_count(8, 10)
@@ -1219,7 +1258,9 @@ class Person:
 
         if nearbyPeople is False or len(nearbyPeople) == 1:
             # No nearby people random
-            return self.random_move()
+            self.setup_explore()
+            return self.navigate_to_remembered_object()
+            # return self.random_move()
 
         angleTotal = 0
         # These are the directions people are moving on the axis
@@ -1468,7 +1509,7 @@ class Person:
     """This will be in an idle state when a person has no desire of drinking, dancing or wanting the toilet"""
     def relax(self):
         dec_thirst = randint(0, 1)
-        dec_toilet = randint(0, 2)
+        dec_toilet = randint(0, 1)
         dec_dance = randint(0, 3)
         self.brain[0][1] -= dec_toilet
         self.brain[1][1] -= dec_thirst
@@ -1564,3 +1605,18 @@ class Person:
     def set_needs_values(self, index, value):
         array = self.brain
         array[index][1] = value
+
+    def check_person_collided_with_target(self, collisionObj):
+        """
+        Checking to see if a person has collided with an object in move that it was aiming for
+        BitchFix
+        :param collisionObj: The object that was collided with
+        :return:
+        """
+
+        if collisionObj == self.rememberedObj or isinstance(collisionObj, self.rememberedObjType) is True:
+            # Found your way there goon, do your thing
+            self.advance_state_machine()
+            return True
+
+        return False

@@ -212,9 +212,10 @@ class Person:
 
         if self.astarCoords and (targetDistance > (self.get_rejection_area() / 2) or self.object_in_vision(self.rememberedObj) is True and self.count_objects_in_vision(False)):
             print("navigating via a*")
+            print(self.object_in_vision(self.rememberedObj))
             self.navigate_via_astar(nextMove)
         else:
-            print("just walking there, target " + str(self.rememberedObj) + " targetDistance " + str(targetDistance))
+            # print("just walking there, target " + str(self.rememberedObj) + " targetDistance " + str(targetDistance))
             if targetCoordinates != nextMove:
                 # while targetCoordinates != nextMove:
                 x = self.coordinates[0]
@@ -375,10 +376,12 @@ class Person:
             self.lastCoordinates = self.coordinates
             self.coordinates = coordinates
             self.coordinatesFailed = 0
+            print("person not moving because of " + str(collisionObject))
 
             return True
 
-        print("person not moving because of " + str(collisionObject))
+        # print("person not moving because of " + str(collisionObject))
+        print("ASTAR Right now is: " + str(self.astarCoords))
 
         # if self.rememberedObj != "":
         #     self.check_person_collided_with_target(collisionObject)
@@ -388,7 +391,8 @@ class Person:
             self.objectFailedCount += 1
             print("THIS IS OCCURING")
             # Phil - Put this here as a test of b-line. Ignore if not neccesary in future commits
-            # self.navigate_to_remembered_object()
+            print("Navigate still")
+            self.navigate_to_remembered_object()
         else:
             self.objectFailed = collisionObject
             self.objectFailedCount = 1
@@ -608,8 +612,8 @@ class Person:
                 print("a* " + str(self.astarCoords))
                 self.advance_state_machine()
                 self.change_angle_to_move_direction(self.coordinates, self.rememberedObj.get_coordinates())
-            else:
-                print("person not touching object " + str(rememberedObjectCoords) + " coord ranges " + str(rectangleCoordRanges))
+            # else:
+                # print("person not touching object " + str(rememberedObjectCoords) + " coord ranges " + str(rectangleCoordRanges))
 
         elif self.currentState == "orderDrink":
             # Person is ordering their drink
@@ -636,6 +640,7 @@ class Person:
             if self.inside_dance_floor:
                 self.dance()
                 self.advance_state_machine()
+                self.inside_dance_floor = False
                 # self.inside_dance_floor = False
 
         elif self.currentState == "useToilet":

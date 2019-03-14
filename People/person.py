@@ -1101,7 +1101,6 @@ class Person:
         """
 
         if self.rememberedObj.check_person_using_toilet(self) is True:
-            self.brain[0][1] = 100 # Set toilet back up to default
             self.get_person_needs()
 
             self.rememberedObj.person_stop_using_toilet(self)
@@ -1521,7 +1520,6 @@ class Person:
                 # return self.move(nextMove)
 
         if self.coordinates == self.random_dance_area:
-            self.brain[2][1] = 99
             """DELAY here?"""
             self.random_dance_area = None
             self.inside_dance_floor = True

@@ -501,7 +501,8 @@ class RunningMain:
                     self.add_heatmap(coordinates)
                 except:
                     nothing = 1
-                if obj.get_state_action() == "dance":
+                # if obj.get_state_action() == "dance":
+                if obj.currentState == "dance":
                     red, blue, green = obj.colour
                     red = (red + 10) % 225
                     blue = (blue + 20) % 225

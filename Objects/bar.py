@@ -7,12 +7,11 @@ from Objects.baseObject import BaseObject
 
 class Bar(BaseObject):
 
-    maxStaffSize = 0
-    staffWorking = []
     #Colour is Blue
     colour = (0, 0, 153)
 
-    drinksQueue = []
+
+
 
     def __init__(self, coordinates, name,  width, height):
         self.coordinates = coordinates
@@ -23,11 +22,19 @@ class Bar(BaseObject):
         # Nope and yes
 
         self.name = name
+        self.maxStaffSize = 0
+        self.staffWorking = []
+        self.drinksQueue = []
+        # This allows you to control the number of virtual servers
+        self.wait_timers = []
 
+        staffSize = 0
         if width > height:
-            self.auto_set_max_staff_size(width)
+            staffSize = self.auto_set_max_staff_size(width)
         else:
-            self.auto_set_max_staff_size(height)
+            staffSize = self.auto_set_max_staff_size(height)
+
+        self.initiate_wait_timers(staffSize)
 
     def action(self):
         """
@@ -35,7 +42,10 @@ class Bar(BaseObject):
         Just having it serve one at a time now
         :return:
         """
+        self.decrease_wait_timers()
+
         self.serve_drink()
+
 
     def staff_start_working_here(self, barStaff):
         """
@@ -84,11 +94,21 @@ class Bar(BaseObject):
         Serves a drink to the first customer in the orders list
         :return: 1 on serving, 0 if no one waiting and -1 if no servers
         """
+        freeWaitTimers = self.count_free_wait_timers()
+
+        usedWaitTimers = 0
 
         if self.drinksQueue:
-            customer = self.drinksQueue.pop(0)
 
-            customer.served_drink()
+            x = 0
+            for x in range(freeWaitTimers):
+                if not self.drinksQueue:
+                    break
+
+                customer = self.drinksQueue.pop(0)
+                # To show how long the server has to wait for
+                waitTime = customer.served_drink()
+                self.set_wait_timer(waitTime)
             return 1
 
         elif not self.drinksQueue:
@@ -110,3 +130,66 @@ class Bar(BaseObject):
 
         self.maxStaffSize = staffNumber
         return staffNumber
+
+    def initiate_wait_timers(self, staffSize):
+        """
+        Sets the number of people who can be served at once
+        :param staffSize: The number of virtual servers
+        :return:
+        """
+
+        x = 0
+
+        for x in range(staffSize):
+            self.wait_timers.append(0)
+            print("wait timers " + str(len(self.wait_timers)))
+
+    def decrease_wait_timers(self):
+        """
+        Decreases every active wait timer by 1
+        To link the person being served a drink wait time with the serving
+        :return:
+        """
+
+        x = 0
+
+        while x < len(self.wait_timers):
+            print("decreasing wait timers " + str(x))
+            if self.wait_timers[x] > 0:
+                self.wait_timers[x] -= 1
+
+            x += 1
+
+
+    def count_free_wait_timers(self):
+        """
+        COunts the number of wait timers at 0
+        :return: Number of free wait timers
+        """
+
+        freeWaitTimers = 0
+        x = 0
+
+        while x < len(self.wait_timers):
+            if int(self.wait_timers[x]) == 0:
+                freeWaitTimers += 1
+
+            x += 1
+
+        return  freeWaitTimers
+
+    def set_wait_timer(self, waitTime):
+        """
+        Sets a wait timer
+        :param waitTime: The ticks to set it to
+        :return: True on success
+        """
+
+        x = 0
+        while x < len(self.wait_timers):
+            if int(self.wait_timers[x]) == 0:
+                self.wait_timers[x] = waitTime
+                return True
+            x += 1
+
+        return False

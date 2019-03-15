@@ -1,17 +1,19 @@
 import numpy
 import math
+from random import randint
 from heapq import *
 mapLocations = []
 test = (1, 1), (-1, -1), (1, -1), (-1, 1)
 graph = []
 finalLocations = []
 n = []
+heatmap_store = {}
 
 #  The binary heap keeps the open list in order
 def astar(array, start, dest):
     """THE DESTINATION WILL BE DEEMED AS A 1"""
-    print("array in astar" + str(array))
-    array[(dest[0], dest[1])] = 0
+    # print("array in astar" + str(array))
+
     neighbours = [(0, 1), (0, -1), (1, 0), (-1, 0), (1, 1), (-1, -1), (1, -1), (-1, 1)]
 
     close_set = set()
@@ -36,6 +38,7 @@ def astar(array, start, dest):
             global mapLocations
             mapLocations = data
             mapLocations.reverse()
+            # array[(dest[0], dest[1])] = 1
             return data  # Return the list
 
         close_set.add(current)  # Add the current parent to the closed set.
@@ -81,11 +84,11 @@ def heuristic(a, b):
 def store_all_nodes(g):
     global graph
     graph = g.copy()
-    print("stored" + str(g))
+    # print("stored" + str(g))
 
 def get_all_nodes():
     global graph
-    if graph.any():
+    if len(graph) > 0:
         return graph
     else:
         return False
@@ -121,14 +124,14 @@ def return_waypoints(locations):
             else:
                 waypoints.append(locations[i])
         except IndexError:
-                print("Error")
+                nothing = 1
         i += 1
     if not locations:
         return
     else:
         """Add the destination to the final waypoint"""
         waypoints.append(locations[-1])
-    print("WAYPOINTS ARE: " + str(waypoints))
+    # print("WAYPOINTS ARE: " + str(waypoints))
     global mapLocations
     mapLocations = waypoints
     return waypoints
@@ -143,21 +146,52 @@ def return_waypoints(locations):
 def run_astar(start, dest):
     a = convert_to_simple(start)
     b = convert_to_simple(dest)
-    """Convert coords to the node boys"""
-    result = astar(get_all_nodes(), a, b)
-    if result == None:
-        return print("none")
-    else:
+    destx = b[0] + 1
+    desty = b[1] + 1
+    allNodes = get_all_nodes()
+    result = None
+    if allNodes is not False and a is not None:
+        result = astar(allNodes, a, b)
+    if result is False: # Catch if there are no astar coords and attempt to move to the top right node.
+        new_dest = destx, desty
+        result = astar(allNodes, a, new_dest)
+    if result is False: # Catch if there are no astar coords and attempt to move to the bottom left node.
+        destxv2 = b[0] - 1
+        destyv2 = b[1] - 1
+        new_dest_v2 = destxv2, destyv2
+        result = astar(allNodes, a, new_dest_v2)
+    if result is not None and result is not False:
+        if len(result) <= 2:  # At this point, the agent is near enough to the object.
+            return False
         waypoint = return_waypoints(store_node_details(result))
         # return store_node_details(result)
         return locations(waypoint)
 
+def get_next_free_cord(cord):
+    """
+    Gets the free cord around the object.
+    :param cord:
+    :return:
+    """
+    new_cord = None
+    potential_free_cords = set()
+    actual_cord = [cord[0] * 20, cord[1] * 20]
+
+
+    return new_cord
 
 """Convert coords that we have as our start and dest to simple 0 - 9 coords."""
 def convert_to_simple(cords):
     converted = []
+    if cords is None:
+        return False
     for c in cords:
-        converted.append(math.floor(c / 50))
+        change = math.floor(c / 20)
+        if change <= 0:
+            change = 0
+            converted.append(change)
+        else:
+            converted.append(change)
     return converted[0], converted[1]
 
 """Returns the final location waypoints of the algorithm needed. """
@@ -167,15 +201,39 @@ def locations(path):
     if not path:
         return
     for p in path:
-        finalLocations.append((p[0] * 50, p[1] * 50))
-    print(finalLocations)
+        finalLocations.append((p[0] * 20, p[1] * 20))
     return finalLocations
 
 def set_open_nodes(nodes):
     global n
     for node in nodes:
-        n.append([node[0] * 50, node[1] * 50])
+        n.append([node[0] * 20, node[1] * 20])
 
 def get_open_nodes():
     global n
     return n
+
+def get_random_waypoint():
+    """
+    Gets a random waypoint
+    :return: A random node
+    """
+
+    global n
+    nodeCount = len(n)
+    # randNodeKey = randint(0, nodeCount - 1)
+
+    nodes = get_open_nodes()
+    nodes_length = len(nodes)
+    return nodes[randint(0, nodes_length - 1)]
+
+    # return n[randNodeKey]
+
+def print_node_count():
+    """
+    test function to print all nodes
+    :return:
+    """
+    global n
+    print("total node count " + str(len(n)))
+    print("open node count " + str(len(get_open_nodes())))

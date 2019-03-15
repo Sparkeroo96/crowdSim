@@ -19,7 +19,6 @@ class FlockingPerson(Person):
 
     def action(self):
         objects = self.map.get_objects_in_range(FlockingPerson, self.coordinates, self.sight)
-        print("got objects")
         self.set_move_direction(objects)
         self.move_with_direction(objects)
 

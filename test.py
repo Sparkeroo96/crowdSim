@@ -7,9 +7,12 @@ Modified by Sam Parker swp5
 import pygame
 import math
 import sys
+import os
 from Data import map_data
 from time import sleep
 from People.person import Person
+from Objects.wall import Wall
+from Objects.danceFloor import DanceFloor
 
 
 class RunningMain:
@@ -23,7 +26,8 @@ class RunningMain:
     red = (255, 0, 0)
     blue = (0, 0, 153)
     orange = (255, 128, 0)
-
+    yellow = (250,250,0)
+    purple = (128,0,128)
     exit = False
 
     # Menu flags
@@ -39,8 +43,14 @@ class RunningMain:
     show_heatmap_toggle = False
 
     # Size of the screen
-    screen_width = 800
-    screen_height = 600
+    screen_width = 1000
+    # screen_height = 800
+    screen_height = 700
+
+    sim_screen_width = math.floor(screen_width - (screen_width / 3))
+    sim_screen_height = math.floor(screen_height - (screen_height/ 4))
+
+    offset = 0
 
     #Error message
     error_message = ""
@@ -63,11 +73,34 @@ class RunningMain:
     save_active = None
     save_name = False
 
-    tick_rate = 30
+    tick_rate = 20
 
     heat_map = []
 
+    selected_person = None
+    size_info_pannel = None
+
+    #Info for changing their needs
+    x1_first_click = None
+    startAmount_of_need = None
+    new_value_for_need = None
+    dragging_bar = False
+    selected_button = None
+    temp_width = None
+    nodes_generated = 0
+    current_route = []
+
+    menu_bar_info = None
+    menu_bar_clicked = None
+    pause_toggle = False
+
+    show_nodes = False
+    dance_floor_info = None
+
     def __init__(self):
+        os.environ['SDL_VIDEO_WINDOW_POS'] = str(0) + "," + str(0)
+
+        self.set_offset(self.centre([0, 0, self.get_screen_width(), self.get_screen_height()],[self.get_sim_screen_width(), self.get_sim_screen_height()]))
         """This is the constructor that starts the main loop of the simulation"""
         #Starts the pygame
         pygame.init()
@@ -82,24 +115,65 @@ class RunningMain:
         clock = pygame.time.Clock()
         # Flag for checking if the map loaded correclty
         success = False
-
+        self.get_map_data().set_size_screen(self.sim_screen_width, self.sim_screen_height)
         # Main loop for the applicaion
         while not self.get_exit():
-            # print(self.get_map_data().get_map())
-            self.get_display().fill(self.white)
 
+            self.get_display().fill(self.white)
             # This gets all the key presses and mouse movements and passes them as events
             for event in pygame.event.get():
-
                 # Quit Function
                 if event.type == pygame.QUIT:
                     self.set_exit()
+                # This allows an agent to be selected to see what they are thinking
+                main_sim_screen = [self.get_offset()[0],self.get_offset()[1],self.get_sim_screen_width(), self.get_sim_screen_height()]
+                if event.type == pygame.MOUSEBUTTONDOWN and self.get_menu()[1] == 'Start' and self.in_area(pygame.mouse.get_pos(), main_sim_screen):
+                    selected = self.get_map_data().what_object(self.gui_to_map_data_coords_offset(pygame.mouse.get_pos()), True)
+                    if isinstance(selected, Person):
+                        self.set_selected_person(selected)
+                    else:
+                        self.set_selected_person(None)
+                    sleep(0.1)
+                # This is gets the button in the info pannel they seleced
+                if self.get_selected_person() is not None:
+                    if event.type == pygame.MOUSEBUTTONDOWN and self.get_size_info_pannel() is not None:
+                        x, y = pygame.mouse.get_pos()
+                        info_size = self.get_size_info_pannel()
+                        box_x1 = info_size[0]
+                        box_y1 = info_size[1]
+                        box_x2 = info_size[0] + info_size[2]
+                        size_one_box = info_size[3] / info_size[4]
+                        if x >= box_x1 and x <= box_x2:
+                            for i in range(0, info_size[4]):
+                                if(self.in_area(pygame.mouse.get_pos(),[box_x1,box_y1 + (size_one_box * i),info_size[2], size_one_box])):
+                                    self.set_selected_button(i)
 
-                    # Pause function
+                if self.get_selected_button() is not None and self.in_area(pygame.mouse.get_pos(),self.get_size_info_pannel()):
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+                        self.set_x1_first_click(pygame.mouse.get_pos()[0])
+                        array = self.get_selected_person().get_person_needs()
+                        self.set_startAmount_of_need(array[self.get_selected_button()][1])
+                        self.set_dragging_bar()
+
+                if event.type == pygame.MOUSEBUTTONUP and self.get_dragging_bar() and self.get_selected_person() is not None:
+                    info = self.get_size_info_pannel()
+                    starting_value = self.get_startAmount_of_need() / (info[2]/100)
+                    new_value = pygame.mouse.get_pos()[0] / (info[2]/100)
+                    new_value = starting_value + (new_value - starting_value)
+                    new_value = round(new_value)
+                    if new_value < 0:
+                        new_value = 0
+                    if new_value > 100:
+                        new_value = 100
+                    self.get_selected_person().set_needs_values(self.get_selected_button(),new_value)
+                    self.set_x1_first_click(None)
+                    self.set_startAmount_of_need(None)
+                    self.set_dragging_bar()
+
+                # Pause function
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_F10:
-                        self.pause = not self.pause
-
+                        self.set_pause()
                     #Saves the current map
                     if event.key == pygame.K_F1 and self.get_build_active():
                         self.set_save_active(True)
@@ -119,23 +193,29 @@ class RunningMain:
                     self.set_drag(True)
 
                 # gets the width and height for the object and creates the obj
-                if event.type == pygame.MOUSEBUTTONUP and self.get_build_active() and self.get_drag() and self.get_current_tool() != "Remove":
+                if event.type == pygame.MOUSEBUTTONUP and self.get_build_active() and self.get_drag() and self.get_current_tool() is not "Remove":
                     x2, y2 = pygame.mouse.get_pos()
                     width = self.get_xCord1() - x2
                     self.set_width(width * -1)
                     height = self.get_yCord1() - y2
                     self.set_height(height * -1)
-                    self.data.add_to_map(self.get_current_tool(),self.get_xCord1(), self.get_yCord1(), self.get_width(), self.get_height())
+                    coord = (self.get_xCord1(), self.get_yCord1())
+                    coord = self.gui_to_map_data_coords_offset(coord)
+                    xCord1, yCord1 = coord
+                    self.data.add_to_map(self.get_current_tool(),xCord1, yCord1, self.get_width(), self.get_height())
                     pygame.display.update()
                     self.set_drag(False)
 
                 # Adds a person to the map if clicked
-                if self.get_add_person_on_click() and event.type == pygame.MOUSEBUTTONUP and not self.get_build_active():
-                    self.get_map_data().add_people_to_map(pygame.mouse.get_pos(),20,0)
+                if self.get_add_person_on_click() and event.type == pygame.MOUSEBUTTONUP and not self.get_build_active() and self.in_area(pygame.mouse.get_pos(),[self.get_offset()[0],self.get_offset()[1],self.get_sim_screen_width(),self.get_sim_screen_height()]):
+                    #Need to have a check to say if you can create a person at these coordinates
+                    personCoordinates = self.gui_to_map_data_coords_offset(pygame.mouse.get_pos())
+                    size = 20
+                    self.get_map_data().add_people_to_map(personCoordinates, size, 0)
 
                 #The remove object function
                 if self.get_current_tool() == "Remove" and event.type == pygame.MOUSEBUTTONUP:
-                    self.get_map_data().delete_object(pygame.mouse.get_pos())
+                    self.get_map_data().delete_object(self.gui_to_map_data_coords_offset(pygame.mouse.get_pos()))
 
                 #This is the code manages the user text imput
                 if self.get_text_running() and event.type == pygame.KEYDOWN:
@@ -157,6 +237,22 @@ class RunningMain:
                             running = self.get_user_input_result()
                             new_running = running + event.unicode
                             self.set_user_input_result(new_running)
+
+                if event.type == pygame.MOUSEBUTTONDOWN and not self.menu_bar_info == None and self.in_area(pygame.mouse.get_pos(), self.menu_bar_info):
+                    x, y = pygame.mouse.get_pos()
+                    menu_size = self.menu_bar_info
+                    button_size = menu_size[2] / menu_size[4]
+                    current_x = 0
+                    first_x = menu_size[0]
+
+                    while current_x < menu_size[4]:
+                        if x > (first_x + (button_size * current_x)) and x < first_x + button_size + (button_size * current_x):
+                            self.menu_bar_clicked = current_x
+
+
+                        current_x = current_x + 1
+
+
 
             # this tracks the mouse movement when holding down the left button and puts a rectangle there each time
             if self.get_drag() and self.get_current_tool() != "Remove":
@@ -193,13 +289,12 @@ class RunningMain:
                     # Gets the map from map data
                     objectArray = self.data.get_map()
                     # if it is empty then it loads the default
-                    if objectArray == []:
-                        self.data.export("maps_saves","default")
+                    if len(self.get_map_data().get_map()) == 0:
+                        print("Load Default")
+                        self.get_map_data().import_from_file("maps_saves","default")
 
-                    elif success:
-                        # If there was a succesful load then it uses the user chosen one
-                        self.draw_display()
                     self.draw_display()
+                    # self.draw_display()
                 # Starts the user input function
                 if menu[1] == "Floor Plan Load":
                     self.data.clear_map()
@@ -244,22 +339,72 @@ class RunningMain:
             else:
                 self.error_page("Menu Option has failed")
 
+            if self.get_dragging_bar():
+                info_size = self.get_size_info_pannel()
+
+                width = pygame.mouse.get_pos()[0]
+                starting_coord = (info_size[2] / 100) * self.get_startAmount_of_need()
+                width = ((width - self.get_x1_first_click()) / info_size[2]) * 100
+                width = starting_coord + width
+
+                if width > info_size[2]:
+                    width = info_size[2]
+                if width < 0:
+                    width = 0
+
+                self.set_temp_width(width)
+                button_num = self.get_selected_button()
+                info_size = [info_size[0] / info_size[4],info_size[1] / info_size[4], info_size[2], info_size[3] / info_size[4]]
+                info = [0, info_size[1] + info_size[3] + (info_size[3] * button_num) - (info_size[3] / 5), info_size[2], info_size[3] / 5]
+                pygame.draw.rect(self.get_display(),self.red,info)
+
+                info = [0, info_size[1] + info_size[3] + (info_size[3] * button_num) - (info_size[3] / 5), self.get_temp_width(), info_size[3] / 5]
+                pygame.draw.rect(self.get_display(),self.green,info)
             pygame.display.update()
             clock.tick(self.tick_rate)
+
+            while self.get_pause():
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        pygame.quit()
+                        quit()
+
+                    if event.type == pygame.KEYDOWN:
+                        if event.key == pygame.K_F10:
+                            self.set_pause()
+
+                    if event.type == pygame.MOUSEBUTTONDOWN and not self.menu_bar_info == None and self.in_area(pygame.mouse.get_pos(), self.menu_bar_info):
+                        x, y = pygame.mouse.get_pos()
+                        menu_size = self.menu_bar_info
+                        button_size = menu_size[2] / menu_size[4]
+                        current_x = 0
+                        first_x = menu_size[0]
+
+                        while current_x < menu_size[4]:
+                            if x > (first_x + (button_size * current_x)) and x < first_x + button_size + (
+                                    button_size * current_x):
+                                if x == 1:
+                                    self.pause_toggle = not self.pause_toggle
+                                self.menu_bar_clicked = current_x
+
+                            current_x = current_x + 1
+                            self.menu_bar()
+                            self.menu_option(self.menu_bar_clicked)
 
         pygame.quit()
         quit()
 
-    def add_button(self,button_info, text, colour):
+    def add_button(self,button_info, text, colour, text_size):
         """Adds a button to the screen with a given dimention and text inside and adds it to the display
         :param button_info, is the coordiate and size info
         :param text, is the text that is going inside the box
         :param colour, is the colour of the box
         """
         pygame.draw.rect(self.get_display(),colour,button_info,2)
-        button_text = self.text(text)
+        button_text = self.text(text,text_size)
         loaction = self.centre(button_info,[button_text[1],button_text[2]])
         self.get_display().blit(button_text[0], loaction)
+
 
     def centre(self,box,text):
         """This is a function that provides the cordinates for a box so that it is centered in the middle of the sceen
@@ -287,6 +432,7 @@ class RunningMain:
         half_box_height = math.floor(box_height / 2)
         half_text_height = math.floor(text_height / 2)
         chaneg_in_y = half_box_height - half_text_height
+
         y_coord = box_y + chaneg_in_y
 
         # Puts both in a tuple format
@@ -295,13 +441,13 @@ class RunningMain:
         # Returns x and y coordinate for the ceneter
         return text_location
 
-    def text(self,text):
+    def text(self,text, size):
         """ This function creates a text object in pygame and returns the size of the text
         :param text: the string that is to be displayed
         :return: The text object and the height and width for further calucaltions
         """
         pygame.font.init()
-        my_font = pygame.font.SysFont("Arial", 50)
+        my_font = pygame.font.SysFont("Arial", size)
         text_surface = my_font.render(text, False, self.black)
         return [text_surface,my_font.size(text)[0],my_font.size(text)[1]]
 
@@ -310,7 +456,6 @@ class RunningMain:
         This function handeles the button presses in pygame, save, pause and creation of walls
         """
         for event in pygame.event.get():
-            # print(event)
             # Gets the starting cordinates for the walls
             # quits if x button is pressed
             if event.type == pygame.QUIT:
@@ -321,37 +466,92 @@ class RunningMain:
         """
         Draws the display for the actul simulation by going though the map array and drawing the shape that is required in the correct loactions
         """
-        # print(self.get_map_data().get_map())
+        if not self.builder_active:
+            self.menu_bar()
+            self.menu_option(self.menu_bar_clicked)
+        x_offset, y_offset = self.get_offset()
+        if self.show_nodes:
+            list_nodes = self.get_map_data().open_nodes
+            if not list_nodes == []:
+                for node in list_nodes:
+                    x1, y1  = node
+                    x1 = x1 * 20
+                    y1 = y1 * 20
+                    x1 = x1 + x_offset
+                    y1 = y1 + y_offset
+                    self.node_icon((x1,y1))
+        # Draws the border around the simulation
+        pygame.draw.rect(self.get_display(),self.black,[x_offset,y_offset,self.get_sim_screen_width(), self.get_sim_screen_height()],2)
         # Goes though the map array obj
         objectArray = self.data.get_map()
+
         for obj in objectArray:
             obj.action()
             coordinates = obj.get_coordinates()
+            coordinates = self.map_data_to_gui_coords_offset(coordinates)
             angle = obj.get_angle()
             width = obj.get_width()
             obj_colour = obj.get_colour()
             shape = obj.get_shape()
-            # print("shape = " + shape)
             # the process of adding a person and the funcitons that get called
             if isinstance(obj, Person) and not self.get_show_heatmap_toggle():
-                self.add_heatmap(coordinates)
-                # Creating the cicle with the variables provided
+                try:
+                    # Adds the coordinates to the heat map in a try to avoid an error where and object is created outside of the area
+                    if not obj.currentState == "drink" or not obj.currentState == "useToilet":
+                        self.add_heatmap(coordinates)
+                except:
+                    nothing = 1
+                if obj.currentState == "dance":
+                    red, blue, green = obj.colour
+                    red = (red + 10) % 225
+                    blue = (blue + 20) % 225
+                    green = (green + 30) % 225
+                    obj.colour = (red, blue, green)
+                else:
+                    obj.colour = self.red
+                if obj == self.get_selected_person():
+                    text_info = self.get_selected_person().get_person_needs()
+                    size_info = [0,0,150,50]
+                    saved_size_info = size_info
+                    obj_colour = self.green
+                    running_size = size_info
+                    path = self.get_selected_person().astarCoords
+                    if not path == [] and path is not None and path is not False:
+                        self.draw_path(path)
+                    for item in text_info:
+                        text = str(item[0] + ": " + str(math.floor(item[1])))
+                        self.add_button(size_info,text, self.black, 20)
+                        self.need_bar(item[0],item[1],size_info)
+                        size_info = [size_info[0],size_info[1] + size_info[3],size_info[2],size_info[3]]
+                        running_size =[size_info[0],size_info[1],size_info[2], size_info[3]+ running_size[3]]
+                    current_state = self.get_selected_person().currentState
+                    if current_state is None:
+                        current_state = "Wondering Around"
+                    size_info = [0,150,150,50]
+                    self.add_button(size_info,current_state,self.black,20)
+                    # size_info = [0, 200, 150, 50]
+                    # self.add_button(size_info, str(obj.coordinates), self.black, 20)
+                    running_size =[saved_size_info[0],saved_size_info[1],saved_size_info[2], running_size[3] - size_info[3], len(text_info)]
+                    self.set_size_info_pannel(running_size)
+
                 pygame.draw.circle(self.display, obj_colour, coordinates, round(width / 2))
                 # Maths to add the pixcels to represent the eyes
                 eyes = obj.person_eyes(coordinates, angle, round(width / 2))
                 self.display.set_at((eyes[0][0], eyes[0][1]), self.white)
                 self.display.set_at((eyes[1][0], eyes[1][1]), self.white)
 
-            elif shape == "rectangle" or shape == "wall":
-                # objects
-                height = obj.get_height()
-                pygame.draw.rect(self.display, obj_colour, [coordinates[0], coordinates[1], width, height])
-
             elif self.get_show_heatmap_toggle():
                 self.show_heatmap()
 
-        for obj in objectArray:
+            if shape == "rectangle" or shape == "wall":
+                # objects
+                height = obj.get_height()
+                pygame.draw.rect(self.display, obj_colour, [coordinates[0], coordinates[1], width, height])
+                # testing
+                # if isinstance(obj, DanceFloor):
+                #     self.dance_floor_info = obj
 
+        for obj in objectArray:
             if isinstance(obj, Person):
                 objCoordinates = obj.get_coordinates()
                 angle = obj.get_angle()
@@ -361,27 +561,34 @@ class RunningMain:
                 # clears the person vision from the previous ittoration
                 obj.clear_vision()
                 # goes though every coordinates and works out what colour is in that pixcel
-
-                for ray in vision:
-                    # display.set_at((cord[0],cord[1]), black)
+                for cordArray in vision:
                     # try and catch to prevent out of array exceptions
-                    for point in ray:
-                        # print(point)
+                    for cord in cordArray:
                         try:
                             seenObj = 0
-                            colour = self.display.get_at((point[0], point[1]))
+                            cords_new = self.map_data_to_gui_coords_offset((cord[0],cord[1]))
+                            # cords_new = self.map_data_to_gui_coords_offset(cords_new)
+                            if(self.selected_person == obj):
+                                self.display.set_at(cords_new, self.red)
+                            colour = self.display.get_at(cords_new)
                             # if it is red then it must be a person
+                            newCoords = self.map_data_to_gui_coords_offset(cord)
+                            colour = self.display.get_at(newCoords)
+
+                            # if it is coloured then it must be an object
                             if colour != (255, 255, 255, 255):
                                 # Its an object of some kind
-                                seenObj = self.data.what_object(point)
+                                seenObj = self.data.what_object(cord, False)
 
                                 obj.add_to_vision(seenObj)
                                 obj.add_to_memory(seenObj)
-                            if colour == self.black:
+
+                            if isinstance(seenObj, Wall):
                                 break
+
+
                         except IndexError:
                             nothing = 0
-
 
     def home_menu(self):
         """Functtion that makes the menu screen with buttons all centred automaticly"""
@@ -406,7 +613,7 @@ class RunningMain:
                     self.set_menu(button)
                     sleep(0.1)
                     # pygame.display.update()
-            self.add_button(info, button, colour)
+            self.add_button(info, button, colour,50)
             i = i + 1
         return True
 
@@ -416,7 +623,7 @@ class RunningMain:
         """
         i = 0
         # sleep(0.1)
-        button_text = ["New", "Load", "Back", "Exit"]
+        button_text = ["New", "Back", "Exit"]
         num_buttons = len(button_text)
         height_of_buttons = 50
         width_of_buttons = 300
@@ -440,9 +647,9 @@ class RunningMain:
             if self.get_load_name() and button == 'Load' and not self.get_text_done():
                 self.user_text_input(info, colour)
             elif self.get_text_done() and button == 'Load':
-                self.add_button(info,self.get_user_input_result(),self.green)
+                self.add_button(info,self.get_user_input_result(),self.green,50)
             else:
-                self.add_button(info, button, colour)
+                self.add_button(info, button, colour, 50)
             i = i + 1
 
     def sim_menu(self):
@@ -451,7 +658,7 @@ class RunningMain:
         """
         i = 0
         # sleep(0.1)
-        button_text = ["Start","Floor Plan Load", "Options", "Back", "Exit"]
+        button_text = ["Start","Floor Plan Load", "Back", "Exit"]
         num_buttons = len(button_text)
         height_of_buttons = 50
         width_of_buttons = 300
@@ -474,10 +681,10 @@ class RunningMain:
             if self.get_load_name() and button == 'Floor Plan Load' and not self.get_text_done():
                 self.user_text_input(info, colour)
             elif self.get_text_done() and button == 'Floor Plan Load':
-                self.add_button(info,self.get_user_input_result(),self.green)
+                self.add_button(info,self.get_user_input_result(),self.green,50)
                 # self.load_map("map_saves",self.get_user_input_result())
             else:
-                self.add_button(info, button, colour)
+                self.add_button(info, button, colour,50)
             i = i + 1
 
     def user_text_input(self,button_info, colour):
@@ -488,7 +695,7 @@ class RunningMain:
         """
         self.set_text_running(True)
         pygame.draw.rect(self.get_display(), colour, button_info, 2)
-        button_text = self.text(self.get_user_input_result())
+        button_text = self.text(self.get_user_input_result(),50)
         loaction = self.centre(button_info, [button_text[1], button_text[2]])
         self.get_display().blit(button_text[0], loaction)
 
@@ -509,6 +716,10 @@ class RunningMain:
         :return: True if the file is found, False if it isn't
         """
         map = self.get_map_data()
+
+        if self.nodes_generated == 0:
+            self.nodes_generated = 1
+            self.data.generate_nodes()
         result = map.import_from_file(file, search)
         if result:
             return True
@@ -521,10 +732,10 @@ class RunningMain:
         :param message: The string message you want displayed, creates a button to go back to main menu
         """
         self.set_menu("error")
-        text = self.text(message)
+        text = self.text(message,50)
         loaction = self.centre([0, 0, self.get_screen_width(), self.get_screen_height()], [text[1], text[2]])
         self.get_display().blit(text[0], loaction)
-        text = self.text("Back To Main Menu")
+        text = self.text("Back To Main Menu",50)
         position = self.centre([0, text[2]+10, self.get_screen_width(), self.get_screen_height()],[text[1],text[2]])
         info = [position[0], position[1], text[1]+5, text[2]+5]
         colour = self.black
@@ -536,7 +747,7 @@ class RunningMain:
                 self.set_home_menu()
                 sleep(0.1)
         # Adds the button with the back or
-        self.add_button(info, 'Back To Main Menu', colour)
+        self.add_button(info, 'Back To Main Menu', colour,50)
 
     def new_build(self):
         """
@@ -554,7 +765,12 @@ class RunningMain:
         current = self.get_current_tool()
         info = [0, self.get_screen_height() * 0.90, button_width,button_height]
         colour = self.black
-        self.add_button(info,current,colour)
+        colour1 = self.black
+        if self.in_area(pygame.mouse.get_pos(), info):
+            colour = self.green
+
+        self.add_button(info,current,colour,50)
+
         if pygame.mouse.get_pos()[0] >= info[0] and pygame.mouse.get_pos()[0] <= info[0] + info[2] and pygame.mouse.get_pos()[1] >= info[1] and pygame.mouse.get_pos()[1] <= info[1] + info[3] and pygame.mouse.get_pressed()[0]:
             self.set_new_tool()
             sleep(0.1)
@@ -568,11 +784,20 @@ class RunningMain:
                     sleep(0.1)
                     self.set_current_tool(objectName)
                     self.set_new_tool()
-
                 if self.get_current_tool() == objectName:
                     colour = self.green
-                self.add_button(info,objectName,colour)
+                self.add_button(info,objectName,colour,50)
                 i= i + 1
+
+        info = [button_width, self.get_screen_height() - button_height, button_width, button_height]
+        if self.in_area(pygame.mouse.get_pos(), info):
+            colour1 = self.green
+            if(pygame.mouse.get_pressed()[0]):
+                self.set_save_active(True)
+                self.set_save_name(True)
+        self.add_button(info, "save", colour1, 50)
+
+        # pygame.draw.rect(self.get_display(), self.green, info)
 
     def save(self):
         """Function that pulls up the save icon, it checks to see if the name is alread in use and then asks for a different name
@@ -608,60 +833,68 @@ class RunningMain:
             return self.blue
         if object == "toilet":
             return self.orange
-        # if object == "d floor":
+        if object == "d floor":
+            return self.red
 
     def create_heatmap(self):
         heatmap = self.get_heatmap()
-        x_running = 1
-        y_running = 1
-        num_x = self.get_screen_width()
-        num_y = self.get_screen_height()
-        x_info = []
-        while x_running <= num_x:
-            x_info = []
-            y_running = 1
-            while y_running <= num_y:
-                info = [y_running,0]
-                x_info.append(info)
-                y_running = y_running + 1
-            heatmap.append([x_running,x_info])
-            x_running = x_running + 1
+        x_running, y_running = self.get_offset()
+        y_running_save = y_running
+        num_x = self.get_sim_screen_width()
+        num_y = self.get_sim_screen_height()
+        for x in range(num_x):
+            y = 0
+            y_list = []
+            for y in range(num_y):
+                y_list.append(0)
+            heatmap.append(y_list)
+
 
     def add_heatmap(self,coord):
         """Ittorates the number of times that a person has been on that pixel on the screen"""
-        x_coord = coord[0]
-        y_coord = coord[1]
-        heatmap = self.get_heatmap()
-        for heatmap_coord in heatmap:
-            if heatmap_coord[0] == x_coord:
-                for heatmap_coord_y in heatmap_coord[1]:
-                    if heatmap_coord_y[0] == y_coord:
-                        heatmap_coord_y[1] = int(heatmap_coord_y[1]) + 1
+        x_index, y_index = self.gui_to_map_data_coords_offset(coord)
+        heatmap = self.heat_map
+        heatmap[x_index][y_index] = heatmap[x_index][y_index] + 1
 
     def show_heatmap(self):
         max_heat_value = 0
         min_heat_value = 100000
         heat_map = self.get_heatmap()
-        for heatmap_coord_x in heat_map:
-            y_coord = 0
-            while y_coord < self.get_screen_height():
-                if heatmap_coord_x[1][y_coord][1] > max_heat_value:
-                    max_heat_value = heatmap_coord_x[1][y_coord][1]
-                if heatmap_coord_x[1][y_coord][1] < min_heat_value and heatmap_coord_x[1][y_coord][1] != 0:
-                    min_heat_value = heatmap_coord_x[1][y_coord][1]
-                y_coord = y_coord + 1
+        average_heat = []
+        size_of_square = 10
+        screen_width = self.get_sim_screen_width()
+        screen_height = self.get_sim_screen_height()
 
-        for heatmap_coord in heat_map:
-            y_coord = 0
-            while y_coord < self.get_screen_height():
-                coord_x = heatmap_coord[0]
-                coord_y = y_coord
-                heat_value = heatmap_coord[1][y_coord][1]
-                if heat_value > 0:
-                    colour = self.colour_picker(min_heat_value,max_heat_value,heat_value)
-                    # print(colour)
-                    self.get_display().set_at((coord_x,coord_y),colour)
-                y_coord = y_coord + 1
+        for x in range(math.floor(len(heat_map)/size_of_square)):
+            y_list = []
+            for y in range(math.floor(len(heat_map[x])/size_of_square)):
+                sum_total = 0
+                for x1 in range(size_of_square):
+                    y1 = 0
+                    current_x = (x * size_of_square) + x1
+                    for y1 in range(size_of_square):
+                        current_y = (y * size_of_square) + y1
+                        if not heat_map[current_x][current_y] == 0:
+                            sum_total = sum_total + heat_map[current_x][current_y]
+                average = sum_total / (size_of_square * size_of_square)
+                if average < min_heat_value:
+                    min_heat_value = average
+                if average > max_heat_value:
+                    max_heat_value = average
+                y_list.append(average)
+            average_heat.append(y_list)
+
+        x_offset, y_offset = self.get_offset()
+        for x_show in range(len(average_heat)):
+            for y_show in range(len(average_heat[x_show])):
+                value = average_heat[x_show][y_show]
+                if not value == 0.0:
+                    show_x_coord = x_offset + (x_show * size_of_square)
+                    show_y_coord = y_offset + (y_show * size_of_square)
+                    info = [show_x_coord, show_y_coord, size_of_square, size_of_square]
+                    colour = self.colour_picker(min_heat_value,max_heat_value,value)
+                    pygame.draw.rect(self.get_display(), colour, info)
+
 
     def colour_picker(self,min_value,max_value,value):
         EPSILON = sys.float_info.epsilon
@@ -674,6 +907,96 @@ class RunningMain:
             (r1, g1, b1), (r2, g2, b2) = colours[i], colours[i + 1]
             return (int(r1 + f * (r2 - r1)), int(g1 + f * (g2 - g1)), int(b1 + f * (b2 - b1)))
 
+    def gui_to_map_data_coords_offset(self,coords):
+        oldx, oldy = coords
+        offset_x, offset_y = self.get_offset()
+        new_cords = (oldx - offset_x, oldy - offset_y)
+        return new_cords
+
+    def map_data_to_gui_coords_offset(self,coords):
+        oldx, oldy = coords
+        offset_x, offset_y = self.get_offset()
+        new_cords = (oldx + offset_x, oldy + offset_y)
+        return new_cords
+
+    def need_bar(self, needName, value, box_info):
+        pygame.draw.rect(self.get_display(),self.red,[box_info[0],(box_info[1] + box_info[3]) - (box_info[3] / 5),box_info[2],box_info[3]/5])
+        x_coord = (box_info[2]/100) * value
+        pygame.draw.rect(self.get_display(),self.green,[0, (box_info[1] + box_info[3]) - (box_info[3] / 5), x_coord,box_info[3]/5])
+
+    def in_area(self, coords, box_info):
+        if coords[0] >= box_info[0] and coords[0] <= box_info[0]+ box_info[2]:
+            if coords[1] >= box_info[1] and coords[1] <= box_info[1]+ box_info[3]:
+                return True
+            else:
+                return False
+        else:
+            return False
+
+    def menu_bar(self):
+        button_names = ["Home", "Pause", "Add Person", "Show Nodes","Heat Map"]
+        height_of_button = self.get_screen_height() / 10
+        width_of_button = self.get_screen_width() / 8
+        start_coords = [1,self.get_screen_height() - height_of_button - 1]
+        x = 0
+        colour = self.black
+        self.menu_bar_info = [start_coords[0],start_coords[1], len(button_names) * width_of_button, height_of_button, len(button_names)]
+        for button in button_names:
+            if self.pause_toggle == True and x == 1:
+                colour == self.green
+            info = [start_coords[0] + (x * width_of_button), start_coords[1], width_of_button, height_of_button]
+            self.add_button(info, button, colour, 30)
+            x = x + 1
+
+    def menu_option(self, option):
+        if option == 0:
+            self.set_home_menu()
+            self.menu_bar_clicked = None
+        elif option == 1:
+            self.set_pause()
+            self.menu_bar_clicked = None
+        elif option == 2:
+            self.set_add_person_on_click()
+            self.menu_bar_clicked = None
+        elif option == 3:
+            self.show_nodes = not self.show_nodes
+            self.menu_bar_clicked = None
+        elif option == 4:
+            self.set_selected_person(None)
+            self.set_pause()
+            self.set_show_heatmap_toggle()
+            self.menu_bar_clicked = None
+
+    def node_icon(self, coord):
+        x, y = coord
+        top_coord = (x , y - 5)
+        bottom_coord = (x, y + 5)
+        left_coord = (x - 5, y)
+        right_coord = (x + 5, y)
+        pygame.draw.line(self.get_display(),self.purple,top_coord,left_coord)
+        pygame.draw.line(self.get_display(),self.purple,left_coord,bottom_coord)
+        pygame.draw.line(self.get_display(),self.purple,bottom_coord,right_coord)
+        pygame.draw.line(self.get_display(),self.purple,right_coord,top_coord)
+        pygame.draw.line(self.get_display(),self.purple,top_coord,bottom_coord)
+        pygame.draw.line(self.get_display(),self.purple,left_coord,right_coord)
+
+    def draw_path(self, coords):
+        end_of_line = len(coords)
+        index = 0
+        x_offset, y_offset = self.get_offset()
+        if self.current_route == []:
+            self.current_route = coords
+        while index < end_of_line:
+            x, y  = coords[index]
+            start_line = (x + x_offset, y + y_offset)
+            if not index + 1 == end_of_line:
+                x1, y1 = coords[index + 1]
+                finish_line = (x1 + x_offset, y1 + y_offset)
+                pygame.draw.line(self.get_display(), self.purple, start_line, finish_line,2)
+            index = index + 1
+
+
+
     def get_map_data(self):
         return self.data
 
@@ -685,6 +1008,12 @@ class RunningMain:
 
     def get_pause(self):
         return self.pause
+
+    def set_pause(self):
+        self.pause = not self.pause
+
+    def set_pause_must(self, value):
+        self.pause = value
 
     def get_screen_width(self):
         return self.screen_width
@@ -749,6 +1078,7 @@ class RunningMain:
         self.text_done = False
         self.builder_active = False
         self.clear_heat_map()
+        self.show_nodes = False
 
     def get_exit(self):
         return self.exit
@@ -855,3 +1185,63 @@ class RunningMain:
 
     def get_size_of_menu_buttons(self):
         return self.size_of_menu_buttons
+
+    def set_offset(self, value):
+        self.offset = value
+
+    def get_offset(self):
+        return self.offset
+
+    def get_sim_screen_height(self):
+        return self.sim_screen_height
+
+    def get_sim_screen_width(self):
+        return self.sim_screen_width
+
+    def set_selected_person(self,value):
+        self.selected_person = value
+
+    def get_selected_person(self):
+        return self.selected_person
+
+    def set_size_info_pannel(self, value):
+        self.size_info_pannel = value
+
+    def get_size_info_pannel(self):
+        return self.size_info_pannel
+
+    def get_x1_first_click(self):
+        return self.x1_first_click
+
+    def set_x1_first_click(self, value):
+        self.x1_first_click = value
+
+    def get_startAmount_of_need(self):
+        return self.startAmount_of_need
+
+    def set_startAmount_of_need(self, value):
+        self.startAmount_of_need = value
+
+    def get_new_value_for_need(self):
+        return self.new_value_for_need
+
+    def set_new_value_for_need(self, value):
+        self.new_value_for_need = value
+
+    def get_dragging_bar(self):
+        return self.dragging_bar
+
+    def set_dragging_bar(self):
+        self.dragging_bar = not self.dragging_bar
+
+    def get_selected_button(self):
+        return self.selected_button
+
+    def set_selected_button(self, value):
+        self.selected_button = value
+
+    def get_temp_width(self):
+        return self.temp_width
+
+    def set_temp_width(self, value):
+        self.temp_width = value

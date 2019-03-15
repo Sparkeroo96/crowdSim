@@ -21,7 +21,6 @@ from Objects.bar import Bar
 from Objects.danceFloor import DanceFloor
 from Objects.toilet import Toilet
 
-numpy.set_printoptions(threshold=numpy.nan)
 
 constant = 0
 class map_data:

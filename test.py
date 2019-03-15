@@ -497,7 +497,7 @@ class RunningMain:
             if isinstance(obj, Person) and not self.get_show_heatmap_toggle():
                 try:
                     # Adds the coordinates to the heat map in a try to avoid an error where and object is created outside of the area
-                    if not obj.currentState == "drink":
+                    if not obj.currentState == "drink" or obj.currentState == "useToilet":
                         self.add_heatmap(coordinates)
                 except:
                     nothing = 1
@@ -509,19 +509,7 @@ class RunningMain:
                     obj.colour = (red, blue, green)
                 else:
                     obj.colour = self.red
-
-                # This is a check to make sure that the people are inside of the area
-                # if not self.dance_floor_info == None:
-                #     dance_floor_x, dance_floor_y = self.dance_floor_info.get_coordinates()
-                #     dance_floor_width = self.dance_floor_info.get_width()
-                #     dance_floor_height = self.dance_floor_info.get_height()
-                #     dance_floor_x, dance_floor_y = self.map_data_to_gui_coords_offset((dance_floor_x, dance_floor_y))
-                #     info = [dance_floor_x, dance_floor_y, dance_floor_width, dance_floor_height]
-                #     self.get_map_data().get_coordinates_range()
-                #     if self.in_area(coordinates, info):
-                #         obj.colour = self.black
-
-                if(obj == self.get_selected_person()):
+                if obj == self.get_selected_person():
                     text_info = self.get_selected_person().get_person_needs()
                     size_info = [0,0,150,50]
                     saved_size_info = size_info
@@ -538,7 +526,7 @@ class RunningMain:
                         running_size =[size_info[0],size_info[1],size_info[2], size_info[3]+ running_size[3]]
                     current_state = self.get_selected_person().currentState
                     if current_state is None:
-                        current_state = ""
+                        current_state = "Wondering Around"
                     size_info = [0,150,150,50]
                     self.add_button(size_info,current_state,self.black,20)
                     # size_info = [0, 200, 150, 50]

@@ -188,9 +188,6 @@ class Person:
                 self.dance()
                 if self.brain[2][1] > randint(75, 100):
                     self.advance_state_machine()
-            # if self.inside_dance_floor:
-            #     self.advance_state_machine()
-            # self.astarCoords.clear()
 
         else:
             # self.random_move()
@@ -398,7 +395,6 @@ class Person:
             self.coordinatesFailed = 0
 
             return True
-
 
         if self.rememberedObj != "":
             self.check_person_collided_with_target(collisionObject)
@@ -671,6 +667,7 @@ class Person:
 
             if self.astarCoords or self.exploreNode:
                 self.clear_explore_node()
+
         else:
             # Cant find object do a circle to see it
             if self.rotate < 12:
@@ -793,6 +790,7 @@ class Person:
                 nextState = "moveTo"
 
             nextState += keyword
+
         elif "move" in current_state:
             if "Bar" in current_state:
                 nextState = "orderDrink"
@@ -1118,6 +1116,7 @@ class Person:
         Agent has reached an area on the dancefloor and is now dancing.
         :return:
         """
+        print("dancing")
         # self.brain[2][1] = 100
         self.increment_need(2, 1)
         # self.set_action_count(5, 10)
@@ -1494,7 +1493,7 @@ class Person:
     """This will be in an idle state when a person has no desire of drinking, dancing or wanting the toilet"""
     def relax(self):
         for i in range(len(self.brain)):
-            self.incriment_need(i,-0.1)
+            self.increment_need(i, -0.1)
 
     def set_random_dance_area(self):
         if self.random_dance_area is None:
@@ -1552,7 +1551,6 @@ class Person:
                 # return self.move(nextMove)
 
         if self.coordinates == self.random_dance_area:
-            # self.brain[2][1] = 99
             """DELAY here?"""
             self.random_dance_area = None
             self.inside_dance_floor = True
@@ -1598,6 +1596,7 @@ class Person:
 
     def increment_need(self, index, increment):
         """
+        incriment_need
         Increments the given brain part
         :param index: The part to increment
         :param increment: The amount to change it by

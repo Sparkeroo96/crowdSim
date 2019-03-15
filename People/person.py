@@ -100,7 +100,6 @@ class Person:
         self.objectFailed = 0
         self.objectFailedCount = 0
 
-
         # A flocking parameter, dont want to be within 10 pixels of a nearby object, will attempt to move out of them
         self.rejectionArea = 10
         self.rejectionStrength = 1
@@ -183,6 +182,8 @@ class Person:
 
         elif stateAction == "dance":
             self.move_inside_dance_floor()
+            # onObject = self.map.what_object(self.coordinates, False)
+            # if isinstance(onObject, DanceFloor) is True:
             if self.inside_dance_floor:
                 self.dance()
                 if self.brain[2][1] > randint(75, 100):
@@ -221,10 +222,10 @@ class Person:
         nextMove = [x, y]
 
         # if not self.astarCoords:
-        if self.astarCoords == []  or not self.astarCoords:
+        if self.astarCoords == []  or not self.astarCoords or self.astarCoords is False:
+            self.astarCoords = []
+        if len(self.astarCoords) == 0 or not self.astarCoords:
             self.set_cords_from_algo()
-            #self.set_cords_from_algo("known_location")
-            # self.placeholder += 1
 
         # if self.astarCoords and (targetDistance > (self.get_rejection_area() / 2) or self.object_in_vision(self.rememberedObj) is True and self.count_objects_in_vision(False) > 1):
         if self.astarCoords and targetObj not in objectsWithinRejection:
@@ -311,7 +312,7 @@ class Person:
         y_distance = abs(y2 - y1)
         distance = (x_distance * x_distance) + (y_distance * y_distance)
         distance = math.sqrt(distance)
-        if distance < self.width + self.width * 0.3:
+        if distance < (self.width + self.width) * 0.3:
             self.astarCoords.pop(0)
             if len(self.astarCoords) == 0:
                 self.clear_explore_node()
@@ -1142,7 +1143,6 @@ class Person:
 
 
 
-
     def set_action_count(self, minRange, maxRange):
         """
         Sets action count to be a random int multipled by the tickRate to mean a number of seconds
@@ -1493,7 +1493,7 @@ class Person:
     """This will be in an idle state when a person has no desire of drinking, dancing or wanting the toilet"""
     def relax(self):
         for i in range(len(self.brain)):
-            self.increment_need(i,-0.1)
+            self.increment_need(i, -0.1)
 
     def set_random_dance_area(self):
         if self.random_dance_area is None:

@@ -28,7 +28,6 @@ class RunningMain:
     orange = (255, 128, 0)
     yellow = (250,250,0)
     purple = (128,0,128)
-
     exit = False
 
     # Menu flags
@@ -99,7 +98,7 @@ class RunningMain:
     dance_floor_info = None
 
     def __init__(self):
-        os.environ['SDL_VIDEO_WINDOW_POS'] = str(10) + "," + str(10)
+        os.environ['SDL_VIDEO_WINDOW_POS'] = str(0) + "," + str(0)
 
         self.set_offset(self.centre([0, 0, self.get_screen_width(), self.get_screen_height()],[self.get_sim_screen_width(), self.get_sim_screen_height()]))
         """This is the constructor that starts the main loop of the simulation"""
@@ -447,8 +446,6 @@ class RunningMain:
         :param text: the string that is to be displayed
         :return: The text object and the height and width for further calucaltions
         """
-        # if text is None:
-        #     text = "ERROR"
         pygame.font.init()
         my_font = pygame.font.SysFont("Arial", size)
         text_surface = my_font.render(text, False, self.black)
@@ -531,7 +528,7 @@ class RunningMain:
                     obj_colour = self.green
                     running_size = size_info
                     path = self.get_selected_person().astarCoords
-                    if not path == [] and path is not None:
+                    if not path == [] and path is not None and path is not False:
                         self.draw_path(path)
                     for item in text_info:
                         text = str(item[0] + ": " + str(math.floor(item[1])))
@@ -735,7 +732,6 @@ class RunningMain:
         if self.nodes_generated == 0:
             self.nodes_generated = 1
             self.data.generate_nodes()
-
         result = map.import_from_file(file, search)
         if result:
             return True
@@ -982,7 +978,6 @@ class RunningMain:
             self.set_pause()
             self.set_show_heatmap_toggle()
             self.menu_bar_clicked = None
-
 
     def node_icon(self, coord):
         x, y = coord

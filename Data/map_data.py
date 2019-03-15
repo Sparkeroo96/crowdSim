@@ -21,6 +21,8 @@ from Objects.bar import Bar
 from Objects.danceFloor import DanceFloor
 from Objects.toilet import Toilet
 
+numpy.set_printoptions(threshold=numpy.nan)
+
 constant = 0
 class map_data:
     """TO DO"""
@@ -55,7 +57,7 @@ class map_data:
     def add_people_to_map(self, coords, size, angle):
         """Adding people to map"""
         """CHANGED THE SIZE TO 10"""
-        newPerson = person.Person("person " + str(len(self.mapData)), coords, size, angle, self.tick_rate)
+        newPerson = person.Person("person " + str(len(self.mapData)), coords, 15, angle, self.tick_rate)
 
         newPersonEdgeCoordinates = newPerson.get_edge_coordinates_array(coords, size)
 
@@ -207,8 +209,8 @@ class map_data:
             if obj.get_name() == object_name:
                 continue
 
-            # if isinstance(obj, "Person"):
-            #     print("In Person")
+            if isinstance(obj, "Person"):
+                print("In Person")
 
     def check_coordinates_for_person(self, check_coords, radius, name, edgeCoordinates):
         """Check to see if a person can move into a space
@@ -865,6 +867,7 @@ class map_data:
         a_starv2.set_open_nodes(openNodes)
         """Store all the nodes in the a_star class"""
         a_starv2.store_all_nodes(graph)
+        # print(graph)
 
     def get_person_cord_info(self):
         personCoords = []

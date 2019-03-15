@@ -100,7 +100,6 @@ class Person:
         self.objectFailed = 0
         self.objectFailedCount = 0
 
-
         # A flocking parameter, dont want to be within 10 pixels of a nearby object, will attempt to move out of them
         self.rejectionArea = 10
         self.rejectionStrength = 1
@@ -154,14 +153,17 @@ class Person:
         self.currentState = self.stateMachine.get_current_state()
         self.usedSpeed = 0
 
-
         if self.wait_on_action_count():
             return "Waiting"
-        # print(" My current state " + self.currentState)
+
+
         stateAction = self.get_state_action()
-        # print("My state action is: " + str(stateAction))
-        # print("currentState: " + self.currentState + " / stateAction " + stateAction)
-        # self.random_move()
+
+        if "dance" not in str(self.currentState) and "Dance" not in str(self.currentState):
+            # Increasing the dance amount by 1 if they arent already doing that
+            self.increment_need(2, -0.33)
+            # print("decreasing dance")
+
         if stateAction == "navigateToRememberedObj":
             self.navigate_to_remembered_object()
 
@@ -178,10 +180,17 @@ class Person:
 
             self.navigate_to_remembered_object()
 
-        # elif stateAction == "dance":
-        #     if self.inside_dance_floor:
-        #         self.advance_state_machine()
-        #     self.astarCoords.clear()
+        elif stateAction == "dance":
+            self.move_inside_dance_floor()
+            # onObject = self.map.what_object(self.coordinates, False)
+            # if isinstance(onObject, DanceFloor) is True:
+            if self.inside_dance_floor:
+                self.dance()
+                if self.brain[2][1] > randint(75, 100):
+                    self.advance_state_machine()
+            # if self.inside_dance_floor:
+            #     self.advance_state_machine()
+            # self.astarCoords.clear()
 
         else:
             # self.random_move()
@@ -202,10 +211,13 @@ class Person:
             # return self.flock_away_from_objects(objectsWithinRejection)
 
         targetCoordinates = None
+        targetObj = None
         if self.rememberedObj:
             targetCoordinates = self.work_out_objects_closest_point(self.rememberedObj)
+            targetObj = self.rememberedObj
         else:
             targetCoordinates = self.exploreNode
+            targetObj = self.exploreNode
 
         targetDistance = self.map.calculate_distance_between_two_points(self.coordinates, targetCoordinates)
         x = self.coordinates[0]
@@ -213,12 +225,13 @@ class Person:
         nextMove = [x, y]
 
         # if not self.astarCoords:
-        if self.astarCoords == []  or not self.astarCoords:
+        if self.astarCoords is False:
+            self.astarCoords = []
+        if len(self.astarCoords) == 0 or not self.astarCoords:
             self.set_cords_from_algo()
-            #self.set_cords_from_algo("known_location")
-            # self.placeholder += 1
 
-        if self.astarCoords and (targetDistance > (self.get_rejection_area() / 2) or self.object_in_vision(self.rememberedObj) is True and self.count_objects_in_vision(False) > 1):
+        # if self.astarCoords and (targetDistance > (self.get_rejection_area() / 2) or self.object_in_vision(self.rememberedObj) is True and self.count_objects_in_vision(False) > 1):
+        if self.astarCoords and targetObj not in objectsWithinRejection:
             self.navigate_via_astar(nextMove)
         else:
             if targetCoordinates != nextMove:
@@ -302,7 +315,7 @@ class Person:
         y_distance = abs(y2 - y1)
         distance = (x_distance * x_distance) + (y_distance * y_distance)
         distance = math.sqrt(distance)
-        if distance < self.width + self.width * 0.3:
+        if distance < (self.width + self.width) * 0.3:
             self.astarCoords.pop(0)
             if len(self.astarCoords) == 0:
                 self.clear_explore_node()
@@ -387,8 +400,8 @@ class Person:
             return True
 
 
-        # if self.rememberedObj != "":
-        #     self.check_person_collided_with_target(collisionObject)
+        if self.rememberedObj != "":
+            self.check_person_collided_with_target(collisionObject)
 
         self.coordinatesFailed += 1
         if self.objectFailed == collisionObject:
@@ -556,7 +569,9 @@ class Person:
         return self.sight
 
     def get_state_action(self):
-        """Causes the person to act based on their current state"""
+        """Causes the person to act based on their current state
+        Will advance the code
+        :returns The action you want it to take based on the currentState"""
         action = "moveRandom"
 
         """NEED TO CHECK HERE FOR NEEDS"""
@@ -565,13 +580,15 @@ class Person:
             """While there are no current needs, the person will relax."""
             """relax will reduce the needs of the person"""
             self.clear_remembered_object()
-            if self.check_needs() == False:
-                self.relax()
-                """RETURN THE ACTION OF DOING NOTHING, THERE IS NO NEED"""
-                return action
+            # if self.check_needs() == False:
+                # self.relax()
+                #"""RETURN THE ACTION OF DOING NOTHING, THERE IS NO NEED"""
+                # return action
             """Setting the current state to the persons needs."""
             self.currentState = self.stateMachine.get_need_state(self.check_needs())
 
+
+        # print("get_state_action current " + self.currentState)
         if "want" in str(self.currentState):
             # Person has a want desire
             if self.want_action(self.currentState):
@@ -612,7 +629,6 @@ class Person:
             if self.has_ordered_drink() == 0 and self.has_drink() is False:
                 self.order_drink()
                 self.clear_remembered_object()
-                self.clear_remembered_object()
 
             elif self.has_drink():
                 self.advance_state_machine()
@@ -626,12 +642,12 @@ class Person:
         elif self.currentState == "dance":
             # Person will dance
             # self.stateMachine.get_next_state()
-
             action = "dance"
-            self.move_inside_dance_floor()
-            if self.inside_dance_floor:
-                self.dance()
-                self.advance_state_machine()
+            # self.move_inside_dance_floor()
+            # if self.inside_dance_floor:
+            #     self.dance()
+            #     if self.brain[2][1] > randint(75, 100):
+            #         self.advance_state_machine()
 
         elif self.currentState == "useToilet":
 
@@ -655,7 +671,6 @@ class Person:
 
             if self.astarCoords or self.exploreNode:
                 self.clear_explore_node()
-
         else:
             # Cant find object do a circle to see it
             if self.rotate < 12:
@@ -778,7 +793,6 @@ class Person:
                 nextState = "moveTo"
 
             nextState += keyword
-
         elif "move" in current_state:
             if "Bar" in current_state:
                 nextState = "orderDrink"
@@ -1050,22 +1064,29 @@ class Person:
         Bar servers person drink
         :return:
         """
-        self.hasDrink = 1
+        drinkSize = randint(20, 80)
+        self.hasDrink = drinkSize
         self.orderedDrink = 0
         #Update drink meter
-        self.incriment_need(1, 1)
+        # self.brain[1][1] = 99
         self.astarCoords.clear()
 
         self.advance_state_machine()
 
-        return self.set_action_count(5,10)
+        waitTime = self.set_action_count(5,10)
+
+        return waitTime
+        # return self.set_action_count(5,10)
 
     def has_drink(self):
         """
         Checks to see if person has a drink
         :return:
         """
-        if self.hasDrink:
+        if self.hasDrink > 0 :
+            # self.brain[1][1] += 100  # Increase the drink level
+            # if self.brain[1][1] > 100:
+            #     self.brain[1][1] = 100
             return True
 
         return False
@@ -1077,7 +1098,17 @@ class Person:
         """
 
         if self.has_drink():
-            self.hasDrink = 0
+            # self.hasDrink = 0
+            drinkAmount = randint(3, 10)
+
+            self.hasDrink -= drinkAmount
+            if self.hasDrink < 0:
+                drinkAmount = drinkAmount - abs(self.hasDrink)
+                self.hasDrink = 0
+
+            self.increment_need(1, drinkAmount)
+            self.increment_need(0, 0 - drinkAmount)
+
             return True
 
         return False
@@ -1087,10 +1118,9 @@ class Person:
         Agent has reached an area on the dancefloor and is now dancing.
         :return:
         """
-        self.incriment_need(2,1)
-        self.incriment_need(1,-1)
-        self.incriment_need(0,-1)
-        self.set_action_count(5, 10)
+        # self.brain[2][1] = 100
+        self.increment_need(2, 1)
+        # self.set_action_count(5, 10)
         # self.clear_remembered_object()
 
     def use_toilet(self):
@@ -1101,7 +1131,9 @@ class Person:
         """
 
         if self.rememberedObj.check_person_using_toilet(self) is True:
-            self.get_person_needs()
+            # self.brain[0][1] += 100 # Set toilet back up to default
+
+            self.increment_need(0, randint(50,100)) # Add large chunk to toilet need
 
             self.rememberedObj.person_stop_using_toilet(self)
             self.advance_state_machine()
@@ -1520,6 +1552,7 @@ class Person:
                 # return self.move(nextMove)
 
         if self.coordinates == self.random_dance_area:
+            # self.brain[2][1] = 99
             """DELAY here?"""
             self.random_dance_area = None
             self.inside_dance_floor = True
@@ -1563,15 +1596,23 @@ class Person:
 
         return False
 
-    def incriment_need(self, index, value_of_incriment):
+    def increment_need(self, index, increment):
+        """
+        Increments the given brain part
+        :param index: The part to increment
+        :param increment: The amount to change it by
+        :return:
+        """
         needs = self.brain
-        current_value = needs[index][1]
-        current_value = (current_value + value_of_incriment)
+        current_value = self.brain[index][1]
+        current_value = (current_value + increment)
+
         if current_value > 100:
             current_value = 100
         if current_value < 0:
             current_value = 0
-        needs[index][1] = current_value
+
+        self.brain[index][1] = current_value
 
     def probility_choice_need(self):
         """

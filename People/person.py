@@ -315,7 +315,7 @@ class Person:
         y_distance = abs(y2 - y1)
         distance = (x_distance * x_distance) + (y_distance * y_distance)
         distance = math.sqrt(distance)
-        if distance < (self.width + self.width) * 0.3:
+        if distance < self.width + (self.width * 0.3):
             self.astarCoords.pop(0)
             if len(self.astarCoords) == 0:
                 self.clear_explore_node()
@@ -650,7 +650,6 @@ class Person:
             #     if self.brain[2][1] > randint(75, 100):
             #         self.advance_state_machine()
 
-        elif self.currentState == "useToilet":
         elif self.currentState == "useToilet":
 
             action = "wait"
@@ -1121,7 +1120,7 @@ class Person:
         Agent has reached an area on the dancefloor and is now dancing.
         :return:
         """
-        print("dancing")
+        # print("dancing")
         # self.brain[2][1] = 100
         self.increment_need(2, 1)
         # self.set_action_count(5, 10)

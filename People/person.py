@@ -161,8 +161,11 @@ class Person:
 
         if "dance" not in str(self.currentState) and "Dance" not in str(self.currentState):
             # Increasing the dance amount by 1 if they arent already doing that
-            self.increment_need(2, -0.33)
+            self.increment_need(2, -0.1)
             # print("decreasing dance")
+
+        if "Drink" not in str(self.currentState) and "Bar" not in str(self.currentState) and "drink" not in str(self.currentState):
+            self.increment_need(1, -0.1)
 
         if stateAction == "navigateToRememberedObj":
             self.navigate_to_remembered_object()
@@ -632,8 +635,10 @@ class Person:
 
         elif self.currentState == "drink":
             # Person drinks their drink
-            self.drink_drink()
-            self.advance_state_machine()
+            if self.has_drink() is True:
+                self.drink_drink()
+            else:
+                self.advance_state_machine()
 
         elif self.currentState == "dance":
             # Person will dance
@@ -1098,16 +1103,15 @@ class Person:
 
         if self.has_drink():
             # self.hasDrink = 0
-            drinkAmount = randint(3, 10)
+            drinkAmount = 0.25
+
+            if drinkAmount > self.hasDrink:
+                drinkAmount = self.hasDrink
 
             self.hasDrink -= drinkAmount
-            if self.hasDrink < 0:
-                drinkAmount = drinkAmount - abs(self.hasDrink)
-                self.hasDrink = 0
 
             self.increment_need(1, drinkAmount)
             self.increment_need(0, 0 - drinkAmount)
-
             return True
 
         return False

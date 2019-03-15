@@ -21,7 +21,6 @@ from Objects.bar import Bar
 from Objects.danceFloor import DanceFloor
 from Objects.toilet import Toilet
 
-
 constant = 0
 class map_data:
     """TO DO"""

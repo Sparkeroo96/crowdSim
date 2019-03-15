@@ -83,6 +83,9 @@ class Person:
         self.currentState = self.idleState
         self.stateMachine.set_current_state(self.currentState)
 
+        self.starting_value = None
+        self.doing_task = False
+
         self.tick_rate = tick_rate
 
         # variable declaration
@@ -180,15 +183,10 @@ class Person:
 
         elif stateAction == "dance":
             self.move_inside_dance_floor()
-            # onObject = self.map.what_object(self.coordinates, False)
-            # if isinstance(onObject, DanceFloor) is True:
             if self.inside_dance_floor:
                 self.dance()
                 if self.brain[2][1] > randint(75, 100):
                     self.advance_state_machine()
-            # if self.inside_dance_floor:
-            #     self.advance_state_machine()
-            # self.astarCoords.clear()
 
         else:
             # self.random_move()
@@ -223,7 +221,7 @@ class Person:
         nextMove = [x, y]
 
         # if not self.astarCoords:
-        if len(self.astarCoords) == 0 or not self.astarCoords:
+        if self.astarCoords == []  or not self.astarCoords:
             self.set_cords_from_algo()
             #self.set_cords_from_algo("known_location")
             # self.placeholder += 1
@@ -307,8 +305,13 @@ class Person:
                 newCoords = self.get_coordinates_for_move_avoiding_collision_object(targetCoordinates, moveReturn, nextMove)
                 self.move(newCoords)
                 # return self.move(nextMove)
-
-        if self.coordinates == list(self.astarCoords[0]):
+        x1, y1 = self.coordinates
+        x2, y2 = self.astarCoords[0]
+        x_distance = abs(x2 - x1)
+        y_distance = abs(y2 - y1)
+        distance = (x_distance * x_distance) + (y_distance * y_distance)
+        distance = math.sqrt(distance)
+        if distance < self.width + self.width * 0.3:
             self.astarCoords.pop(0)
             if len(self.astarCoords) == 0:
                 self.clear_explore_node()
@@ -1489,13 +1492,8 @@ class Person:
 
     """This will be in an idle state when a person has no desire of drinking, dancing or wanting the toilet"""
     def relax(self):
-        dec_thirst = randint(0, 1)
-        dec_toilet = randint(0, 1)
-        dec_dance = randint(0, 3)
-
-        self.brain[0][1] -= dec_toilet
-        self.brain[1][1] -= dec_thirst
-        self.brain[2][1] -= dec_dance
+        for i in range(len(self.brain)):
+            self.increment_need(i,-0.1)
 
     def set_random_dance_area(self):
         if self.random_dance_area is None:
@@ -1553,7 +1551,6 @@ class Person:
                 # return self.move(nextMove)
 
         if self.coordinates == self.random_dance_area:
-            # self.brain[2][1] = 99
             """DELAY here?"""
             self.random_dance_area = None
             self.inside_dance_floor = True
@@ -1599,6 +1596,7 @@ class Person:
 
     def increment_need(self, index, increment):
         """
+        incriment_need
         Increments the given brain part
         :param index: The part to increment
         :param increment: The amount to change it by
@@ -1614,3 +1612,30 @@ class Person:
             current_value = 0
 
         self.brain[index][1] = current_value
+
+    def probility_choice_need(self):
+        """
+        This function takes all the needs and selects one based on the probibility of it being needed
+        :return:
+        """
+        needs = self.brain
+        toilet = 100 - needs[0][1]
+        if toilet == 0:
+            toilet = 1
+        drink = 100 - needs[1][1]
+        if drink == 0:
+            drink = 1
+        dance = 100 - needs[2][1]
+        if dance == 0:
+            dance = 1
+        sum_of_needs = toilet + drink + dance
+        prob_toilet = (toilet / sum_of_needs) * 100
+        prob_drink = (drink / sum_of_needs) * 100
+        prob_dance = (dance / sum_of_needs) * 100
+        rand_num = randint(0,100)
+        if prob_toilet > rand_num:
+            return needs[0]
+        elif prob_toilet + prob_drink > rand_num:
+            return needs[1]
+        elif prob_drink + prob_toilet + prob_dance > rand_num:
+            return needs[2]

@@ -646,6 +646,7 @@ class Person:
             #         self.advance_state_machine()
 
         elif self.currentState == "useToilet":
+        elif self.currentState == "useToilet":
 
             action = "wait"
             self.use_toilet()

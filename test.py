@@ -898,7 +898,7 @@ class RunningMain:
 
     def colour_picker(self,min_value,max_value,value):
         EPSILON = sys.float_info.epsilon
-        colours = [(0, 0, 255), (0, 255, 0), (255, 0, 0)]
+        colours = [self.yellow, self.red]
         i_f = float(value - min_value) / float(max_value - min_value) * (len(colours) - 1)
         i, f = int(i_f // 1), i_f % 1
         if f < EPSILON:

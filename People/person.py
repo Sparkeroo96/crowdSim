@@ -308,7 +308,6 @@ class Person:
             if moveReturn is not True and moveReturn != self.rememberedObj and moveReturn != False:
                 newCoords = self.get_coordinates_for_move_avoiding_collision_object(targetCoordinates, moveReturn, nextMove)
                 self.move(newCoords)
-                # return self.move(nextMove)
         x1, y1 = self.coordinates
         x2, y2 = self.astarCoords[0]
         x_distance = abs(x2 - x1)

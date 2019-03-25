@@ -34,13 +34,13 @@ class IntegrationTest(unittest.TestCase):
         """Test to check if the get edge coords array returns the coords around the current cords"""
         self.assertTrue(self.testPerson1.get_edge_coordinates_array(test_current_cords))
 
-    def test_get_object_colour_code(self):
-        """
-        tests the object colour code. I've used a person to test this
-        :return: True. RGB value of 255, 0, 0 (Red for a person)
-        """
-        result = self.map.get_object_colour_code("Person")
-        self.assertEqual(result, [255, 0, 0])
+    # def test_get_object_colour_code(self):
+    #     """
+    #     tests the object colour code. I've used a person to test this
+    #     :return: True. RGB value of 255, 0, 0 (Red for a person)
+    #     """
+    #     result = self.map.get_object_colour_code("Person")
+    #     self.assertEqual(result, [255, 0, 0])
 
     def test_mock(self):
         """

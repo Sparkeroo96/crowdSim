@@ -202,7 +202,7 @@ class Person:
         Starts to move to the remembered Object
         :return: True on success
         """
-        # Hopefully this will allow someone to flock around objects in front of them, whilst navigiating to the remembered object
+        # Hopefully this wilxl allow someone to flock around objects in front of them, whilst navigiating to the remembered object
         objectsWithinRejection = self.map.get_objects_within_range(self.coordinates, self.get_rejection_area(), self.get_edge_coordinates_array(self.coordinates, self.get_rejection_area()), self)
 
         if objectsWithinRejection and self.rememberedObj not in objectsWithinRejection:
@@ -927,6 +927,7 @@ class Person:
         :pram cord1 is the first cordinate
         :pram cord2 is the second
         :retrun is the array of cordinates between the two points
+        :DEFUNCT:
         """
         # Gets the angle of the line
         angleRad =  math.atan2(cord2[1]-cord1[1], cord2[0]-cord1[0])
@@ -1616,30 +1617,3 @@ class Person:
             current_value = 0
 
         self.brain[index][1] = current_value
-
-    def probility_choice_need(self):
-        """
-        This function takes all the needs and selects one based on the probibility of it being needed
-        :return:
-        """
-        needs = self.brain
-        toilet = 100 - needs[0][1]
-        if toilet == 0:
-            toilet = 1
-        drink = 100 - needs[1][1]
-        if drink == 0:
-            drink = 1
-        dance = 100 - needs[2][1]
-        if dance == 0:
-            dance = 1
-        sum_of_needs = toilet + drink + dance
-        prob_toilet = (toilet / sum_of_needs) * 100
-        prob_drink = (drink / sum_of_needs) * 100
-        prob_dance = (dance / sum_of_needs) * 100
-        rand_num = randint(0,100)
-        if prob_toilet > rand_num:
-            return needs[0]
-        elif prob_toilet + prob_drink > rand_num:
-            return needs[1]
-        elif prob_drink + prob_toilet + prob_dance > rand_num:
-            return needs[2]

@@ -107,7 +107,7 @@ class RunningMain:
         self.create_heatmap()
         #Gets the location for the map data
         self.set_map_data(map_data.map_data(self,self.get_tick_rate()))
-        # Creates a display to the size of the screen
+        # Creates  a display to the size of the screen
         self.display = pygame.display.set_mode((self.get_screen_width(),self.get_screen_height()))
         # Adds name for the application
         pygame.display.set_caption("Crowd Simulation ")

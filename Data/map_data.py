@@ -15,7 +15,6 @@ import numpy
 from People.person import Person
 from Objects.wall import Wall
 from Objects import fireExit
-from People.flockingPerson import FlockingPerson
 
 from Objects.bar import Bar
 from Objects.danceFloor import DanceFloor
@@ -102,6 +101,7 @@ class map_data:
         Gets an object colour code
         :param objectType: The object type you are looking for
         :return: Returns an RGB array, false if no such object type exists
+        :DEFUNCT:
         """
 
         for obj in self.mapData:
@@ -199,6 +199,7 @@ class map_data:
         :param coordinates is the set its checking to see if anything occupies it
         :param object_size is the obj that is the size of the obj currently checking coords, if it has a width and height give it as a list
         :param object_name is the name of the obj doing checking so it doesnt check itself
+        :DEFUNCT:
         """
 
         ranges = self.get_coordinates_range(coordinates, object_size)

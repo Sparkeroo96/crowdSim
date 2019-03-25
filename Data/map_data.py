@@ -11,7 +11,6 @@ from Nodes import node
 from Algorithm import a_starv2
 import numpy
 
-numpy.set_printoptions(threshold=numpy.nan)
 # Seems to need these for allowing isinstance(example, Person), doesnt work with the above import
 from People.person import Person
 from Objects.wall import Wall
@@ -56,9 +55,18 @@ class map_data:
     def add_people_to_map(self, coords, size, angle):
         """Adding people to map"""
         """CHANGED THE SIZE TO 10"""
-        newPerson = person.Person("person " + str(len(self.mapData)), coords, size, angle, self.tick_rate)
-        newPerson.add_map(self, coords)
-        self.mapData.append(newPerson)
+        newPerson = person.Person("person " + str(len(self.mapData)), coords, 15, angle, self.tick_rate)
+
+        newPersonEdgeCoordinates = newPerson.get_edge_coordinates_array(coords, size)
+
+        if self.check_coordinates_for_person(coords, size, None, newPersonEdgeCoordinates) is True:
+            newPerson.add_map(self, coords)
+            self.mapData.append(newPerson)
+            return True
+
+        return False
+
+
 
 
     def add_bar_to_map(self, coords, width, height):
@@ -97,7 +105,6 @@ class map_data:
         """
 
         for obj in self.mapData:
-            # print("objType: " + str(type(obj)))
             # if type(obj) == objectType:
             searchString = "." + objectType + "'"
             if searchString in str(type(obj)):
@@ -171,15 +178,11 @@ class map_data:
         if 1 <= angle and angle <= 90:
             veritcal = math.floor(vision * math.sin(math.radians(90) - angle1))
             veritcal = veritcal * -1
-            # print(veritcal)
             horizontal = math.floor(vision * math.cos(math.radians(90) - angle1))
-            # print(horizontal)
         if 90 < angle and angle <= 180:
-            # print("BR")
             veritcal = math.floor(vision * math.sin(angle1 - math.radians(90)))
             horizontal = math.floor(vision * math.cos(angle1 - math.radians(90)))
         if 180 < angle and angle <= 270:
-            # print("BL")
             veritcal = math.floor(vision * math.sin(math.radians(270) - angle1))
             horizontal = math.floor(vision * math.cos(math.radians(270) - angle1))
             horizontal = horizontal *-1
@@ -246,10 +249,9 @@ class map_data:
                 objSize = [obj.get_width(), obj.get_height()]
                 objCoords = obj.get_coordinates()
                 rectangleCoordRanges = self.get_coordinates_range(objCoords, objSize)
-                if obj.get_clip_through():  # Dancefloor is not a collision, and can proceed.
-                    return True
-                elif self.check_circle_overlap_rectangle(edgeCoordinates, rectangleCoordRanges):
-                    return obj
+                if self.check_circle_overlap_rectangle(edgeCoordinates, rectangleCoordRanges):
+                    if obj.get_clip_through() == False: #
+                        return obj
 
         # Coordinates are fine to move to
         return True
@@ -269,10 +271,9 @@ class map_data:
         highX = coordinates[0] + radius
         highY = coordinates[1] + radius
 
-        if lowX < 0 or lowY < 0:
-            return False
+        simOffsets = self.gui.get_offset()
 
-        if highX > self.gui.get_screen_width() or highY > self.gui.get_screen_height():
+        if highX > simOffsets[0] + self.gui.get_sim_screen_width() or highY > simOffsets[1] + self.gui.get_sim_screen_height():
             return False
 
         return True
@@ -356,8 +357,6 @@ class map_data:
         """
         xCoord = coordinates[0]
         yCoord = coordinates[1]
-        # print("object size = " +str(object_size))
-        # print("coordinates = " + str(coordinates))
         if isinstance(object_size, list):
             # If there is a width and height give it as a list
             xSize = object_size[0]
@@ -393,16 +392,13 @@ class map_data:
             "X" : xRanges,
             "Y" : yRanges
         }
-        # print("get coords range " + str(returnValue))
-        # return [xRanges, yRanges]
         return returnValue
 
 
-    def what_object(self, coords):
+    def what_object(self, coords, searching_people):
         """This function checks to see if a cordiante is within another person and returns a reference to the object"""
         for obj in self.mapData:
             objCoords = obj.get_coordinates()
-
             if obj.get_shape() == "circle":
                 x = objCoords[0]
                 y = objCoords[1]
@@ -410,18 +406,19 @@ class map_data:
                 x1 = coords[0]
                 y1 = coords[1]
                 # This is pythagorous and works out if the point is within the circle
-                distance = math.pow(x1 - x,2) + math.pow(y1 - y,2)
+                distance = math.pow(x1 - x,2) + math.pow(y1 - y, 2)
                 distanceRoot = math.sqrt(distance)
                 if distanceRoot <= radias:
                     return obj
 
-            else:
+            elif not searching_people:
                 width = obj.get_width()
                 height = obj.get_height()
-                # coordsRange = self.get_coordinates_range(coords, [width, height])
                 coordsRange = self.get_coordinates_range(objCoords, [width, height])
-                if self.point_in_coordinates_range(coords, coordsRange):
+
+                if self.point_in_coordinates_range(coords, coordsRange) is True:
                     return obj
+        return False
 
 
     def point_in_coordinates_range(self, coordinates, range):
@@ -435,7 +432,7 @@ class map_data:
         x = coordinates[0]
         y = coordinates[1]
 
-        if x >= range["X"][0] and x <= range["X"][1] and y >= range["Y"][0] and y <= range["Y"][1]:
+        if range["X"][0] <= x <= range["X"][1] and range["Y"][0] <= y <= range["Y"][1]:
             return True
 
         return False
@@ -483,7 +480,6 @@ class map_data:
                 # Different data needed to record person objects
 
                 if isinstance(obj,Person):
-                    # print("ran")
                     obj_type = 'Person'
                     coords = obj.get_coordinates()
                     angle = obj.get_angle()
@@ -576,7 +572,6 @@ class map_data:
                         # self.mapData.append(newBar)
                     elif result[0] == "dancefloor":
                         self.add_dancefloor_to_map(coords, int(result[2]), int(result[3]))
-                        print("Dancefloor")
             self.generate_nodes()
             return True
         else:
@@ -603,7 +598,6 @@ class map_data:
         if objectType == "toilet":
             self.add_toilet_to_map(cords, width, height)
         if objectType == "d floor":
-            print("Dancefloor")
             self.add_dancefloor_to_map(cords, width, height)
         """Used to create the nodes"""
         self.generate_nodes()
@@ -741,12 +735,9 @@ class map_data:
         height = offset[1]
         x2 = cordX + width
         y2 = cordY + height
-        print("width and height")
-        print(widthTest, heightTest)
-        print(width, height)
+
         # If the coord starts from bottom right
         if int(width) < 0 and int(height) < 0:
-            # print("in bottom right")
             width2 = int(abs(width))# Rounding up on a negative number will drop by one
             height2 = int(abs(height))
             for x in range(width2):
@@ -754,7 +745,6 @@ class map_data:
                     self.values_to_append.append([cordX - x, cordY - y])
         # If the cord starts from top left
         if int(width) > 0 and int(height) > 0:
-            print("X and Y are: " + str(cordX) + str(cordY))
             for x in range(width):
                 self.values_to_append.append([cordX + x, cordY])
                 self.values_to_append.append([cordX + x, y2])
@@ -776,7 +766,6 @@ class map_data:
                 self.values_to_append.append([x2, cordY - y])
         # If the coord starts from Top Right
         if int(width) < 0 and int(height) > 0:
-            print("top right")
             width3 = int(abs(width))
             print(width3)
             for x in range(width3 + 1):
@@ -816,7 +805,6 @@ class map_data:
         node_distance = 20
         total_width = int(math.ceil(self.sim_screen_width/node_distance))
         total_height = int(math.ceil(self.sim_screen_height/node_distance))
-        print(total_height, total_width)
         for x in range(total_width):
             for y in range(total_height):
                 self.values_to_append.append([x, 0]) # Left column
@@ -835,7 +823,6 @@ class map_data:
         """
         node_distance = 20
         total_nodes = self.calculate_starting_nodes() # All nodes to being with.
-        print("total Nodes are" + str(total_nodes))
         maxX = int(math.ceil(self.sim_screen_width/node_distance))
         maxY = int(math.ceil(self.sim_screen_height/node_distance))
         nodeList = []
@@ -847,14 +834,14 @@ class map_data:
         for number in range(0, total_nodes):
             listofID.append(number)
         """Create cords for the grid"""
-        print(maxX, maxY)
+        # print(maxX, maxY)
 
         for x in range(maxX):
             for y in range(maxY):
                 simpleCords.append([x, y])
         """apply the coords to the nodes"""
-        print("Simple cords")
-        print(len(simpleCords))
+        # print("Simple cords")
+        # print(len(simpleCords))
         for n in range(total_nodes):
             nodeList.append(node.Node(simpleCords[n], 0))
         """Obtaining last coord in the simple grid to create the range of maze"""
@@ -874,11 +861,11 @@ class map_data:
             elif cords.get_value() == 0:  # Cord should be added to list of open nodes
                 openNodes.append(cords.get_idCoords())
         self.open_nodes = openNodes
-        print(graph)
         """Stores all free nodes in a_star class"""
         a_starv2.set_open_nodes(openNodes)
         """Store all the nodes in the a_star class"""
         a_starv2.store_all_nodes(graph)
+        # print(graph)
 
     def get_person_cord_info(self):
         personCoords = []
@@ -897,3 +884,18 @@ class map_data:
     def set_size_screen(self, width, height):
         self.sim_screen_width = width
         self.sim_screen_height = height
+
+    def calculate_distance_between_two_points(self, c1, c2):
+        """
+        Caluclates the distance between two points
+        :param c1: First set of coordinates
+        :param c2: Second set of coordinates
+        :return: The distance between the two poits
+        """
+
+        xDiff = (c2[0] - c1[0]) * (c2[0] - c1[0])
+        yDiff = (c2[1] - c1[1]) * (c2[1] - c1[1])
+
+        distance = math.sqrt(xDiff + yDiff)
+
+        return distance

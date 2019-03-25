@@ -5,6 +5,7 @@
 from random import randint, seed
 # import random
 from People.stateMachine import StateMachine
+from Objects.baseObject import BaseObject
 from Objects.bar import Bar
 from Objects.toilet import Toilet
 from Objects.danceFloor import DanceFloor
@@ -82,6 +83,9 @@ class Person:
         self.currentState = self.idleState
         self.stateMachine.set_current_state(self.currentState)
 
+        self.starting_value = None
+        self.doing_task = False
+
         self.tick_rate = tick_rate
 
         # variable declaration
@@ -129,9 +133,7 @@ class Person:
         self.orderedDrink = 0
         self.hasDrink = 0
         # Persons "needs" first value is importance second is how much they want to do it
-        self.brain = [["Toilet", 100],
-                 ["Drink", 100],
-                 ["Dance", 100]]
+        self.brain = [["Toilet", randint(0,100)],["Drink", randint(0,100)],["Dance", randint(0,100)]]
 
         self.random_node = None
 
@@ -150,13 +152,21 @@ class Person:
         """What the person is going to do"""
         self.currentState = self.stateMachine.get_current_state()
         self.usedSpeed = 0
-        # print(" My current state " + self.currentState)
+
         if self.wait_on_action_count():
             return "Waiting"
 
+
         stateAction = self.get_state_action()
-        # print("currentState: " + self.currentState + " / stateAction " + stateAction)
-        # self.random_move()
+
+        if "dance" not in str(self.currentState) and "Dance" not in str(self.currentState):
+            # Increasing the dance amount by 1 if they arent already doing that
+            self.increment_need(2, -0.1)
+            # print("decreasing dance")
+
+        if "Drink" not in str(self.currentState) and "Bar" not in str(self.currentState) and "drink" not in str(self.currentState):
+            self.increment_need(1, -0.1)
+
         if stateAction == "navigateToRememberedObj":
             self.navigate_to_remembered_object()
 
@@ -165,36 +175,22 @@ class Person:
 
         elif stateAction == "wait":
             # The person sits there and waits
-            # print(self.name + " waiting")
             nothing = None
 
         elif stateAction == "explore":
             # Person will pick a random node and navigate to it
-            # print("Explore " + str(self.exploreNode))
-
-            # Failed to explore a certain way a number of times moving back
-            if self.coordinatesFailed == 5 or self.objectFailedCount == 5:
-                # Could have gone off the map or something is going wrong, try to go somewhere else instead
-                self.coordinatesFailed = 0
-                self.objectFailed = 0
-                self.objectFailedCount = 0
-                self.clear_explore_node()
-
-            if self.rememberedObjType != "" and not self.exploreNode:
-                # if self.rememberedObjType != "" and self.exploreNode == []:
-                self.exploreNode = a_starv2.get_random_waypoint()
-                self.astarCoords = a_starv2.run_astar(self.find_nearest_waypoint(), self.exploreNode)
-                # print("setting explore node")
-
-            # print("exploreNode " + str(self.exploreNode) + " mycoords " + str(self.coordinates))
+            self.setup_explore()
 
             self.navigate_to_remembered_object()
 
         elif stateAction == "dance":
+            self.move_inside_dance_floor()
+            # onObject = self.map.what_object(self.coordinates, False)
+            # if isinstance(onObject, DanceFloor) is True:
             if self.inside_dance_floor:
-                print("dance")
-                self.advance_state_machine()
-            self.astarCoords.clear()
+                self.dance()
+                if self.brain[2][1] > randint(75, 100):
+                    self.advance_state_machine()
 
         else:
             # self.random_move()
@@ -210,57 +206,58 @@ class Person:
         objectsWithinRejection = self.map.get_objects_within_range(self.coordinates, self.get_rejection_area(), self.get_edge_coordinates_array(self.coordinates, self.get_rejection_area()), self)
 
         if objectsWithinRejection and self.rememberedObj not in objectsWithinRejection:
-            # print("objects within rejection")
-            # print(objectsWithinRejection)
-            # return self.flock_away_from_objects(objectsWithinRejection)
             # Sam - Keeping the flocking in but not allowing it to move two blocks to its destination
             self.flock_away_from_objects(objectsWithinRejection)
             # return self.flock_away_from_objects(objectsWithinRejection)
 
-        # print(self.name + " Attempting to navigate to remembered " + str(self.rememberedObj))
+        targetCoordinates = None
+        targetObj = None
+        if self.rememberedObj:
+            targetCoordinates = self.work_out_objects_closest_point(self.rememberedObj)
+            targetObj = self.rememberedObj
+        else:
+            targetCoordinates = self.exploreNode
+            targetObj = self.exploreNode
+
+        targetDistance = self.map.calculate_distance_between_two_points(self.coordinates, targetCoordinates)
         x = self.coordinates[0]
         y = self.coordinates[1]
         nextMove = [x, y]
 
         # if not self.astarCoords:
-        if self.astarCoords == [] or not self.astarCoords:
-            # print("ASTAR IS EMPTY, SETTING CORDS TO GET TO THE OBJECT")
+        if self.astarCoords is False or self.astarCoords is None:
+            self.astarCoords = []
+        if len(self.astarCoords) == 0 or not self.astarCoords:
             self.set_cords_from_algo()
-            #self.set_cords_from_algo("known_location")
-            # self.placeholder += 1
 
-        if self.astarCoords:
+        # if self.astarCoords and (targetDistance > (self.get_rejection_area() / 2) or self.object_in_vision(self.rememberedObj) is True and self.count_objects_in_vision(False) > 1):
+        if self.astarCoords and targetObj not in objectsWithinRejection:
             self.navigate_via_astar(nextMove)
         else:
-            if self.rememberedObj:
-                targetCoordinates = self.work_out_objects_closest_point(self.rememberedObj)
-            else:
-                targetCoordinates = self.exploreNode
-
             if targetCoordinates != nextMove:
                 # while targetCoordinates != nextMove:
                 x = self.coordinates[0]
                 y = self.coordinates[1]
 
                 if targetCoordinates[0] > x:
-                    if targetCoordinates[0] > x + 1 and self.usedSpeed == 0:
+                    if targetCoordinates[0] > x + 2 and self.usedSpeed == 0:
                         x += 2
                     else:
                         x += 1
 
                 elif targetCoordinates[0] < x:
-                    if targetCoordinates[0] < x - 1 and self.usedSpeed == 0:
+                    if targetCoordinates[0] < x - 2 and self.usedSpeed == 0:
                         x -= 2
                     else:
                         x -= 1
 
                 if targetCoordinates[1] > y:
-                    if targetCoordinates[1] > y + 1 and self.usedSpeed == 0:
+                    if targetCoordinates[1] > y + 2 and self.usedSpeed == 0:
                         y += 2
                     else:
                         y += 1
                 elif targetCoordinates[1] < y:
-                    if targetCoordinates[1] < y - 1 and self.usedSpeed == 0:
+                    if targetCoordinates[1] < y - 2 and self.usedSpeed == 0:
                         y -= 2
                     else:
                         y -= 1
@@ -277,7 +274,6 @@ class Person:
         targetCoordinates = [self.astarCoords[0][0], self.astarCoords[0][1]]
         # First move
         # Sam - Think this being in while was partially responsible for the big jumps changed to if
-        # print("targetCoordiatnes " + str(targetCoordinates) + " / nextMove " + str(nextMove))
         # if targetCoordinates != nextMove:
         if True:
             # while targetCoordinates != nextMove:
@@ -313,11 +309,41 @@ class Person:
                 newCoords = self.get_coordinates_for_move_avoiding_collision_object(targetCoordinates, moveReturn, nextMove)
                 self.move(newCoords)
                 # return self.move(nextMove)
-
-        if self.coordinates == list(self.astarCoords[0]):
+        x1, y1 = self.coordinates
+        x2, y2 = self.astarCoords[0]
+        x_distance = abs(x2 - x1)
+        y_distance = abs(y2 - y1)
+        distance = (x_distance * x_distance) + (y_distance * y_distance)
+        distance = math.sqrt(distance)
+        if distance < self.width + (self.width * 0.3):
             self.astarCoords.pop(0)
             if len(self.astarCoords) == 0:
                 self.clear_explore_node()
+
+    def setup_explore(self):
+        """
+        Sets Explore node if exists
+        Changes Explore Node if it has multiple collisions with the same object
+        Needs to be used in conjunction with navigate_to_remembered_object
+        :return:
+        """
+        # Failed to explore a certain way a number of times moving back
+        if self.coordinatesFailed == 5 or self.objectFailedCount == 5:
+            # Could have gone off the map or something is going wrong, try to go somewhere else instead
+            self.coordinatesFailed = 0
+            self.objectFailed = 0
+            self.objectFailedCount = 0
+            self.clear_explore_node()
+
+        if len(self.exploreNode) == 2:
+            if self.exploreNode[0] == self.coordinates[0] and self.exploreNode[1] == self.coordinates[1]:
+                self.clear_explore_node()
+
+        # if self.rememberedObjType != "" and (not self.exploreNode or self.exploreNode is None):
+        if not self.exploreNode or self.exploreNode is None:
+            # if self.rememberedObjType != "" and self.exploreNode == []:
+            self.exploreNode = a_starv2.get_random_waypoint()
+            self.astarCoords = a_starv2.run_astar(self.find_nearest_waypoint(), self.exploreNode)
 
     def get_coordinates_for_move_avoiding_collision_object(self, targetCoordinates,  collisionObject, attemptedMove):
         """
@@ -373,6 +399,9 @@ class Person:
 
             return True
 
+        if self.rememberedObj != "":
+            self.check_person_collided_with_target(collisionObject)
+
         self.coordinatesFailed += 1
         if self.objectFailed == collisionObject:
             self.objectFailedCount += 1
@@ -381,25 +410,6 @@ class Person:
             self.objectFailedCount = 1
 
         return collisionObject
-
-    def set_explore_node(self):
-        """
-        Gets a node to navigate to in order to explore the environment they are in
-        Node cant be too close to them, or its pointless exploring
-        :return:
-        """
-        x = self.coordinates[0]
-        y = self.coordinates[1]
-        nextMove = [x, y]
-        nodes = a_starv2.get_open_nodes()
-        nodes_length = len(a_starv2.get_open_nodes())
-        self.random_node = nodes[randint(0, nodes_length - 1)]
-        if self.astarCoords:
-            self.navigate_via_astar(nextMove)
-        else: # No Astar cords found. This is due to the location not being available to travel, or first time initiating exploring.
-            # print("no astar cords found")
-            self.set_cords_from_algo()
-            self.find_action() # Keep going back to find to see if object has been found.
 
 
     def person_rotate(self, clockwise = True):
@@ -492,9 +502,7 @@ class Person:
     def random_move(self):
         """Person moving randomly around the map"""
         randomNumber = randint(0, 8)
-        # #print(self.name + " should move " + str(randomNumber))
         newCoordinates = []
-        # #print(self.name + " random number " + str(randomNumber) + " -- initial coords " + str(self.coordinates))
         if randomNumber <= 2:  # person move up
             newCoordinates = [self.coordinates[0], self.coordinates[1] + 1]
 
@@ -560,23 +568,26 @@ class Person:
         return self.sight
 
     def get_state_action(self):
-        """Causes the person to act based on their current state"""
+        """Causes the person to act based on their current state
+        Will advance the code
+        :returns The action you want it to take based on the currentState"""
         action = "moveRandom"
 
         """NEED TO CHECK HERE FOR NEEDS"""
         """IF STATE IS GREATEST NEED"""
         if self.currentState == self.idleState:
-            # #print(self.name + " in greatest need")
             """While there are no current needs, the person will relax."""
             """relax will reduce the needs of the person"""
-            if self.check_needs() == False:
-                self.relax()
-                # print(str(self.get_person_needs()))
-                """RETURN THE ACTION OF DOING NOTHING, THERE IS NO NEED"""
-                return action
+            self.clear_remembered_object()
+            # if self.check_needs() == False:
+                # self.relax()
+                #"""RETURN THE ACTION OF DOING NOTHING, THERE IS NO NEED"""
+                # return action
             """Setting the current state to the persons needs."""
             self.currentState = self.stateMachine.get_need_state(self.check_needs())
 
+
+        # print("get_state_action current " + self.currentState)
         if "want" in str(self.currentState):
             # Person has a want desire
             if self.want_action(self.currentState):
@@ -595,12 +606,11 @@ class Person:
             # Person moving to object
             action = "navigateToRememberedObj"
             rememberedObjectCoords = 0
-
+            objectClosestPoint = -1
             if self.object_in_vision(self.rememberedObj):
-                rememberedObjectCoords = self.work_out_objects_closest_point(self.rememberedObj)
-            else:
-                #If the person is next to the thing they are supposed to be on like a bar, advance the state again
-                rememberedObjectCoords = self.rememberedObj.get_coordinates()
+                objectClosestPoint = self.work_out_objects_closest_point(self.rememberedObj)
+
+            rememberedObjectCoords = self.rememberedObj.get_coordinates()
 
             objectSize = [self.rememberedObj.get_width(), self.rememberedObj.get_height()]
             rectangleCoordRanges = self.map.get_coordinates_range(rememberedObjectCoords, objectSize)
@@ -608,8 +618,7 @@ class Person:
 
             # if self.map.check_circle_overlap_rectangle(selfEdge, rectangleCoordRanges):
             if self.map.check_person_touching_object(selfEdge, rectangleCoordRanges):
-                print("TOUCHING OBJECT ")
-                self.astarCoords.clear()
+                self.astarCoords = []
                 self.advance_state_machine()
                 self.change_angle_to_move_direction(self.coordinates, self.rememberedObj.get_coordinates())
 
@@ -626,20 +635,20 @@ class Person:
 
         elif self.currentState == "drink":
             # Person drinks their drink
-            self.drink_drink()
-            self.advance_state_machine()
+            if self.has_drink() is True:
+                self.drink_drink()
+            else:
+                self.advance_state_machine()
 
         elif self.currentState == "dance":
             # Person will dance
-            #print(self.name + " is dancing")
             # self.stateMachine.get_next_state()
-
             action = "dance"
-            self.move_inside_dance_floor()
-            if self.inside_dance_floor:
-                # print("DANCEFLOOR IS NOW TRUE")
-                self.dance()
-                self.advance_state_machine()
+            # self.move_inside_dance_floor()
+            # if self.inside_dance_floor:
+            #     self.dance()
+            #     if self.brain[2][1] > randint(75, 100):
+            #         self.advance_state_machine()
 
         elif self.currentState == "useToilet":
 
@@ -663,6 +672,7 @@ class Person:
 
             if self.astarCoords or self.exploreNode:
                 self.clear_explore_node()
+
         else:
             # Cant find object do a circle to see it
             if self.rotate < 12:
@@ -785,6 +795,7 @@ class Person:
                 nextState = "moveTo"
 
             nextState += keyword
+
         elif "move" in current_state:
             if "Bar" in current_state:
                 nextState = "orderDrink"
@@ -842,6 +853,24 @@ class Person:
                 return True
 
         return False
+
+    def count_objects_in_vision(self, includePeople):
+        """
+        Counts objects in vision
+        :param includePeople: will count people as well if true
+        :return: Number of objects
+        """
+        if includePeople is True:
+            return len(self.vision)
+
+        objCount = 0
+
+        for obj in self.vision:
+            if isinstance(obj, BaseObject):
+                objCount += 1
+
+        return objCount
+
 
     def add_to_memory(self, obj):
         """Adds an object to the persons memory so they can find it again easier
@@ -1038,24 +1067,29 @@ class Person:
         Bar servers person drink
         :return:
         """
-        self.hasDrink = 1
+        drinkSize = randint(20, 80)
+        self.hasDrink = drinkSize
         self.orderedDrink = 0
         #Update drink meter
-        print("IN served Drink")
-        self.brain[1][1] = 99
+        # self.brain[1][1] = 99
         self.astarCoords.clear()
 
         self.advance_state_machine()
 
-        return self.set_action_count(5,10)
+        waitTime = self.set_action_count(5,10)
+
+        return waitTime
+        # return self.set_action_count(5,10)
 
     def has_drink(self):
         """
         Checks to see if person has a drink
         :return:
         """
-        if self.hasDrink:
-            self.brain[1][1] += 100  # Increase the drink level
+        if self.hasDrink > 0 :
+            # self.brain[1][1] += 100  # Increase the drink level
+            # if self.brain[1][1] > 100:
+            #     self.brain[1][1] = 100
             return True
 
         return False
@@ -1067,7 +1101,16 @@ class Person:
         """
 
         if self.has_drink():
-            self.hasDrink = 0
+            # self.hasDrink = 0
+            drinkAmount = 0.25
+
+            if drinkAmount > self.hasDrink:
+                drinkAmount = self.hasDrink
+
+            self.hasDrink -= drinkAmount
+
+            self.increment_need(1, drinkAmount)
+            self.increment_need(0, 0 - drinkAmount)
             return True
 
         return False
@@ -1077,9 +1120,11 @@ class Person:
         Agent has reached an area on the dancefloor and is now dancing.
         :return:
         """
-        print("In dance function")
-        self.brain[2][1] += 200
-        self.set_action_count(5, 10)
+        # print("dancing")
+        # self.brain[2][1] = 100
+        self.increment_need(2, 1)
+        # self.set_action_count(5, 10)
+        # self.clear_remembered_object()
 
     def use_toilet(self):
         """
@@ -1088,12 +1133,14 @@ class Person:
         :return: the action count of how long they are going to be waiting for
         """
 
-        if self.rememberedObj.get_person_using_toilet() == self:
-            self.brain[0][1] += 100 # Set toilet back up to default
-            self.get_person_needs()
+        if self.rememberedObj.check_person_using_toilet(self) is True:
+            # self.brain[0][1] += 100 # Set toilet back up to default
+
+            self.increment_need(0, randint(50,100)) # Add large chunk to toilet need
 
             self.rememberedObj.person_stop_using_toilet(self)
             self.advance_state_machine()
+            self.clear_remembered_object()
 
         elif self.rememberedObj.person_use_toilet(self):
             self.set_action_count(8, 10)
@@ -1115,7 +1162,6 @@ class Person:
 
         # self.actionCount = 1
 
-        # print(self.name + " is waiting for " + str(self.actionCount) + " ticks")
         return self.actionCount
 
     def clear_action_count(self):
@@ -1147,20 +1193,14 @@ class Person:
             startingLoc = self.find_nearest_waypoint()
         """NEED TO ADD THE DESTINATION OF REQUIRED OBJECT"""
         # Sam - Trying to change it to use startingLoc as its making a huge jump as it goes to the node
-        # locations = a_starv2.run_astar(startingLoc, self.rememberedObj.get_coordinates())
         locations = None
 
         if self.rememberedObj:
-            # print("THERE IS A REMEMBERED OBJECT AND THAT IS" + str(self.rememberedObj))
             targetCoordinates = self.work_out_objects_closest_point(self.rememberedObj)
-            print(str(targetCoordinates) + "Target coords")
-            print("TARGET COORDS ARE" + str(targetCoordinates))
             locations = a_starv2.run_astar(startingLoc, targetCoordinates)
         else:
-            print("Move into random node" + str(self.random_node))
-            locations = a_starv2.run_astar(startingLoc, self.random_node)
+            locations = a_starv2.run_astar(startingLoc, self.exploreNode)
 
-        # print("LOCATIONS ARE " + str(locations))
         if not locations:
             return False
         else:
@@ -1169,7 +1209,10 @@ class Person:
 
     def store_waypoints(self, cord):
         """Stores the waypoints in cords var"""
-        self.astarCoords.append([cord[0], cord[1]])
+        try:
+            self.astarCoords.append([cord[0], cord[1]])
+        except:
+            print("no astar coords")
 
 
 
@@ -1179,18 +1222,11 @@ class Person:
         currentX = self.coordinates[0]
         currentY = self.coordinates[1]
         notFound = True
-        # while notFound:
-        #     currentX = int(50 * round(float(currentX / 50)))
-        #     currentY = int(50 * round(float(currentY / 50)))
-        #     futurexy = [currentX, currentY]
-        #     if futurexy in open:
-        #         return futurexy
         currentX = int(20 * round(float(currentX / 20)))
         currentY = int(20 * round(float(currentY / 20)))
         cords.append(currentX)
         cords.append(currentY)
         return cords
-        # print(current)
 
     #FLOCKING STUFF FML
 
@@ -1210,7 +1246,9 @@ class Person:
 
         if nearbyPeople is False or len(nearbyPeople) == 1:
             # No nearby people random
-            return self.random_move()
+            self.setup_explore()
+            return self.navigate_to_remembered_object()
+            # return self.random_move()
 
         angleTotal = 0
         # These are the directions people are moving on the axis
@@ -1322,7 +1360,6 @@ class Person:
             if obj == self:
                 continue
             # Finding closest and moving away from that
-            # print(x)
             coords = coordinates[x]
             coordsDiff = (abs(coords[0] - self.coordinates[0]) + abs(coords[1] - self.coordinates[1]))
             if obj.get_rejection_strength() > rejectionScore:
@@ -1354,7 +1391,6 @@ class Person:
                 continue
 
             if isinstance(obj, Person):
-                # print("move away from center")
                 coordsToAvoid.append(obj.get_coordinates())
 
             else:
@@ -1417,7 +1453,6 @@ class Person:
             newCoordinates[1] -= 1
 
         moveReturn = self.move(newCoordinates)
-        # print("trying to flock too " + str(newCoordinates) + " avgAngle " + str(avgAngle) + " return " + str(moveReturn))
         if moveReturn is True:
             self.angle = avgAngle
         else:
@@ -1452,20 +1487,17 @@ class Person:
             return False
         return [xDiff, yDiff]
 
+    def get_memory(self):
+        return self.memory
+
     """Returns array of persons current needs, alone with value"""
     def get_person_needs(self):
         return self.brain
 
     """This will be in an idle state when a person has no desire of drinking, dancing or wanting the toilet"""
     def relax(self):
-        # print("In relax")
-        dec_thirst = randint(0, 1)
-        dec_toilet = randint(0, 1)
-        dec_dance = randint(0, 3)
-        self.brain[0][1] -= dec_toilet
-        self.brain[1][1] -= dec_thirst
-        self.brain[2][1] -= dec_dance
-        # print("CURRENT ASTAR CORDS ARE " + str(self.astarCoords))
+        for i in range(len(self.brain)):
+            self.increment_need(i, -0.1)
 
     def set_random_dance_area(self):
         if self.random_dance_area is None:
@@ -1486,13 +1518,8 @@ class Person:
         """
         randomNumber = randint(0, 8)
         nextMove = self.coordinates
-        # print("IN DANCE")
         self.set_random_dance_area()
-        # print(self.coordinates)
-        # print("random dance area")
-        # print(self.random_dance_area)
         if self.random_dance_area != self.coordinates:
-            # print("MOVE INSIDE DANCE FLOOR")
             # while targetCoordinates != nextMove:
             x = self.coordinates[0]
             y = self.coordinates[1]
@@ -1528,8 +1555,6 @@ class Person:
                 # return self.move(nextMove)
 
         if self.coordinates == self.random_dance_area:
-            # print("REACHED TARGET WOOO")
-            self.brain[2][1] = 99
             """DELAY here?"""
             self.random_dance_area = None
             self.inside_dance_floor = True
@@ -1559,3 +1584,62 @@ class Person:
             return True
         else:
             return False
+
+    def set_needs_values(self, index, value):
+        array = self.brain
+        array[index][1] = value
+
+    def check_person_collided_with_target(self, collisionObj):
+
+        if collisionObj == self.rememberedObj or type(collisionObj) is type(self.rememberedObj) is True:
+            # Found your way there goon, do your thing
+            self.advance_state_machine()
+            return True
+
+        return False
+
+    def increment_need(self, index, increment):
+        """
+        incriment_need
+        Increments the given brain part
+        :param index: The part to increment
+        :param increment: The amount to change it by
+        :return:
+        """
+        needs = self.brain
+        current_value = self.brain[index][1]
+        current_value = (current_value + increment)
+
+        if current_value > 100:
+            current_value = 100
+        if current_value < 0:
+            current_value = 0
+
+        self.brain[index][1] = current_value
+
+    def probility_choice_need(self):
+        """
+        This function takes all the needs and selects one based on the probibility of it being needed
+        :return:
+        """
+        needs = self.brain
+        toilet = 100 - needs[0][1]
+        if toilet == 0:
+            toilet = 1
+        drink = 100 - needs[1][1]
+        if drink == 0:
+            drink = 1
+        dance = 100 - needs[2][1]
+        if dance == 0:
+            dance = 1
+        sum_of_needs = toilet + drink + dance
+        prob_toilet = (toilet / sum_of_needs) * 100
+        prob_drink = (drink / sum_of_needs) * 100
+        prob_dance = (dance / sum_of_needs) * 100
+        rand_num = randint(0,100)
+        if prob_toilet > rand_num:
+            return needs[0]
+        elif prob_toilet + prob_drink > rand_num:
+            return needs[1]
+        elif prob_drink + prob_toilet + prob_dance > rand_num:
+            return needs[2]

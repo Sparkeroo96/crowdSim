@@ -10,7 +10,6 @@ class IntegrationTest(unittest.TestCase):
         """Creating a map"""
         self.map = map_data.map_data(None, 0)
         """Map default generates all the people on a map"""
-        self.map.map_default()
         """First person in the map data array"""
         self.testPerson1 = self.map.mapData[0]
 

@@ -2,6 +2,7 @@ import unittest
 from Data import map_data
 from People import person
 from test import RunningMain
+from Objects import wall
 
 import numpy
 
@@ -17,21 +18,15 @@ class TestMapData(unittest.TestCase):
     #     """
     #     self.assertTrue(self.test_map.map_default())
 
-    def test_add_people_to_map(self):
-        """
-        Tests the add people to map function
-        :return:
-        """
-        """Adding no one to the map should return false"""
-        """Adding one person will assert true"""
-        # self.gui = RunningMain()
-        # test_map2 = map_data.map_data(gui, 0)
-        # test_coords = self.test_person.get_coordinates()
-        # test_size = self.test_person.get_width()
-        # test_angle = self.test_person.get_angle()
-        # self.assertTrue(test_map2.add_people_to_map(test_coords, test_size, test_angle))
-        # with self.assertRaises(TypeError):
-        #     result = test_map2.add_people_to_map("test", "test", "test")
+
+    # def test_add_people_to_map(self):
+    #     self.test_map_2 = map_data.map_data(None, 0)
+    #     test_coords = [100, 100]
+    #     test_size = 20
+    #     test_angle = 20
+    #     result = self.test_map_2.add_people_to_map(test_coords, test_angle, test_size)
+    #     self.assertTrue(result)
+
 
     def test_person_vision_true(self):
         data_x1 = 50
@@ -102,6 +97,107 @@ class TestMapData(unittest.TestCase):
         data_coordinates_false = [220, 220]
         self.assertFalse(self.test_map.point_in_coordinates_range(data_coordinates_false, data_range))
         """Check incorrect parameters are false"""
+
+    def test_get_coordinates_range_not_list(self):
+        test_coordinates = [100, 100]
+        test_object_size = 20
+        result = self.test_map.get_coordinates_range(test_coordinates, test_object_size)
+        self.assertTrue(result)
+
+    def test_import_from_file_false(self):
+        test_file = "../../maps_saves"
+        save_name = "testdsa"
+        result = self.test_map.import_from_file(test_file, save_name)
+        self.assertFalse(result)
+
+    def test_import_from_file_true(self):
+        test_width = 100
+        test_height = 100
+        self.test_map.set_size_screen(test_height, test_width)
+        test_file = "../../maps_saves"
+        save_name = "test2"
+        result = self.test_map.import_from_file(test_file, save_name)
+        self.assertTrue(result)
+
+    def test_check_save_name_true(self):
+        test_file = "../../maps_saves"
+        save_name = "test_new_map"
+        result = self.test_map.check_save_name(test_file, save_name)
+        self.assertTrue(result)
+
+    def test_check_save_name_false(self):
+        test_file = "../../maps_saves"
+        save_name = "test2"
+        result = self.test_map.check_save_name(test_file, save_name)
+        self.assertFalse(result)
+
+    def test_export_true(self):
+        test_file = "../../maps_saves"
+        save_name = "testing_map"
+        result = self.test_map.export(test_file, save_name)
+        self.assertTrue(result)
+
+    def test_export_false(self):
+        test_file = "../../maps_saves"
+        save_name = "test2"
+        result = self.test_map.export(test_file, save_name)
+        self.assertFalse(result)
+
+
+    def test_set_nodes_values(self):
+        test_wall = wall.Wall([200, 200], 200, 100)
+        self.test_map.set_nodes_values(test_wall)
+        result = self.test_map.values_to_append
+        self.assertTrue(result)
+
+    def test_set_nodes_values_negative(self):
+        test_wall = wall.Wall([200, 200], -100, -100)
+        self.test_map.set_nodes_values(test_wall)
+        result = self.test_map.values_to_append
+        self.assertTrue(result)
+
+    def test_set_nodes_values_negative_width(self):
+        test_wall = wall.Wall([200, 200], 100, -100)
+        self.test_map.set_nodes_values(test_wall)
+        result = self.test_map.values_to_append
+        self.assertTrue(result)
+
+    def test_set_nodes_values_negative_height(self):
+        test_wall = wall.Wall([200, 200], -100, 100)
+        self.test_map.set_nodes_values(test_wall)
+        result = self.test_map.values_to_append
+        self.assertTrue(result)
+
+    def test_generate_nodes(self):
+        test_width = 100
+        test_height = 100
+        self.test_map.set_size_screen(test_height, test_width)
+        self.test_map.generate_nodes()
+        result = self.test_map.open_nodes
+        print("Return to this")
+        self.assertTrue(result)
+
+
+    def test_calculate_starting_nodes(self):
+        test_width = 100
+        test_height = 100
+        self.test_map.set_size_screen(test_height, test_width)
+        result = self.test_map.calculate_starting_nodes()
+        self.assertTrue(result)
+
+    def test_set_grid_area(self):
+        test_width = 100
+        test_height = 100
+        self.test_map.set_size_screen(test_height, test_width)
+        self.test_map.set_grid_area()
+        result = self.test_map.values_to_append
+        self.assertTrue(result)
+
+    def test_get_coordinates_range_list(self):
+        test_coordinates = [100, 100]
+        test_object_size = [-20, -20]
+        result = self.test_map.get_coordinates_range(test_coordinates, test_object_size)
+        self.assertTrue(result)
 
     def test_person_eyes(self):
         print("to do")

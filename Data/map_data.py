@@ -39,18 +39,6 @@ class map_data:
         self.gui = gui
         self.tick_rate = tick_rate
 
-    def map_default(self):
-        """Getting default map data"""
-        self.add_people_to_map(15)
-        self.add_bar_to_map(1)
-        self.add_toilet_to_map(1)
-        # self.add_wall_to_map()
-        global constant
-        if constant == 0:
-            # self.generate_nodes()
-            constant += 1
-        return self.mapData
-
     def add_people_to_map(self, coords, size, angle):
         """Adding people to map"""
         """CHANGED THE SIZE TO 10"""
@@ -95,37 +83,6 @@ class map_data:
         newToilet = toilet.Toilet(coords, "toilet " + str(len(self.mapData)), width, height)
         self.set_nodes_values(newToilet)
         self.mapData.append(newToilet)
-
-    def get_object_colour_code(self, objectType):
-        """
-        Gets an object colour code
-        :param objectType: The object type you are looking for
-        :return: Returns an RGB array, false if no such object type exists
-        :DEFUNCT:
-        """
-
-        for obj in self.mapData:
-            # if type(obj) == objectType:
-            searchString = "." + objectType + "'"
-            if searchString in str(type(obj)):
-                return obj.get_colour()
-
-
-        return False
-
-    def person_look_for_object(self, coordinates, angle, vision, colourCode):
-        """
-        DEFUNCT
-        Returns an array with references to given object
-        :param coordinates: Persons coordinates given as [x, y]
-        :param angle: Persons viewing angle
-        :param vision: Persons vision range
-        :return: Array of objects
-        """
-
-        visionCoordinates = self.personVision(coordinates[0], coordinates[1], angle, vision)
-
-        coordinatesWithColour = self.gui.check_coordinates_for_colour(visionCoordinates, colourCode)
 
     def personVision(self, x1, y1, angle, vision):
         """This function gets an person and returns an array of the cordinates of their vision"""
@@ -698,15 +655,6 @@ class map_data:
 
         return objArray
 
-    def add_fireEscape_to_map(self):
-        x = 0
-        fireEscapes = []
-        while x <= 1:
-            coords = [480, 200]
-            newFireEscape = fireExit.FireExit(coords, "fireEscape " + str(self.mapData), 20, 30)
-            self.mapData.append(newFireEscape)
-            x += 1
-
     def calculate_starting_nodes(self):
 
         node_distance = 20  # Pixel distance between each node. The higher the number, the greater granularity we get.
@@ -867,20 +815,6 @@ class map_data:
         """Store all the nodes in the a_star class"""
         a_starv2.store_all_nodes(graph)
         # print(graph)
-
-    def get_person_cord_info(self):
-        personCoords = []
-        personState = []
-        personName = []
-        personNeeds = []
-        current_map = self.mapData
-        for p in current_map:
-            if "person" in p.get_name():
-                # print(p.get_name())
-                personCoords.append(p.get_coordinates())
-                personName.append(p.get_name())
-                personState.append(p.get_state_action())
-                personNeeds.append(p.get_person_needs())
 
     def set_size_screen(self, width, height):
         self.sim_screen_width = width

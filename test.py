@@ -837,6 +837,10 @@ class RunningMain:
             return self.red
 
     def create_heatmap(self):
+        """
+        This function create the heatmap with empty values
+        :return: none
+        """
         heatmap = self.get_heatmap()
         x_running, y_running = self.get_offset()
         y_running_save = y_running
@@ -857,6 +861,11 @@ class RunningMain:
         heatmap[x_index][y_index] = heatmap[x_index][y_index] + 1
 
     def show_heatmap(self):
+        """
+        This function shows the heatmap on the display, it has to run twise once to work out the max and min and then another to get the correct
+        colour to colour the square area
+        :return: Shows the heat map on the display
+        """
         max_heat_value = 0
         min_heat_value = 100000
         heat_map = self.get_heatmap()
@@ -897,6 +906,13 @@ class RunningMain:
 
 
     def colour_picker(self,min_value,max_value,value):
+        """
+        This is a function that picks colour based off the min and max values and the current. Used for the heat map
+        :param min_value: The minimum value for the heatmap
+        :param max_value: THe highest value of the heatmap
+        :param value: The value of the heatmap at that current square
+        :return: The colour imbetween yellow and red
+        """
         EPSILON = sys.float_info.epsilon
         colours = [self.yellow, self.red]
         i_f = float(value - min_value) / float(max_value - min_value) * (len(colours) - 1)
@@ -908,23 +924,46 @@ class RunningMain:
             return (int(r1 + f * (r2 - r1)), int(g1 + f * (g2 - g1)), int(b1 + f * (b2 - b1)))
 
     def gui_to_map_data_coords_offset(self,coords):
+        """
+        THe offset for the display when the sim is running
+        :param coords: The coords that the map data provides
+        :return: The new coords that have the offset applied
+        """
         oldx, oldy = coords
         offset_x, offset_y = self.get_offset()
         new_cords = (oldx - offset_x, oldy - offset_y)
         return new_cords
 
     def map_data_to_gui_coords_offset(self,coords):
+        """
+        THe invers to the previous removes the offest to the GUI cooridates
+        :param coords: Gui coords
+        :return: Map data coords
+        """
         oldx, oldy = coords
         offset_x, offset_y = self.get_offset()
         new_cords = (oldx + offset_x, oldy + offset_y)
         return new_cords
 
     def need_bar(self, needName, value, box_info):
+        """
+        THis Creates slider bar in the info box for the agents
+        :param needName: Name of the need
+        :param value: The current value
+        :param box_info: The box that it is located in
+        :return: None
+        """
         pygame.draw.rect(self.get_display(),self.red,[box_info[0],(box_info[1] + box_info[3]) - (box_info[3] / 5),box_info[2],box_info[3]/5])
         x_coord = (box_info[2]/100) * value
         pygame.draw.rect(self.get_display(),self.green,[0, (box_info[1] + box_info[3]) - (box_info[3] / 5), x_coord,box_info[3]/5])
 
     def in_area(self, coords, box_info):
+        """
+        Function that returns true if a coordiate is within a box
+        :param coords: The quered coords
+        :param box_info: The box that is being checked
+        :return: True or False bepending on if it is inside or not
+        """
         if coords[0] >= box_info[0] and coords[0] <= box_info[0]+ box_info[2]:
             if coords[1] >= box_info[1] and coords[1] <= box_info[1]+ box_info[3]:
                 return True
@@ -934,6 +973,10 @@ class RunningMain:
             return False
 
     def menu_bar(self):
+        """
+        This creates the buttons on the bottom of the simulation
+        :return: Draws the buttons to the bottom on the simulation when running
+        """
         button_names = ["Home", "Pause", "Add Person", "Show Nodes","Heat Map"]
         height_of_button = self.get_screen_height() / 10
         width_of_button = self.get_screen_width() / 8
@@ -949,6 +992,11 @@ class RunningMain:
             x = x + 1
 
     def menu_option(self, option):
+        """
+        THis gets the current option from the menu_bar and then runs the code accordingly
+        :param option: THe option that was chosen
+        :return: The function that was clicked
+        """
         if option == 0:
             self.set_home_menu()
             self.menu_bar_clicked = None
@@ -968,6 +1016,11 @@ class RunningMain:
             self.menu_bar_clicked = None
 
     def node_icon(self, coord):
+        """
+        This is used to display a icon for the nodes a simple diamond
+        :param coord: The coords of the node
+        :return: The node icon is drawn to the disaply 
+        """
         x, y = coord
         top_coord = (x , y - 5)
         bottom_coord = (x, y + 5)
@@ -981,6 +1034,11 @@ class RunningMain:
         pygame.draw.line(self.get_display(),self.purple,left_coord,right_coord)
 
     def draw_path(self, coords):
+        """
+        Takes an array of coordinates and draws a connecting line between them
+        :param coords: array of A* coords
+        :return: None
+        """
         end_of_line = len(coords)
         index = 0
         x_offset, y_offset = self.get_offset()
@@ -1069,6 +1127,10 @@ class RunningMain:
         self.menu = new_menu
 
     def set_home_menu(self):
+        """
+        THis function sets all the flags back to befalut and returns the user back to the home page
+        :return:
+        """
         new_menu = [None, "home"]
         self.menu = new_menu
         self.user_input_result = ""

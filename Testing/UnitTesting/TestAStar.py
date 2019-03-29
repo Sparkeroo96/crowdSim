@@ -14,6 +14,20 @@ class TestAStar(unittest.TestCase):
         result = a_starv2.astar(test_array, test_start, test_dest)
         self.assertFalse(result)
 
+    def test_run_astar_no_grid(self):
+        test_start = [0, 0]
+        test_dest = [300, 300]
+        result = a_starv2.run_astar(test_start, test_dest)
+        self.assertFalse(result)
+
+    def test_run_astar_with_waypoints(self):
+        """Needs tweaking"""
+        test_start = [0, 0]
+        test_dest = [350, 350]
+        a_starv2.store_all_nodes(numpy.zeros((10, 10), int))
+        result = a_starv2.run_astar(test_start, test_dest)
+        self.assertFalse(result)
+
     def test_astar_dest_outside_grid(self):
         """
         Tests to see if a destination outside of its normal bounds returns True
@@ -47,7 +61,7 @@ class TestAStar(unittest.TestCase):
         test_a = (0, 40)
         test_b = (4, 40)
         result = a_starv2.heuristic(test_a, test_b)
-        self.assertTrue(result)
+        self.assertEqual(result, 16)
 
     def test_return_waypoints(self):
         """
@@ -105,6 +119,15 @@ class TestAStar(unittest.TestCase):
         result = a_starv2.convert_to_simple(data)
         self.assertEqual(result, (0, 0))
 
+    def test_convert_to_simple_false(self):
+        """
+        Test to see if converting two negative numbers turns the result into 0, 0
+        :return: True if converted correctly
+        """
+        data = None
+        result = a_starv2.convert_to_simple(data)
+        self.assertFalse(result)
+
     def test_locations(self):
         """
         Test to see if the correspondng coords are converted to usable coords
@@ -114,6 +137,26 @@ class TestAStar(unittest.TestCase):
         intended_result = [(0, 0), (20, 20), (40, 40)]
         result = a_starv2.locations(data)
         self.assertEqual(result, intended_result)
+
+    def test_store_node_details(self):
+        test_locations = [[0, 0], [20, 20]]
+        result = a_starv2.store_node_details(test_locations)
+        self.assertTrue(result, test_locations)
+
+    def test_get_open_nodes(self):
+        test_open_nodes = [[0, 0], [10, 10]]
+        test_result = [[0, 0], [200, 200]]
+        a_starv2.set_open_nodes(test_open_nodes)
+        result = a_starv2.get_open_nodes()
+        self.assertEqual(result, test_result)
+
+    def test_get_random_waypoint(self):
+        test_open_nodes = [[0, 0], [10, 10]]
+        test_result = [[0, 0], [200, 200]]
+        a_starv2.set_open_nodes(test_open_nodes)
+        result = a_starv2.get_random_waypoint()
+        print(result)
+        self.assertIn(result, test_result)
 
 
 if __name__ == '__main__':

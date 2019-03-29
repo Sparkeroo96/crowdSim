@@ -167,18 +167,6 @@ def run_astar(start, dest):
         # return store_node_details(result)
         return locations(waypoint)
 
-def get_next_free_cord(cord):
-    """
-    Gets the free cord around the object.
-    :param cord:
-    :return:
-    """
-    new_cord = None
-    potential_free_cords = set()
-    actual_cord = [cord[0] * 20, cord[1] * 20]
-
-
-    return new_cord
 
 """Convert coords that we have as our start and dest to simple 0 - 9 coords."""
 def convert_to_simple(cords):
@@ -229,11 +217,3 @@ def get_random_waypoint():
 
     # return n[randNodeKey]
 
-def print_node_count():
-    """
-    test function to print all nodes
-    :return:
-    """
-    global n
-    print("total node count " + str(len(n)))
-    print("open node count " + str(len(get_open_nodes())))

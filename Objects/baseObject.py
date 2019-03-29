@@ -42,11 +42,6 @@ class BaseObject:
     def get_details(self):
         return ([self.envObjectName, self.id, self.coordX, self.coordY, self.angle, self.width])
 
-    """Cords"""
-    def get_cords(self):
-        cords = [self.coordX, self.coordY]
-        return cords
-
     def get_clip_through(self):
         return self.clipThrough
 
@@ -59,18 +54,6 @@ class BaseObject:
 
     def get_angle(self):
         return self.angle
-
-    def set_env_object_name(self, name):
-        self.envObjectName = name
-
-    def set_id(self, newID):
-        self.id = newID
-
-    def set_coordX(self, coordX):
-        self.coordX = coordX
-
-    def set_coordY(self, coordY):
-        self.coordY = coordY
 
     def set_angle(self, angle):
         self.angle = angle
@@ -89,10 +72,6 @@ class BaseObject:
     def get_coordinates(self):
         """Returns the objects coordinates"""
         return self.coordinates
-
-    def get_angle(self):
-        """Returns the objects angle"""
-        return self.angle
 
     def get_width(self):
         """Returns the objects size"""
@@ -115,9 +94,6 @@ class BaseObject:
 
     def set_shape(self, shape):
         shape = self.shape
-
-    def get_shape(self):
-        return self.shape
 
     def get_rejection_strength(self):
         """Reutrns the rejectionStrength"""

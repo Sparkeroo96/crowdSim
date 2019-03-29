@@ -47,23 +47,35 @@ class TestStateMachine(unittest.TestCase):
         result = self.test_machine.get_state_next_states("state 4")
         self.assertTrue(result)
 
+    def test_get_next_state_random_option(self):
+        result = self.test_machine.get_next_state()
+        intended_results = self.test_machine.get_state_next_states("state 1")
+        self.assertIn(result, intended_results)
+
+    def test_get_next_state_only_one_option(self):
+        self.test_machine.set_current_state("state 4")
+        result = self.test_machine.get_next_state()
+        intended_result = "state 1"
+        self.assertEqual(result, intended_result)
+
+    def test_choose_next_state_true(self):
+        result = self.test_machine.choose_next_state("state 2")
+        self.assertEqual(result, "state 2")
+
+    def test_choose_next_state_false(self):
+        result = self.test_machine.choose_next_state("state 4")
+        self.assertFalse(result)
+
+
     def test_get_all_states(self):
         """
         Tests to see if all states are returned in a given state machine
         :return:
         """
         result = self.test_machine.get_all_states()
-        self.assertEqual(result, ['state 1', 'state 2', 'state 3', 'state 4'])
+        for r in result:
+            self.assertIn(r, result)
 
-    # def test_check_next_state_fine(self):
-    #     trueNextState = "state 2"
-    #     falseNextState = "state 4"
-    #     # false_result = self.test_machine.check_next_state_fine(falseNextState)
-    #     true_result = self.test_machine.check_next_state_fine(trueNextState)
-    #     """Next State is state 2, which is true."""
-    #     self.assertTrue(true_result)
-    #     """Next state can not be 4 which will return false"""
-    #     # self.assertRaises(KeyError, self.test_machine.check_next_state_fine(falseNextState))
 
 
 

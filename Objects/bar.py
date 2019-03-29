@@ -47,16 +47,6 @@ class Bar(BaseObject):
         self.serve_drink()
 
 
-    def staff_start_working_here(self, barStaff):
-        """
-        Staff member adds themselves to the
-        """
-        if self.check_free_staff_space() is not False:
-            self.staffWorking.append(barStaff)
-            return True
-
-        return False
-
     def get_staff_working(self):
         """
         Returns the saff working

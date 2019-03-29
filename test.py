@@ -1079,6 +1079,7 @@ class RunningMain:
         self.builder_active = False
         self.clear_heat_map()
         self.show_nodes = False
+        self.add_person_on_click = False
 
     def get_exit(self):
         return self.exit

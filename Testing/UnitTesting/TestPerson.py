@@ -15,22 +15,6 @@ class TestPerson(unittest.TestCase):
         self.test_bar = Bar([450, 450], "Bar", 30, 20)
         self.testPerson2.add_to_memory(self.test_bar)
 
-    def test_set_up(self):
-        """
-        Testing the setup method
-        :return: True as the persons name is "person 1"
-        """
-        result = "person 1"
-        self.assertEqual(self.testPerson.get_name(), result)
-
-    def test_action(self):
-        """Big function"""
-        return
-
-    def test_setup_explore(self):
-        """No return on this"""
-        return
-
     def test_get_coordinates_for_move_avoiding_collision_object_true(self):
         """requires an object to avoid."""
         test_wall = Wall([100, 100], 500, 500)
@@ -41,7 +25,6 @@ class TestPerson(unittest.TestCase):
         self.assertEqual(result, test_attempted)
 
     def test_get_coordinates_for_move_avoiding_collision_object_false(self):
-        """NEED TO FIX"""
         """requires an object to avoid."""
         test_wall = Wall([100, 100], 601, 601)
         test_target = [0, 0]
@@ -52,11 +35,6 @@ class TestPerson(unittest.TestCase):
                                                                                     test_attempted)
         self.assertEqual(result, test_attempted)
 
-    def test_move(self):
-        """May require an object for collision"""
-        """Requires a map"""
-        # result = self.testPerson.move([101, 101])
-        # self.assertTrue(result, True)
 
     def test_person_rotate(self):
         """
@@ -84,19 +62,28 @@ class TestPerson(unittest.TestCase):
         result = self.testPerson.get_angle_between_coords(test_old_coords, test_new_coords)
         self.assertAlmostEqual(result, 137, 0)
 
+    def test_get_angle_between_coords_x0(self):
+        test_old_coords = [0, 0]
+        test_new_coords = [0, 186]
+        """Tests to see if there is an angle change. The result will be a float but used assertEqual
+        to find the closest whole number."""
+        result = self.testPerson.get_angle_between_coords(test_old_coords, test_new_coords)
+        self.assertAlmostEqual(result, 90, 0)
+
+    def test_get_angle_between_coords_y0(self):
+        test_old_coords = [0, 0]
+        test_new_coords = [200, 0]
+        """Tests to see if there is an angle change. The result will be a float but used assertEqual
+        to find the closest whole number."""
+        result = self.testPerson.get_angle_between_coords(test_old_coords, test_new_coords)
+        self.assertAlmostEqual(result, 180, 0)
+
     def test_get_angle_between_coords_no_angle_change(self):
         test_old_coords = [0, 0]
         test_new_coords = [0, 0]
         """Tests to see if there is no angle change"""
         result = self.testPerson.get_angle_between_coords(test_old_coords, test_new_coords)
         self.assertFalse(result)
-
-    def test_random_move(self):
-        """Does not require anything"""
-        """Need to test in integration with person and map."""
-        # result = self.testPerson.random_move()
-        # print(result)
-        return
 
     def test_get_rejection_area(self):
         """Width is currently 10"""
@@ -133,7 +120,6 @@ class TestPerson(unittest.TestCase):
         self.testPerson.rememberedObjType = "Bar"
         result = self.testPerson.find_action()
         self.assertEqual(result, "explore")
-
 
     def test_want_action_false(self):
         """searchObject is Bar, However, we have not discovered it and therefore
@@ -172,10 +158,6 @@ class TestPerson(unittest.TestCase):
         result = self.testPerson.rememberedCoords
         self.assertEqual(result, [])
 
-    def test_work_out_closest_object(self):
-        """Need to create an array of objects and then discover if there is"""
-        # result = self.testPerson.work_out_closest_object(self.test_bar)
-        # self.assertEqual(result, None)
 
     def test_get_edge_coordinates_array(self):
         """
@@ -205,10 +187,6 @@ class TestPerson(unittest.TestCase):
         qualifier = self.testPerson.add_to_vision(new_bar)
         result = self.testPerson.object_in_vision(new_bar)
         self.assertTrue(result)
-
-    def test_count_objects_in_vision(self):
-        """Requires Integration Testing"""
-        return
 
     def test_add_to_memory_true(self):
         """Instance of a bar, dancefloor or toilet"""
@@ -274,10 +252,6 @@ class TestPerson(unittest.TestCase):
         result = self.testPerson.angleMath(angle, coords[0], coords[1], width)
         self.assertEqual(result, [10, 0])
 
-    def test_order_drink(self):
-        """Requires a remembered object and therefore advancement of the state machine"""
-        return
-
     def test_has_ordered_drink(self):
         self.testPerson.orderedDrink = 1
         result = self.testPerson.has_ordered_drink()
@@ -310,9 +284,6 @@ class TestPerson(unittest.TestCase):
         result = self.testPerson.wait_on_action_count()
         self.assertFalse(result)
 
-    def test_set_cords_from_algo(self):
-        """Need to have astar initialised also"""
-
     def test_store_waypoints(self):
         """
         Tests the store waypoints function appends to the cords variable in order for a* to trigger
@@ -324,27 +295,6 @@ class TestPerson(unittest.TestCase):
     def test_find_nearest_waypoint(self):
         result = self.testPerson2.find_nearest_waypoint()
         self.assertEqual(result, [20, 40])
-
-    def test_flock(self):
-        """No return statement"""
-
-    def test_flock_away_from_objects(self):
-        """Need a map and objects around"""
-
-    def test_priority_avoid_cordinates(self):
-        return
-
-    def test_coordinates_to_avoid_of_nearby_objects(self):
-        return
-
-    def test_find_closest_coordinate(self):
-        return
-
-    def test_flock_move(self):
-        return
-
-    def test_calculate_move_direction_difference(self):
-        return
 
     def test_check_needs_false(self):
         result = self.testPerson.check_needs()
@@ -416,28 +366,29 @@ class TestPerson(unittest.TestCase):
         end_result = self.testPerson.brain[test_index][1]
         self.assertEqual(end_result, 0)
 
-    # def test_set_cords_from_algo_second(self):
-    #     a_starv2.store_all_nodes(numpy.zeros((10, 10), int))
-    #     self.testPerson2.coordinates = self.testPerson2.find_nearest_waypoint()
-    #     print(self.testPerson2.coordinates, self.testPerson2.destination())
-    #     self.testPerson2.set_cords_from_algo()
-    #     self.assertFalse(self.testPerson.cords)
-    # def test_move(self):
-    #     data = [200, 200]
-    #     self.assertTrue(self.testPerson.move(data))
+    def test_advance_state_machine_currently_greatest_need(self):
+        result = self.testPerson.stateMachine.get_current_state()
+        self.assertEqual(result, self.testPerson.stateMachine.get_current_state())
 
-    # def test_person_memory(self):
-    #     """TO DO"""
-    #     """SHOULD PASS BUT TESTPERSON PICKS UP THE MEMORY"""
-    #     self.assertFalse(self.testPerson.memory, {'Bar': [], 'DanceFloor': [], 'Toilet': []})
+    def test_advance_state_machine_currently_want(self):
+        self.testPerson.stateMachine.set_current_state("findToilet")
+        self.testPerson.advance_state_machine()
+        result = self.testPerson.stateMachine.get_current_state()
+        self.assertEqual(result, "moveToToilet")
 
+    def test_advance_state_machine_currently_move(self):
+        self.testPerson.stateMachine.set_current_state("moveToToilet")
+        self.testPerson.advance_state_machine()
+        result = self.testPerson.stateMachine.get_current_state()
+        self.assertEqual(result, "useToilet")
 
-# def test_get_closest_object_from_memory(self):
-    #     """
-    #     TEST FAILS - Should return false as testperson has not added bar into memory
-    #     :return:
-    #     """
-    #     self.assertEqual(self.testPerson.get_closest_object_from_memory("Bar"), False)
+    def test_person_eyes(self):
+        test_coords = self.testPerson.get_coordinates()
+        test_angle = 0
+        test_radius = self.testPerson.get_width()
+        result = self.testPerson.person_eyes(test_coords, test_angle, round(test_radius / 2))
+        self.assertEqual(result, [[98, 99], [98, 101]])
+        return
 
 if __name__ == '__main__':
     unittest.main()

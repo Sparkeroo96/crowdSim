@@ -7,6 +7,7 @@ from Testing.UnitTesting import TestStateMachine
 from Testing.UnitTesting import TestToilet
 from Testing.UnitTesting import TestBar
 from Testing.UnitTesting import TestbaseObject
+from Testing.IntegrationTesting import IntegrationTests
 
 # def suite():
 #     suite = unittest.TestSuite()
@@ -22,7 +23,9 @@ if __name__ == '__main__':
 
     test_classes_to_run = [TestAStar.TestAStar, TestDancefloor.TestDanceFloor, TestMapData.TestMapData,
                            TestPerson.TestPerson, TestStateMachine.TestStateMachine,
-                           TestToilet.TestToilet, TestBar.TestBar, TestbaseObject.TestBaseObject]
+                           TestToilet.TestToilet, TestBar.TestBar, TestbaseObject.TestBaseObject,
+                           TestPerson.TestPerson, IntegrationTests.IntegrationTest]
+    # test_classes_to_run = [TestPerson.TestPerson, IntegrationTests.IntegrationTest]
 
     loader = unittest.TestLoader()
 

@@ -3,7 +3,6 @@ import math
 from random import randint
 from heapq import *
 mapLocations = []
-test = (1, 1), (-1, -1), (1, -1), (-1, 1)
 graph = []
 finalLocations = []
 n = []
@@ -20,55 +19,58 @@ def astar(array, start, dest):
     # The parent of the node we are currently occupied
     came_from = {}
     # Distance between start node and end node
-    gscore = {start: 0}
+    start_to_current_score = {start: 0}
     # Total cost of the node
-    fscore = {start: heuristic(start, dest)}
-    oheap = []
+    score_of_node = {start: calculate_heuristic(start, dest)}
+    stored_heap = []
 
-    heappush(oheap, (fscore[start], start))
-
-    while oheap:
-        current = heappop(oheap)[1]  # Current parent
-
-        if current == dest:  # The current Parent is the destination
-            data = []
-            while current in came_from:  # While there is still a parent.
-                data.append(current)
-                current = came_from[current]  # Move from child node to parent node
+    """Push item onto heap, maintaining the heap."""
+    heappush(stored_heap, (score_of_node[start], start))
+    while stored_heap:
+        current_parent = heappop(stored_heap)[1]  # Current parent
+        """We have found the destination"""
+        if current_parent == dest:
+            final_path = []
+            while current_parent in came_from:  # While there is still a parent.
+                final_path.append(current_parent)
+                """" Move from child node to parent node """
+                current_parent = came_from[current_parent]
             global mapLocations
-            mapLocations = data
+            mapLocations = final_path
             mapLocations.reverse()
             # array[(dest[0], dest[1])] = 1
-            return data  # Return the list
-
-        close_set.add(current)  # Add the current parent to the closed set.
-        for i, j in neighbours:
-            neighbour = current[0] + i, current[1] + j  # Assign neighbours
-
+            return final_path  # Return the list
+        close_set.add(current_parent)  # Add the current parent to the closed set.
+        for x, y in neighbours:
+            neighbour = current_parent[0] + x, current_parent[1] + y  # Assign neighbours
             # Create a placeholder g score, adding the distance and heuristic
-            tentative_g_score = gscore[current] + heuristic(current, neighbour)
+            placeholder_start_to_current_score = start_to_current_score[current_parent]\
+                                                 + calculate_heuristic(current_parent, neighbour)
             if 0 <= neighbour[0] < array.shape[0]:  # If neighbour inside the array
                 if 0 <= neighbour[1] < array.shape[1]:
-                    if array[neighbour[0]][neighbour[1]] == 1:  # If the value is 1, this is a wall
+                    """ If the value is 1, this is a node we cannot pass through """
+                    if array[neighbour[0]][neighbour[1]] == 1:
                         continue
                 else:
-                    # array bound y walls
+                    """ array bound y walls """
                     continue
             else:
-                # array bound x walls
+                """ array bound x walls """
                 continue
-
-            if neighbour in close_set and tentative_g_score >= gscore.get(neighbour, 0):
+            """Ignore this neighbour as they have been added to close set"""
+            """Score is greater"""
+            if neighbour in close_set and placeholder_start_to_current_score >= start_to_current_score.get(neighbour, 0):
                 continue
 
             #  If the score is lower
             #  If neighbour does not exist in the heap
-            if tentative_g_score < gscore.get(neighbour, 0) or neighbour not in [i[1] for i in oheap]:
-                came_from[neighbour] = current  # this value will be the new parent
-                gscore[neighbour] = tentative_g_score
-                fscore[neighbour] = tentative_g_score + heuristic(neighbour, dest)
-                heappush(oheap, (fscore[neighbour], neighbour))  # Push the neighbour to the queue
-
+            if placeholder_start_to_current_score < start_to_current_score.get(neighbour, 0) or \
+                    neighbour not in [i[1] for i in stored_heap]:
+                came_from[neighbour] = current_parent  # this value will be the new parent
+                start_to_current_score[neighbour] = placeholder_start_to_current_score
+                score_of_node[neighbour] = placeholder_start_to_current_score + calculate_heuristic(neighbour, dest)
+                heappush(stored_heap, (score_of_node[neighbour], neighbour))  # Push the neighbour to the queue
+    """Cannot find a path"""
     return False
 
 
@@ -76,8 +78,8 @@ def astar(array, start, dest):
 """a = start"""
 """b = destination"""
 """a** + b** = heuristic"""
-def heuristic(a, b):
-    return (b[0] - a[0]) ** 2 + (b[1] - a[1]) ** 2
+def calculate_heuristic(start, dest):
+    return (dest[0] - start[0]) ** 2 + (dest[1] - start[1]) ** 2
 
 
 """copies the graph made from map_data to the a_star class"""

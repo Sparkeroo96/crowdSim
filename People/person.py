@@ -832,14 +832,6 @@ class Person:
         if self.object_in_vision(obj) is False:
             self.vision.append(obj)
 
-        # for people in self.vision:
-        #     #Cheacks to see if the person is already in the vision
-        #     if obj == people:
-        #         already_there = True
-        # # if it isnt then it adds it to the array
-        # if already_there == False:
-        #     self.vision.append(obj)
-
     def object_in_vision(self, searchObj):
         """
         Checks to see if an object can be seen by the person
@@ -920,29 +912,6 @@ class Person:
             return False
 
         return self.work_out_closest_object(self.memory[objType])
-
-    def coords_between_two_points(self, cord1, cord2):
-        """This is a funciton the takes 2 coordinates and returns all the cordinates that are between them
-        :pram cord1 is the first cordinate
-        :pram cord2 is the second
-        :retrun is the array of cordinates between the two points
-        :DEFUNCT:
-        """
-        # Gets the angle of the line
-        angleRad =  math.atan2(cord2[1]-cord1[1], cord2[0]-cord1[0])
-        # Converts it to degrees
-        angleDeg = math.degrees(angleRad)
-        # works out the distance between the two cordinates
-        distance = math.pow(cord1[0] - cord2[0],2) + math.pow(cord2[1] - cord2[1],2)
-        distanceRoot = math.sqrt(distance)
-        result = []
-        x = 1
-        #Goes though each itoration and works out what the cordiante is and adds it to the array
-        while x <= distanceRoot:
-            lineCoords = self.angleMath(angleDeg,cord1[0],cord1[1],x)
-            result.append(lineCoords)
-            x = x + 1
-        return result
 
     def personVision(self, x1, y1, angle, vision):
         """This function gets an person and returns an array of the cordinates of their vision
@@ -1228,8 +1197,6 @@ class Person:
         cords.append(currentY)
         return cords
 
-    #FLOCKING STUFF FML
-
     def flock(self):
         """
         Person flocks with others
@@ -1469,9 +1436,7 @@ class Person:
 
         returnList  = {
             "angle" : self.angle,
-            "direction" : self.calculate_move_direction_difference()
-        }
-
+            "direction" : self.calculate_move_direction_difference()}
         return returnList
 
     def calculate_move_direction_difference(self):
@@ -1494,11 +1459,6 @@ class Person:
     def get_person_needs(self):
         return self.brain
 
-    """This will be in an idle state when a person has no desire of drinking, dancing or wanting the toilet"""
-    def relax(self):
-        for i in range(len(self.brain)):
-            self.increment_need(i, -0.1)
-
     def set_random_dance_area(self):
         if self.random_dance_area is None:
             self.random_dance_area = self.rememberedObj.get_random_dance_area()
@@ -1507,14 +1467,9 @@ class Person:
 
     def get_random_dance_area(self):
         return self.random_dance_area
-    """
-    This function checks the needs of the person.
-    If the value goes below the limit, it'll return that need, otherwise False
-    """
 
     def move_inside_dance_floor(self):
         """Person moves to a random location on the dancefloor
-        Currently broken as it only moves one cord, not the full destination.
         """
         randomNumber = randint(0, 8)
         nextMove = self.coordinates

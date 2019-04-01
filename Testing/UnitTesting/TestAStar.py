@@ -60,7 +60,7 @@ class TestAStar(unittest.TestCase):
         """
         test_a = (0, 40)
         test_b = (4, 40)
-        result = a_starv2.heuristic(test_a, test_b)
+        result = a_starv2.calculate_heuristic(test_a, test_b)
         self.assertEqual(result, 16)
 
     def test_return_waypoints(self):

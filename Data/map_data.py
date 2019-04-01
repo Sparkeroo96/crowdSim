@@ -151,23 +151,6 @@ class map_data:
             horizontal = horizontal * -1
         return [veritcal, horizontal]
 
-    def check_space_unoccupied(self, coordinates, object_size, object_name, object_shape):
-        """Checks to see if a set of coordinates is occupied by an obj or person
-        :param coordinates is the set its checking to see if anything occupies it
-        :param object_size is the obj that is the size of the obj currently checking coords, if it has a width and height give it as a list
-        :param object_name is the name of the obj doing checking so it doesnt check itself
-        :DEFUNCT:
-        """
-
-        ranges = self.get_coordinates_range(coordinates, object_size)
-
-        for obj in self.mapData:
-            if obj.get_name() == object_name:
-                continue
-
-            if isinstance(obj, "Person"):
-                print("In Person")
-
     def check_coordinates_for_person(self, check_coords, radius, name, edgeCoordinates):
         """Check to see if a person can move into a space
         :param check_coords The new coordinates to check
